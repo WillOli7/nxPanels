@@ -27,6 +27,8 @@ All notable changes to nxPanels. Versions follow [Semantic Versioning](https://s
 - Scripts: syntax check with the line number, last error shown in the editor.
 - Export of one panel or one folder, pasted into another layout; gallery of templates; `nxPanels.RegisterMedia` for media packs.
 - Fixed: values stored by scripts on a panel followed its frame to another panel after a layout switch.
+- Fixed: frame picker error on protected frames of other addons (Retail 12 secret values); export error on WoW Forever (division by zero in LibSerialize, patched).
+- New panel menu: empty panel or a template (the gallery moved there); icons for the panel text.
 
 ## 1.0.0-alpha.1 — 2026-09-27
 - First version of nxPanels, a full rewrite: panels, backgrounds, borders, text, scripts.

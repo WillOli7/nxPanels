@@ -69,8 +69,20 @@ local function rowButton(i)
 	b.tex = b:CreateTexture(nil, "ARTWORK")
 	b.preview = CreateFrame("Frame", nil, b)
 	O.core.Border:Create(b.preview)
-	b:SetScript("OnEnter", function(self) self.highlight:Show() end)
-	b:SetScript("OnLeave", function(self) self.highlight:Hide() end)
+	b:SetScript("OnEnter", function(self)
+		self.highlight:Show()
+		-- item.tooltip: description shown next to the list
+		if self.item.tooltip then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:SetText(self.item.text, 1, 1, 1)
+			GameTooltip:AddLine(self.item.tooltip, nil, nil, nil, true)
+			GameTooltip:Show()
+		end
+	end)
+	b:SetScript("OnLeave", function(self)
+		self.highlight:Hide()
+		GameTooltip:Hide()
+	end)
 	b:SetScript("OnClick", function(self)
 		local onSelect = popup.onSelect
 		Dropdown:Close()
@@ -143,7 +155,8 @@ function Dropdown:Open(owner, items, current, onSelect, opts)
 	popup.items, popup.current, popup.onSelect, popup.opts = items, current, onSelect, opts or {}
 	popup:ClearAllPoints()
 	popup:SetPoint("TOPLEFT", owner, "BOTTOMLEFT", 0, -2)
-	popup:SetWidth(math.max(owner:GetWidth(), popup.opts.preview and 280 or 200))
+	-- opts.minWidth: wider list for long texts
+	popup:SetWidth(math.max(owner:GetWidth(), popup.opts.minWidth or (popup.opts.preview and 280 or 200)))
 	popup.search.edit:SetText("")
 	popup.search:SetShown(#items > MAX_ROWS)
 	popup.scroll:SetVerticalScroll(0)

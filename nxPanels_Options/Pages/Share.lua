@@ -247,54 +247,6 @@ local function buildExport(parent, width)
 end
 
 ---------------------------------------------------------------------------
--- Gallery of templates
----------------------------------------------------------------------------
--- Adds a template to the active layout, or to a new layout
-function Share:AddTemplate(template, newLayout)
-	local payload = O.TemplatePayload(template)
-	local layoutId = not newLayout and Options:ActiveLayout()
-	if not layoutId then
-		layoutId = core.Database:CreateLayout(payload.layout.name)
-		core.Layouts:Activate(layoutId)
-	end
-	local ids = core.Share.AddPanels(payload, layoutId)
-	for _, panelId in ipairs(ids) do core.Layouts:PanelChanged(panelId, "added") end
-	core:Print(L["IMPORT_PANELS_DONE"], #ids, core.Database:GetLayout(layoutId).name)
-	Options:Refresh()
-	return layoutId, ids
-end
-
-local function buildGallery(parent, width)
-	local f = CreateFrame("Frame", nil, parent)
-	f:SetAllPoints(parent)
-	local scroll = W.Scroll(f)
-	scroll:SetPoint("TOPLEFT")
-	scroll:SetPoint("BOTTOMRIGHT")
-	local ROW = 74
-	for i, template in ipairs(O.Templates) do
-		local card = CreateFrame("Frame", nil, scroll.content)
-		card:SetSize(width - 12, ROW - 8)
-		card:SetPoint("TOPLEFT", 0, -(i - 1) * ROW)
-		T:Fill(card, C.card)
-		T:Border(card, C.line)
-		local title = T:Text(card, T.fonts.header, C.text)
-		title:SetPoint("TOPLEFT", 16, -12)
-		title:SetText(L["TPL_" .. template.key])
-		local add = W.Button(card, L["TPL_ADD"], 150, "primary", function() Share:AddTemplate(template, false) end)
-		add:SetPoint("RIGHT", -12, 0)
-		local new = W.Button(card, L["TPL_NEW_LAYOUT"], 150, "default", function() Share:AddTemplate(template, true) end)
-		new:SetPoint("RIGHT", add, "LEFT", -8, 0)
-		local desc = T:Text(card, T.fonts.small, C.textDim)
-		desc:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
-		desc:SetPoint("RIGHT", new, "LEFT", -12, 0)
-		desc:SetWordWrap(true)
-		desc:SetText(L["TPL_" .. template.key .. "_DESC"])
-	end
-	scroll:SetContentHeight(#O.Templates * ROW)
-	return f
-end
-
----------------------------------------------------------------------------
 -- Page
 ---------------------------------------------------------------------------
 Options:RegisterPage({
@@ -309,16 +261,13 @@ Options:RegisterPage({
 		body:SetPoint("BOTTOMRIGHT")
 		page.import = buildImport(body, width)
 		page.export = buildExport(body, width)
-		page.gallery = buildGallery(body, width)
 		page.tabs = W.Tabs(page, {
 			{ key = "import", text = L["IMPORT"] },
 			{ key = "export", text = L["EXPORT"] },
-			{ key = "gallery", text = L["GALLERY"] },
 		}, function(key)
 			Share.tab = key
 			page.import:SetShown(key == "import")
 			page.export:SetShown(key == "export")
-			page.gallery:SetShown(key == "gallery")
 			if key == "export" then Share:RefreshExport() end
 		end)
 		page.tabs:SetPoint("TOPLEFT")

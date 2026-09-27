@@ -558,6 +558,37 @@ local function buildText(form)
 		text().value = value .. ((value == "" or value:find("%s$")) and "" or " ") .. "{" .. name .. "}"
 		changed("look")
 	end, { width = 240 })
+	-- Icons: texture codes of the game, written for the user
+	local function icons()
+		local _, classFile = UnitClass("player")
+		local list = {
+			{ "Interface\\MoneyFrame\\UI-GoldIcon", L["ICON_GOLD"] },
+			{ "Interface\\MoneyFrame\\UI-SilverIcon", L["ICON_SILVER"] },
+			{ "Interface\\Icons\\INV_Misc_PocketWatch_01", L["ICON_CLOCK"] },
+			{ "Interface\\Icons\\ClassIcon_" .. (classFile or "WARRIOR"), L["ICON_CLASS"] },
+			{ "Interface\\RaidFrame\\ReadyCheck-Ready", L["ICON_READY"] },
+			{ "Interface\\RaidFrame\\ReadyCheck-NotReady", L["ICON_NOT_READY"] },
+			{ "Interface\\RaidFrame\\ReadyCheck-Waiting", L["ICON_WAITING"] },
+			{ "Interface\\GossipFrame\\AvailableQuestIcon", L["ICON_QUEST"] },
+			{ "Interface\\GossipFrame\\ActiveQuestIcon", L["ICON_QUEST_TURNIN"] },
+			{ "Interface\\Buttons\\UI-GroupLoot-Dice-Up", L["ICON_DICE"] },
+		}
+		for i = 1, 8 do
+			list[#list + 1] = { "Interface\\TargetingFrame\\UI-RaidTargetingIcon_" .. i, _G["RAID_TARGET_" .. i] or ("#" .. i) }
+		end
+		local items = {}
+		for i, icon in ipairs(list) do
+			items[i] = { value = icon[1], text = icon[2], texture = icon[1] }
+		end
+		return items
+	end
+	W.DropdownRow(form, L["INSERT_ICON"], icons, function() return nil end, function(path)
+		clearFocus()
+		local value = text().value
+		-- "||" is how a single "|" is stored (edit box escaping)
+		text().value = value .. ((value == "" or value:find("%s$")) and "" or " ") .. "||T" .. path .. ":0||t"
+		changed("look")
+	end, { width = 240, preview = "texture" })
 
 	form:Section(L["SECTION_FONT"])
 	W.DropdownRow(form, L["FONT"], function() return Options:MediaItems("font") end,
@@ -813,11 +844,29 @@ Options:RegisterPage({
 		layoutButton:SetPoint("TOPLEFT", 0, 0)
 		page.layoutButton = layoutButton
 
-		local newPanel = W.Button(page, L["NEW_PANEL"], (LIST_WIDTH - 6) / 2, "primary", function()
-			local panel = P()
-			Panels:NewPanel(panel and panel.folder)
+		-- New panel: empty, or from a template of the gallery
+		local newPanel
+		newPanel = W.Button(page, L["NEW_PANEL"], (LIST_WIDTH - 6) / 2, "primary", function()
+			local items = { { value = 0, text = L["NEW_PANEL_EMPTY"] } }
+			for i, template in ipairs(O.Templates) do
+				items[#items + 1] = {
+					value = i,
+					text = L["NEW_PANEL_FROM"]:format(L["TPL_" .. template.key]),
+					tooltip = L["TPL_" .. template.key .. "_DESC"],
+				}
+			end
+			O.Dropdown:Open(newPanel, items, nil, function(choice)
+				if choice == 0 then
+					local panel = P()
+					Panels:NewPanel(panel and panel.folder)
+				else
+					local _, ids = O.AddTemplate(O.Templates[choice], false)
+					Panels:Select(ids[1])
+				end
+			end, { minWidth = 300 })
 		end)
 		newPanel:SetPoint("TOPLEFT", 0, -36)
+		page.newPanel = newPanel
 		local newFolder = W.Button(page, L["NEW_FOLDER"], (LIST_WIDTH - 6) / 2, "default", function() Panels:NewFolder() end)
 		newFolder:SetPoint("LEFT", newPanel, "RIGHT", 6, 0)
 

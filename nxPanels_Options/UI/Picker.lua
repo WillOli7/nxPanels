@@ -20,25 +20,43 @@ local IGNORED = {
 }
 local THROTTLE = 0.1
 
+--[[
+Retail 12 hides some values of other addons' frames ("secret values", e.g.
+aura frames): testing them is an error. Such frames are skipped.
+]]
+local isSecret = issecretvalue or function() return false end
+
+local function secret(...)
+	for i = 1, select("#", ...) do
+		if isSecret((select(i, ...))) then return true end
+	end
+	return false
+end
+
+-- { frame, name, area } when the frame is a named frame under the point, nil otherwise
+local function candidate(frame, x, y)
+	local forbidden, visible = frame:IsForbidden(), frame:IsVisible()
+	if secret(forbidden, visible) or forbidden or not visible then return end
+	local name = frame:GetName()
+	if secret(name) or type(name) ~= "string" or IGNORED[name] or _G[name] ~= frame then return end
+	local l, b, w, h = frame:GetRect()
+	local s = frame:GetEffectiveScale()
+	if secret(l, b, w, h, s) or not l or w <= 0 or h <= 0 then return end
+	local cx, cy = x / s, y / s
+	if cx >= l and cx <= l + w and cy >= b and cy <= b + h then
+		return { frame = frame, name = name, area = w * h * s * s }
+	end
+end
+
 -- Named frames under the cursor, smallest first
 local function framesUnderCursor()
 	local list = {}
 	local x, y = GetCursorPosition()
 	local frame = EnumerateFrames()
 	while frame do
-		if not frame:IsForbidden() and frame:IsVisible() then
-			local name = frame:GetName()
-			if type(name) == "string" and not IGNORED[name] and _G[name] == frame then
-				local l, b, w, h = frame:GetRect()
-				if l and w > 0 and h > 0 then
-					local s = frame:GetEffectiveScale()
-					local cx, cy = x / s, y / s
-					if cx >= l and cx <= l + w and cy >= b and cy <= b + h then
-						list[#list + 1] = { frame = frame, name = name, area = w * h * s * s }
-					end
-				end
-			end
-		end
+		-- pcall: a protected value that is not detected must not break the picker
+		local ok, found = pcall(candidate, frame, x, y)
+		if ok and found then list[#list + 1] = found end
 		frame = EnumerateFrames(frame)
 	end
 	table.sort(list, function(a, b) return a.area < b.area end)
@@ -123,8 +141,14 @@ function Picker:Draw()
 		f.name:SetText(L["PICKER_NONE"])
 		return
 	end
-	local l, b, w, h = c.frame:GetRect()
-	local s = c.frame:GetEffectiveScale() / UIParent:GetEffectiveScale()
+	-- The frame was readable when it was found; it may be protected since
+	local ok, l, b, w, h = pcall(c.frame.GetRect, c.frame)
+	local s = c.frame:GetEffectiveScale()
+	if not ok or not l or secret(l, b, w, h, s) then
+		f.box:Hide()
+		return
+	end
+	s = s / UIParent:GetEffectiveScale()
 	f.box:ClearAllPoints()
 	f.box:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", l * s, b * s)
 	f.box:SetSize(w * s, h * s)

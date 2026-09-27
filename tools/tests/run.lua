@@ -399,6 +399,10 @@ if scenario == "migrate" or scenario == "forever" or scenario == "zhcn" then
 	local copyBarId = ns.Database:FindPanel(main, "Bottom Bar (2)")
 	check(#added == 2 and copyChat and copyChat.anchor.relativeTo == "panel:" .. copyBarId, "panels added to a layout, anchors kept")
 	check(nxPanels.RegisterMedia("background", "Pack Stone", "Interface\\AddOns\\Pack\\stone.tga") and ns.Media.LSM:Fetch("background", "Pack Stone"), "media pack API")
+	-- LibSerialize patched for WoW Forever (no division by zero): values still round-trip
+	local LS = LibStub("LibSerialize")
+	local okZero, zeros = LS:Deserialize(LS:Serialize({ 0, -0.0, 1.5, 0 / 0 }))
+	check(okZero and zeros[1] == 0 and tostring(zeros[2]) == "-0" and zeros[3] == 1.5 and zeros[4] ~= zeros[4], "zero, negative zero and NaN serialized without dividing by zero")
 
 	-- Layout per specialization
 	local function setSpec(n)
@@ -546,11 +550,20 @@ elseif scenario == "options" then
 	chatPanel.text.value = "Zone:"
 	choose(findRow(editor.tabs.text.form, L["INSERT_VARIABLE"]), "zone")
 	check(chatPanel.text.value == "Zone: {zone}" and chat.text.textValue == "Zone: Valdrakken", "variable inserted")
+	choose(findRow(editor.tabs.text.form, L["INSERT_ICON"]), "Interface\\MoneyFrame\\UI-GoldIcon")
+	check(chat.text.textValue == "Zone: Valdrakken |TInterface\\MoneyFrame\\UI-GoldIcon:0|t", "icon inserted as a texture code")
 
 	-- Frame picker
 	local target = CreateFrame("Frame", "PickMeFrame", UIParent)
 	target.w, target.h = 300, 60
 	target.rect = { 800, 500, 300, 60 }
+	-- Frames of other addons with protected values (Retail 12 "secret values"), smaller than the target
+	local secretFrame = CreateFrame("Frame", "SecretAuraFrame", UIParent)
+	secretFrame.w, secretFrame.h, secretFrame.rect = 20, 20, { 890, 510, 20, 20 }
+	function secretFrame:IsVisible() return M.SECRET end
+	local brokenFrame = CreateFrame("Frame", "BrokenFrame", UIParent)
+	brokenFrame.w, brokenFrame.h, brokenFrame.rect = 10, 10, { 895, 515, 10, 10 }
+	function brokenFrame:GetRect() error("attempt to perform boolean test on a secret boolean value") end
 	M.cursor = { 900, 520 }
 	local pickRow = findRow(general, L["PICK_ON_SCREEN"])
 	click(pickRow.buttons[1])
@@ -575,12 +588,13 @@ elseif scenario == "options" then
 
 	-- Gallery
 	local before = count(main.panels)
-	O.SharePage:AddTemplate(O.Templates[1], false)
+	P.page.newPanel.scripts.OnClick(P.page.newPanel)
+	check(O.Dropdown:Choose(1), "template chosen from the New panel menu")
 	local barTplId, barTpl = ns.Database:FindPanel(main, L["TPL_INFO_BAR"])
 	local lineId, line = ns.Database:FindPanel(main, L["TPL_INFO_BAR_LINE"])
 	check(count(main.panels) == before + 2 and line and line.parent == "panel:" .. barTplId and line.background.colorMode == "CLASS", "template added, its panels linked")
 	check(ns.Layouts.frames[barTplId].text.textValue:find("Valdrakken"), "template text variables")
-	local glowLayout = O.SharePage:AddTemplate(O.Templates[4], true)
+	local glowLayout = O.AddTemplate(O.Templates[4], true)
 	local glowId = next(ns.Database:GetLayout(glowLayout).panels)
 	check(ns.Layouts.activeId == glowLayout and not ns.Layouts.frames[glowId].shown, "combat glow template hidden out of combat")
 	ns.Layouts:Activate(mainId)

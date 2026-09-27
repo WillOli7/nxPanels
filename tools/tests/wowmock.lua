@@ -258,6 +258,9 @@ function IsShiftKeyDown() return M.shift end
 function IsControlKeyDown() return M.ctrl end
 function InCombatLockdown() return M.combat end
 function GetCurrentKeyBoardFocus() return M.focus end
+-- Retail 12 "secret values": M.SECRET stands for one
+M.SECRET = setmetatable({}, { __tostring = function() return "<secret>" end })
+function issecretvalue(v) return v == M.SECRET end
 
 -- Game state read by the display conditions, colors and text variables
 M.state = { group = false, raid = false, instance = "none", mounted = false, target = nil, combat = false, hover = {} }

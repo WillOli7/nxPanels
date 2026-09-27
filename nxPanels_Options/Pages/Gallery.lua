@@ -103,3 +103,18 @@ O.Templates = {
 function O.TemplatePayload(template)
 	return { layout = { name = L["TPL_" .. template.key], folders = {}, panels = template.panels() } }
 end
+
+-- Adds a template to the active layout (or to a new layout); returns the layout and panel ids
+function O.AddTemplate(template, newLayout)
+	local core = O.core
+	local payload = O.TemplatePayload(template)
+	local layoutId = not newLayout and core.Database:GetActiveLayoutId()
+	if not layoutId then
+		layoutId = core.Database:CreateLayout(payload.layout.name)
+		core.Layouts:Activate(layoutId)
+	end
+	local ids = core.Share.AddPanels(payload, layoutId)
+	for _, panelId in ipairs(ids) do core.Layouts:PanelChanged(panelId, "added") end
+	core:Print(L["IMPORT_PANELS_DONE"], #ids, core.Database:GetLayout(layoutId).name)
+	return layoutId, ids
+end
