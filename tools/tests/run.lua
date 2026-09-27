@@ -517,6 +517,10 @@ elseif scenario == "options" then
 	s.snapPanels, s.snapGrid = false, true
 	dragMover(m, 1000, 1005)
 	check(test.anchor.x == 4 and test.anchor.y == 2 and EM.selected == testId, "moved and snapped to the grid")
+	test.anchor.x, test.anchor.y = 0, 0
+	dragMover(m, 1000, 1010)
+	check(test.anchor.x == 10 and test.anchor.y == 2, "far from a grid line: free move (smooth), not steps")
+	EM:Undo()
 	M.ctrl = true
 	EM.frame.scripts.OnKeyDown(EM.frame, "Z")
 	M.ctrl = false

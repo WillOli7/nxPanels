@@ -15,7 +15,8 @@ All notable changes to nxPanels. Versions follow [Semantic Versioning](https://s
 - Translations of the window: English, French, Simplified and Traditional Chinese.
 - Layout per specialization (Retail specializations, WoW Forever primary / secondary talents), replacing the profiles per specialization (LibDualSpec removed; schema 2).
 - Profiles: one-click profile per class or faction, and a profile choice for new characters.
-- Window appearance: "Workshop" (warm, default) or "Night" style, and an accent color (gold, cyan, violet, jade, rose or class color).
+- Window appearance: "Workshop" (warm, default), "Ink" or "Night" style, and an accent color (gold, cyan, violet, jade, rose or class color).
+- Edit mode moves smoothly: the grid is a magnet near its lines (off by default) instead of steps.
 - Fixed: pasted text was invisible in the multi-line text boxes (import, panel text, scripts).
 
 ## 1.0.0-alpha.1 — 2026-09-27

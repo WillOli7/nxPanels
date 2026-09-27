@@ -160,7 +160,9 @@ local function snapAxis(values, lines, center)
 		if d then return d, line end
 	end
 	if s.snapGrid then
-		return snapToGrid(values[1], center)
+		-- A magnet, not steps: only close to a line, so the panel still moves smoothly
+		local d = snapToGrid(values[1], center)
+		if math.abs(d) <= math.min(s.snapDistance, s.gridSize / 4) then return d end
 	end
 	return 0
 end

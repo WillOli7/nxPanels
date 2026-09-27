@@ -30,6 +30,19 @@ Theme.STYLES = {
 		textDim = { 0.73, 0.68, 0.61, 1 },
 		textMuted = { 0.52, 0.48, 0.43, 1 },
 	},
+	-- Deep ink, violet tint
+	ink = {
+		window = { 0.055, 0.05, 0.078, 0.97 },
+		sidebar = { 0.04, 0.036, 0.058, 1 },
+		card = { 0.082, 0.075, 0.112, 1 },
+		cardHover = { 0.11, 0.1, 0.148, 1 },
+		input = { 0.03, 0.027, 0.045, 1 },
+		line = { 0.85, 0.8, 1, 0.08 },
+		lineStrong = { 0.85, 0.8, 1, 0.18 },
+		text = { 0.94, 0.92, 0.98, 1 },
+		textDim = { 0.68, 0.65, 0.78, 1 },
+		textMuted = { 0.48, 0.45, 0.58, 1 },
+	},
 	-- Cool blue-grey
 	night = {
 		window = { 0.043, 0.055, 0.067, 0.97 },
@@ -44,7 +57,7 @@ Theme.STYLES = {
 		textMuted = { 0.43, 0.47, 0.52, 1 },
 	},
 }
-Theme.STYLE_ORDER = { "atelier", "night" }
+Theme.STYLE_ORDER = { "atelier", "ink", "night" }
 
 Theme.ACCENTS = {
 	gold = { 1, 0.76, 0.33 },
@@ -64,6 +77,8 @@ end
 
 local settings = O.core.db.global.optionsTheme
 Theme.style = Theme.STYLES[settings.style] and settings.style or "atelier"
+-- Ornate styles: accent logo, brush strokes, colored section titles
+Theme.ornate = Theme.style ~= "night"
 local accent = settings.accent == "class" and classColor() or Theme.ACCENTS[settings.accent] or Theme.ACCENTS.gold
 local r, g, b = unpack(accent)
 
@@ -73,7 +88,7 @@ C.accent = { r, g, b, 1 }
 C.accentSoft = { r, g, b, 0.14 }
 C.accentHover = { r, g, b, 0.28 }
 -- Section titles: accent in the workshop style, discreet otherwise
-C.section = Theme.style == "atelier" and { r, g, b, 0.85 } or C.textMuted
+C.section = Theme.ornate and { r, g, b, 0.85 } or C.textMuted
 C.danger = { 1, 0.38, 0.38, 1 }
 C.dangerSoft = { 1, 0.38, 0.38, 0.14 }
 C.success = { 0.35, 0.9, 0.55, 1 }

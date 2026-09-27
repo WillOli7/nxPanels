@@ -105,7 +105,7 @@ local function navButton(parent, def)
 	b:SetScript("OnClick", function() Options:Show(def.key) end)
 	function b:SetSelected(on)
 		self.bar:SetShown(on)
-		if on and T.style == "atelier" then
+		if on and T.ornate then
 			-- Accent fading to the right, like a brush stroke
 			T:Gradient(self.bg, C.accentHover, { C.accent[1], C.accent[2], C.accent[3], 0 })
 		else
@@ -154,7 +154,7 @@ function Options:Create()
 	logo:SetSize(34, 34)
 	logo:SetPoint("TOPLEFT", 22, -24)
 	local logoText
-	if T.style == "atelier" then
+	if T.ornate then
 		-- Solid block of color, dark letters
 		T:Fill(logo, C.accent)
 		logoText = T:Text(logo, T.fonts.header, C.sidebar, "CENTER")
@@ -191,7 +191,7 @@ function Options:Create()
 	self.title:SetPoint("TOPLEFT", SIDEBAR + CONTENT_PAD, -26)
 	self.subtitle = T:Text(f, T.fonts.normal, C.textDim)
 	self.subtitle:SetPoint("TOPLEFT", self.title, "BOTTOMLEFT", 0, -6)
-	if T.style == "atelier" then
+	if T.ornate then
 		-- Short stroke of the accent under the title
 		local stroke = f:CreateTexture(nil, "ARTWORK")
 		stroke:SetTexture(T.WHITE)
