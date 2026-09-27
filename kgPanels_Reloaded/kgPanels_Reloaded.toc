@@ -1,0 +1,11 @@
+## Interface: 120000, 120001, 120005, 120007, 120100, 16001
+## Title: kgPanels Reloaded |cff888888(migration to nxPanels)|r
+## Notes: Keeps your kgPanels Reloaded data readable so nxPanels can import it. Loaded by nxPanels when needed.
+## Notes-frFR: Garde vos données kgPanels Reloaded lisibles pour que nxPanels les importe. Chargé par nxPanels si besoin.
+## Author: Adna
+## Version: 1.0.0-alpha.1
+## X-License: GPL-3.0-or-later
+## LoadOnDemand: 1
+## SavedVariables: kgPanelsDB
+
+Bridge.lua

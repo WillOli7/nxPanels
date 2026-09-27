@@ -1,0 +1,41 @@
+local L = LibStub("AceLocale-3.0"):NewLocale("nxPanels", "enUS", true)
+if not L then return end
+
+L["LIB_MISSING"] = "The library %s is missing. Please reinstall nxPanels."
+L["ENABLED"] = "Panels enabled."
+L["DISABLED"] = "Panels disabled."
+L["LAYOUT_ACTIVE"] = "Active layout: %s"
+L["LAYOUT_NONE"] = "No active layout."
+L["LAYOUT_NOT_FOUND"] = "Layout not found: %s"
+L["LAYOUT_LIST"] = "Layouts:"
+L["LAYOUT_LIST_ITEM"] = "%s (%d panels)"
+L["NO_LAYOUTS"] = "No layouts yet."
+L["STATUS"] = "Version %s, %s client. Active layout: %s. Panels shown: %d, waiting for their frame: %d."
+L["CLIENT_RETAIL"] = "Retail"
+L["CLIENT_FOREVER"] = "WoW Forever"
+L["CLIENT_OTHER"] = "unsupported"
+L["MENU_SHOW"] = "Show the panels"
+
+L["HELP_TITLE"] = "Commands (/nxpanels or /nxp):"
+L["HELP_LAYOUTS"] = "layouts: list your layouts"
+L["HELP_LAYOUT"] = "layout <name>: activate a layout"
+L["HELP_TOGGLE"] = "enable / disable: show or hide all panels"
+L["HELP_MINIMAP"] = "minimap: show or hide the minimap button"
+L["HELP_STATUS"] = "status: version and diagnostics"
+
+
+L["SCRIPT_ERROR"] = "Script error in panel |cffffd100%s|r (%s): %s. This script is disabled until the next reload."
+L["SCRIPT_COMPILE_ERROR"] = "Script of panel |cffffd100%s|r (%s) could not be compiled: %s"
+L["ANCHOR_CYCLE"] = "Panel |cffffd100%s|r: circular anchoring detected, anchored to the screen instead."
+
+L["HELP_OPEN"] = "(nothing): open the nxPanels window"
+L["HELP_EDIT"] = "edit: edit mode, move and resize the panels with the mouse"
+L["OPTIONS_LOAD_FAILED"] = "The nxPanels_Options module could not be loaded (%s). Check that it is installed and enabled."
+L["SETTINGS_DESC"] = "Create and arrange artistic panels: backgrounds, borders, text and scripts. Everything is set up in the nxPanels window."
+L["OPEN_OPTIONS"] = "Open nxPanels"
+L["IMPORT_INVALID"] = "This text is not a valid layout string."
+L["IMPORT_NEWER"] = "This layout was made with a newer version of nxPanels. Update the addon to import it."
+L["IMPORT_EMPTY"] = "Paste a layout string first."
+L["IMPORTED_LAYOUT"] = "Imported layout"
+L["MINIMAP_TOOLTIP_LEFT"] = "|cffffd100Left-click:|r open nxPanels"
+L["MINIMAP_TOOLTIP_RIGHT"] = "|cffffd100Right-click:|r layouts menu"

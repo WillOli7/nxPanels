@@ -1,0 +1,16 @@
+## Interface: 120000, 120001, 120005, 120007, 120100, 16001
+## Title: nxPanels |cff888888Import|r
+## Notes: Imports your kgPanels and kgPanels Reloaded layouts into nxPanels. You can disable it once your layouts are imported.
+## Notes-frFR: Importe vos layouts kgPanels et kgPanels Reloaded dans nxPanels. Vous pouvez le désactiver une fois vos layouts importés.
+## Notes-zhCN: 将你的 kgPanels 与 kgPanels Reloaded 布局导入 nxPanels。导入完成后可以禁用。
+## Notes-zhTW: 將你的 kgPanels 與 kgPanels Reloaded 版面匯入 nxPanels。匯入完成後可以停用。
+## Author: Adna
+## Version: 1.0.0-alpha.2
+## X-License: GPL-3.0-or-later
+## RequiredDeps: nxPanels
+## OptionalDeps: kgPanels
+## IconTexture: Interface\Icons\INV_Inscription_Tradeskill01
+
+Locales.lua
+Convert.lua
+Import.lua

@@ -1,0 +1,8 @@
+## Interface: 120000, 120001, 120005, 120007, 120100, 16001
+## Title: kgPanelsConfig Reloaded |cff888888(replaced by nxPanels)|r
+## Notes: Empty placeholder: the configuration is now part of nxPanels. You can delete this folder.
+## Notes-frFR: Dossier vide : la configuration fait désormais partie de nxPanels. Vous pouvez supprimer ce dossier.
+## Author: Adna
+## Version: 1.0.0-alpha.1
+## X-License: GPL-3.0-or-later
+## LoadOnDemand: 1

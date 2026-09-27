@@ -1,0 +1,3 @@
+-- nxPanels migration bridge - Copyright (C) 2026 Adna - GPL-3.0-or-later
+-- This addon has no feature: it only declares the kgPanelsDB saved variable, so that
+-- nxPanels can read the data of kgPanels Reloaded and import it. The data is never modified.

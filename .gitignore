@@ -1,0 +1,12 @@
+# Local and editor files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+# Never commit personal saved variables
+*.bak
+WTF/
+SavedVariables/
+# Build output of the packager
+.release/

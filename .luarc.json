@@ -1,0 +1,12 @@
+{
+	"runtime.version": "Lua 5.1",
+	"workspace.library": [],
+	"workspace.ignoreDir": ["nxPanels/Libs", "nxPanels_Options/Libs", "tools/tests", ".git"],
+	"diagnostics.disable": ["lowercase-global"],
+	"diagnostics.globals": [
+		"LibStub", "C_AddOns", "C_Timer", "GetBuildInfo", "WOW_PROJECT_ID", "WOW_PROJECT_MAINLINE",
+		"DEFAULT_CHAT_FRAME", "CreateFrame", "UIParent", "STANDARD_TEXT_FONT", "CreateColor", "wipe",
+		"strjoin", "tostringall", "StaticPopupDialogs", "StaticPopup_Show", "ReloadUI", "SlashCmdList",
+		"SLASH_NXPANELS1", "SLASH_NXPANELS2", "MenuUtil", "AddonCompartmentFrame", "time", "loadstring", "setfenv"
+	]
+}

@@ -1,0 +1,20 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  offline-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install LuaJIT
+        run: sudo apt-get update && sudo apt-get install -y luajit
+      - name: Syntax check
+        run: |
+          status=0
+          while read -r f; do luajit -bl "$f" > /dev/null || status=1; done < <(find nxPanels nxPanels_Options nxPanels_Import kgPanels_Reloaded -name '*.lua')
+          exit $status
+      - name: Offline scenarios
+        run: bash tools/tests/run-all.sh luajit

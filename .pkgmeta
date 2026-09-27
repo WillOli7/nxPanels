@@ -1,0 +1,18 @@
+# BigWigs packager (CurseForge / Wago / GitHub releases)
+package-as: nxPanels
+enable-nolib-creation: no
+
+move-folders:
+  nxPanels/nxPanels: nxPanels
+  nxPanels/nxPanels_Options: nxPanels_Options
+  nxPanels/nxPanels_Import: nxPanels_Import
+  nxPanels/kgPanels_Reloaded: kgPanels_Reloaded
+  nxPanels/kgPanelsConfig_Reloaded: kgPanelsConfig_Reloaded
+
+ignore:
+  - tools
+  - docs
+  - .github
+  - .luarc.json
+  - Libs-VERSIONS.md
+  - CONTRIBUTING.md
