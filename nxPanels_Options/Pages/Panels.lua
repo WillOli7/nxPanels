@@ -436,19 +436,6 @@ local function buildGeneral(form)
 		function(v) P().anchor.y = v changed("geometry") end, { free = true })
 	W.DropdownRow(form, L["PARENT"], frameItems, function() return frameRef(P().parent) end,
 		setFrameRef(function(v) P().parent = v end), { width = 220 })
-	-- Points a frame on the screen instead of typing its name
-	local function pick(apply)
-		local id = Panels.selected
-		O.Picker:Start(function(ref)
-			if ref == "panel:" .. id or Panels.selected ~= id then return end
-			apply(ref)
-			changed("anchors")
-		end)
-	end
-	W.ButtonsRow(form, {
-		{ text = L["PICK_ANCHOR"], width = 150, onClick = function() pick(function(ref) P().anchor.relativeTo = ref end) end },
-		{ text = L["PICK_PARENT"], width = 150, onClick = function() pick(function(ref) P().parent = ref end) end },
-	}, L["PICK_ON_SCREEN"])
 	local status = W.TextRow(form, "", 44)
 	status.text:SetTextColor(unpack(C.danger))
 	status.isShown = function()
@@ -547,7 +534,7 @@ local function buildText(form)
 	form:Section(L["SECTION_TEXT"])
 	W.TextAreaRow(form, nil, function() return text().value end,
 		function(v) text().value = v changed("look") end, { height = 80, live = true })
-	W.TextRow(form, L["TEXT_HELP"], 40)
+	W.TextRow(form, L["TEXT_HELP"], 58)
 	local vars = {}
 	for i, name in ipairs(core.TextVars.NAMES) do
 		vars[i] = { value = name, text = ("{%s}  %s"):format(name, L["VAR_" .. name:upper()]) }
@@ -596,7 +583,7 @@ local function buildText(form)
 		else
 			append("||T" .. path .. ":0||t")
 		end
-	end, { width = 240, preview = "texture" })
+	end, { width = 240, preview = "icon" })
 	-- Currencies of the character (collapsed categories of the currency tab are not listed)
 	local function currencies()
 		local items = {}
@@ -612,7 +599,7 @@ local function buildText(form)
 	end
 	W.DropdownRow(form, L["INSERT_CURRENCY"], currencies, function() return nil end, function(id)
 		append("{currency:" .. id .. "}")
-	end, { width = 240, preview = "texture" })
+	end, { width = 240, preview = "icon" })
 
 	form:Section(L["SECTION_FONT"])
 	W.DropdownRow(form, L["FONT"], function() return Options:MediaItems("font") end,

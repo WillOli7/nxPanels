@@ -137,7 +137,7 @@ Principe : les librairies ne sont plus copiées dans le dépôt ; elles sont ré
 ### Création & édition
 - 🚧 **Mode édition visuel** : grille, aimantation (bords, centre, autres panneaux), guides d'alignement, flèches du clavier, sélection multiple, annuler/rétablir.
 - 🚧 **Navigateur de textures en vignettes** (au lieu d'une liste déroulante).
-- 🚧 **Sélecteur de frame au survol** (façon `/fstack`) pour ancrer sur EllesmereUI, ElvUI, frames du mode édition…
+- ❌ **Sélecteur de frame au survol** : essayé puis retiré (frames protégées depuis Midnight, trop coûteux sur une grosse interface). Reste « Autre frame… » avec `/fstack`.
 - 🚧 Éditeur de scripts : affichage de la ligne en erreur (fait). Reste : coloration syntaxique, bibliothèque d'extraits.
 
 ### Partage

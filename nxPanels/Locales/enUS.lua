@@ -381,12 +381,6 @@ L["ATLAS_UNKNOWN"] = "Unknown on this client"
 L["ATLAS_COUNT"] = "%d images"
 L["ATLAS_ITEM"] = "Blizzard: %s"
 
--- Frame picker
-L["PICK_ON_SCREEN"] = "Choose on the screen"
-L["PICK_ANCHOR"] = "Anchor"
-L["PICK_PARENT"] = "Parent"
-L["PICKER_HINT"] = "Point a frame, mouse wheel: frames below. Left-click: choose. Right-click or Escape: cancel."
-L["PICKER_NONE"] = "No named frame under the mouse"
 
 -- Text variables
 L["TEXT_HELP"] = "Color codes (||cffRRGGBB text||r), texture codes (||Tpath:size||t) and variables like {zone} or {time} (updated every second)."
@@ -458,7 +452,6 @@ L["ICON_WAITING"] = "Waiting"
 L["ICON_QUEST"] = "Quest available"
 L["ICON_QUEST_TURNIN"] = "Quest to turn in"
 L["ICON_DICE"] = "Dice"
-L["PICKER_SCANNING"] = "Reading the interface... %d frames"
 L["ICON_ALL"] = "All the icons of the game..."
 L["ICON_COUNT"] = "%d icons"
 L["BROWSER_TITLE_ICON"] = "Choose an icon"

@@ -96,7 +96,8 @@ function Dropdown:Fill()
 	local filter = strtrim(popup.search.edit:GetText() or ""):lower()
 	popup.search.placeholder:SetShown(filter == "")
 	local preview = popup.opts.preview
-	local rowHeight = (preview == "texture" or preview == "border") and 38 or 24
+	-- "icon": small square images (icons, currencies); "texture" / "border": wide previews
+	local rowHeight = (preview == "texture" or preview == "border") and 38 or preview == "icon" and 28 or 24
 	local width = popup:GetWidth() - 12
 
 	local shown = 0
@@ -113,7 +114,17 @@ function Dropdown:Fill()
 			b.text:ClearAllPoints()
 			b.tex:Hide()
 			b.preview:Hide()
-			if preview == "texture" or preview == "border" then
+			if preview == "icon" then
+				b.tex:ClearAllPoints()
+				b.tex:SetPoint("LEFT", 10, 0)
+				b.tex:SetSize(22, 22)
+				if item.texture then
+					b.tex:SetTexture(item.texture)
+					b.tex:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+					b.tex:Show()
+				end
+				b.text:SetPoint("LEFT", 42, 0)
+			elseif preview == "texture" or preview == "border" then
 				local box = preview == "texture" and b.tex or b.preview
 				box:ClearAllPoints()
 				box:SetPoint("LEFT", 10, 0)
@@ -131,10 +142,12 @@ function Dropdown:Fill()
 				b.text:SetPoint("LEFT", 12, 0)
 			end
 			b.text:SetPoint("RIGHT", -6, 0)
+			-- Always an explicit font: a row reused from the font list would keep its font
+			-- (a font object does not replace a font set with SetFont)
 			if preview == "font" and item.font then
 				b.text:SetFont(item.font, 13, "")
 			else
-				b.text:SetFontObject(T.fonts.normal)
+				b.text:SetFont(T.fonts.normal:GetFont())
 			end
 			b.text:SetText(item.text)
 		end
@@ -219,7 +232,7 @@ function W.DropdownButton(parent, width, items, get, set, opts)
 		if opts.preview == "font" and font then
 			self.text:SetFont(font, 13, "")
 		else
-			self.text:SetFontObject(T.fonts.normal)
+			self.text:SetFont(T.fonts.normal:GetFont())
 		end
 	end
 	return button

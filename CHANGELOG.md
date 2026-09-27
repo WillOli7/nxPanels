@@ -21,16 +21,15 @@ All notable changes to nxPanels. Versions follow [Semantic Versioning](https://s
 - Display conditions without scripts (combat, group, place, mount, target, pet battles, macro conditions) and opacity (base, in combat, under the mouse) with fades. Schema 3.
 - Automatic colors for backgrounds and borders: class, faction, reaction of the target.
 - Blizzard images (atlases) as backgrounds, and a texture browser with thumbnails.
-- Frame picker: attach a panel to a frame pointed with the mouse.
 - Text variables: {zone}, {time}, {fps}, {latency}, {gold}...
 - Edit mode: several panels selected with Ctrl+click, moved together and aligned.
 - Scripts: syntax check with the line number, last error shown in the editor.
 - Export of one panel or one folder, pasted into another layout; gallery of templates; `nxPanels.RegisterMedia` for media packs.
 - Fixed: values stored by scripts on a panel followed its frame to another panel after a layout switch.
-- Fixed: frame picker error on protected frames of other addons (Retail 12 secret values); export error on WoW Forever (division by zero in LibSerialize, patched).
+- Fixed: export error on WoW Forever (division by zero in LibSerialize, patched); anchoring to protected frames of other addons (Retail 12 secret values).
 - New panel menu: empty panel or a template (the gallery moved there); icons for the panel text.
-- Frame picker no longer freezes the game: the interface is read once, in batches, then only on mouse moves.
 - Text: every icon of the game (browser), currencies and items with {currency:<id>} and {item:<id>}, "Insert a currency" menu.
+- Fixed: list rows kept the font of the font list (capitals, missing accents), icons were stretched.
 
 ## 1.0.0-alpha.1 — 2026-09-27
 - First version of nxPanels, a full rewrite: panels, backgrounds, borders, text, scripts.

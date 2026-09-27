@@ -570,39 +570,15 @@ elseif scenario == "options" then
 	ns.Layouts:PanelChanged(chatId, "look")
 	check(chat.text.textValue == "|T5868902:0|t 12345 |T134400:0|t 7", "currency and item amounts with their icons")
 	chatPanel.text.value = "Zone: {zone}"
-
-	-- Frame picker
-	local target = CreateFrame("Frame", "PickMeFrame", UIParent)
-	target.w, target.h = 300, 60
-	target.rect = { 800, 500, 300, 60 }
-	-- Frames of other addons with protected values (Retail 12 "secret values"), smaller than the target
-	local secretFrame = CreateFrame("Frame", "SecretAuraFrame", UIParent)
-	secretFrame.w, secretFrame.h, secretFrame.rect = 20, 20, { 890, 510, 20, 20 }
-	function secretFrame:IsVisible() return M.SECRET end
-	local brokenFrame = CreateFrame("Frame", "BrokenFrame", UIParent)
-	brokenFrame.w, brokenFrame.h, brokenFrame.rect = 10, 10, { 895, 515, 10, 10 }
-	function brokenFrame:GetRect() error("attempt to perform boolean test on a secret boolean value") end
-	M.cursor = { 900, 520 }
-	local pickRow = findRow(general, L["PICK_ON_SCREEN"])
-	click(pickRow.buttons[1])
-	local picker = O.Picker.frame
-	local batches = 0
-	while not O.Picker.scanDone and batches < 1000 do
-		picker.scripts.OnUpdate(picker, 0.1)
-		batches = batches + 1
-	end
-	check(O.Picker.scanned == #M.frames and batches == math.ceil(#M.frames / 1500), "interface scanned once, in batches (no freeze)")
-	check(O.Picker.frame.shown and not Options.frame.shown and O.Picker.list[1] and O.Picker.list[1].name == "PickMeFrame", "picker finds the frame under the mouse")
-	O.Picker.list = {}
-	picker.scripts.OnUpdate(picker, 0.1)
-	check(#O.Picker.list == 0, "mouse still: no new search")
-	M.cursor = { 901, 520 }
-	picker.scripts.OnUpdate(picker, 0.1)
-	check(O.Picker.list[1] and O.Picker.list[1].name == "PickMeFrame", "mouse moved: search again")
-	O.Picker.frame.scripts.OnMouseDown(O.Picker.frame, "LeftButton")
-	check(chatPanel.anchor.relativeTo == "PickMeFrame" and Options.frame.shown, "anchored to the picked frame")
-	chatPanel.anchor.relativeTo = "panel:" .. barId
-	ns.Layouts:PanelChanged(chatId, "anchors")
+	-- A list row used by the font list goes back to the normal font
+	local fontRow = findRow(editor.tabs.text.form, L["FONT"])
+	fontRow.button.scripts.OnClick(fontRow.button)
+	O.Dropdown:Close()
+	local iconRow = findRow(editor.tabs.text.form, L["INSERT_ICON"])
+	iconRow.button.scripts.OnClick(iconRow.button)
+	local rows = O.Dropdown.popup.buttons
+	check(rows[2].text.font[1] == STANDARD_TEXT_FONT and rows[2].text.font[2] == 13 and rows[2].h == 28, "list rows: normal font, square icons")
+	O.Dropdown:Close()
 
 	-- Export of one panel, pasted back: added to the active layout
 	P:Export({ chatId }, "Chat BG")

@@ -282,6 +282,7 @@ function SecureCmdOptionParse(text)
 	end
 end
 function Region:GetAlpha() return self.alpha or 1 end
+function Region:GetFont() return unpack(self.font or {}) end
 date = os.date
 function UnitLevel() return 80 end
 function GetGuildInfo() return "Les Testeurs" end

@@ -382,12 +382,6 @@ L["ATLAS_UNKNOWN"] = "此用戶端中不存在"
 L["ATLAS_COUNT"] = "%d 張圖片"
 L["ATLAS_ITEM"] = "暴雪：%s"
 
--- 框架選擇器
-L["PICK_ON_SCREEN"] = "在螢幕上選擇"
-L["PICK_ANCHOR"] = "錨點"
-L["PICK_PARENT"] = "父框架"
-L["PICKER_HINT"] = "指向一個框架，滾輪：切換下方的框架。左鍵：選擇。右鍵或 Esc：取消。"
-L["PICKER_NONE"] = "滑鼠下沒有具名的框架"
 
 -- 文字變數
 L["TEXT_HELP"] = "支援顏色代碼（||cffRRGGBB 文字||r）、材質代碼（||T路徑:大小||t）以及 {zone}、{time} 等變數（每秒更新）。"
@@ -459,7 +453,6 @@ L["ICON_WAITING"] = "等待中"
 L["ICON_QUEST"] = "可接任務"
 L["ICON_QUEST_TURNIN"] = "可交任務"
 L["ICON_DICE"] = "骰子"
-L["PICKER_SCANNING"] = "正在讀取介面……%d 個框架"
 L["ICON_ALL"] = "遊戲中的所有圖示……"
 L["ICON_COUNT"] = "%d 個圖示"
 L["BROWSER_TITLE_ICON"] = "選擇圖示"

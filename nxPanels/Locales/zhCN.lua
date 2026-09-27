@@ -382,12 +382,6 @@ L["ATLAS_UNKNOWN"] = "此客户端中不存在"
 L["ATLAS_COUNT"] = "%d 张图片"
 L["ATLAS_ITEM"] = "暴雪：%s"
 
--- 框体选择器
-L["PICK_ON_SCREEN"] = "在屏幕上选择"
-L["PICK_ANCHOR"] = "锚点"
-L["PICK_PARENT"] = "父框体"
-L["PICKER_HINT"] = "指向一个框体，滚轮：切换下方的框体。左键：选择。右键或 Esc：取消。"
-L["PICKER_NONE"] = "鼠标下没有带名称的框体"
 
 -- 文字变量
 L["TEXT_HELP"] = "支持颜色代码（||cffRRGGBB 文字||r）、材质代码（||T路径:大小||t）以及 {zone}、{time} 等变量（每秒更新）。"
@@ -459,7 +453,6 @@ L["ICON_WAITING"] = "等待中"
 L["ICON_QUEST"] = "可接任务"
 L["ICON_QUEST_TURNIN"] = "可交任务"
 L["ICON_DICE"] = "骰子"
-L["PICKER_SCANNING"] = "正在读取界面……%d 个框体"
 L["ICON_ALL"] = "游戏中的所有图标……"
 L["ICON_COUNT"] = "%d 个图标"
 L["BROWSER_TITLE_ICON"] = "选择图标"

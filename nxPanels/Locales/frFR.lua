@@ -381,12 +381,6 @@ L["ATLAS_UNKNOWN"] = "Inconnue sur ce client"
 L["ATLAS_COUNT"] = "%d images"
 L["ATLAS_ITEM"] = "Blizzard : %s"
 
--- Sélecteur de frame
-L["PICK_ON_SCREEN"] = "Choisir à l'écran"
-L["PICK_ANCHOR"] = "Ancrage"
-L["PICK_PARENT"] = "Parent"
-L["PICKER_HINT"] = "Pointez une frame, molette : frames en dessous. Clic gauche : choisir. Clic droit ou Échap : annuler."
-L["PICKER_NONE"] = "Aucune frame nommée sous la souris"
 
 -- Variables de texte
 L["TEXT_HELP"] = "Codes couleur (||cffRRGGBB texte||r), codes de texture (||Tchemin:taille||t) et variables comme {zone} ou {time} (mises à jour chaque seconde)."
@@ -458,7 +452,6 @@ L["ICON_WAITING"] = "En attente"
 L["ICON_QUEST"] = "Quête disponible"
 L["ICON_QUEST_TURNIN"] = "Quête à rendre"
 L["ICON_DICE"] = "Dés"
-L["PICKER_SCANNING"] = "Lecture de l'interface... %d frames"
 L["ICON_ALL"] = "Toutes les icônes du jeu..."
 L["ICON_COUNT"] = "%d icônes"
 L["BROWSER_TITLE_ICON"] = "Choisir une icône"

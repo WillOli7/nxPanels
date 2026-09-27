@@ -27,7 +27,6 @@ UI\Widgets.lua
 UI\Dropdown.lua
 UI\Window.lua
 UI\Browser.lua
-UI\Picker.lua
 Pages\Layouts.lua
 Pages\Panels.lua
 Pages\Library.lua
