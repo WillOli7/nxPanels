@@ -126,6 +126,7 @@ end
 
 function Browser:Fill()
 	local f = self.frame
+	if self.kind == "icon" then return self:FillIcons() end
 	local filter = strtrim(f.search.edit:GetText() or ""):lower()
 	f.placeholder:SetShown(filter == "")
 	local items = self.tab == "atlas" and self:AtlasItems() or O.Options:MediaItems(self.kind)
@@ -235,7 +236,78 @@ local function create()
 	f.empty = T:Text(f.scroll.content, T.fonts.normal, C.textDim)
 	f.empty:SetPoint("TOPLEFT", 4, -8)
 	f.empty:SetText(L["BROWSER_EMPTY"])
+	f.scroll:HookScript("OnMouseWheel", function()
+		if Browser.kind == "icon" then Browser:FillIcons() end
+	end)
 	f:SetScript("OnHide", function() GameTooltip:Hide() end)
+end
+
+---------------------------------------------------------------------------
+-- Every icon of the game (the list used for the macro icons): thousands of
+-- them, so only the visible cells exist and are moved while scrolling
+---------------------------------------------------------------------------
+local ICON, ICON_GAP = 40, 4
+local iconCells = {}
+
+function Browser:GameIcons()
+	if self.icons then return self.icons end
+	local list = {}
+	-- By name: a function missing on a client must not stop the others
+	for _, name in ipairs({ "GetLooseMacroIcons", "GetMacroIcons", "GetLooseMacroItemIcons", "GetMacroItemIcons" }) do
+		local fill = _G[name]
+		if fill then pcall(fill, list) end
+	end
+	-- Older clients give texture names instead of file ids
+	for i, icon in ipairs(list) do
+		if type(icon) == "string" and not icon:find("\\") then list[i] = "Interface\\Icons\\" .. icon end
+	end
+	self.icons = list
+	return list
+end
+
+local function iconCell(i)
+	local c = iconCells[i]
+	if c then return c end
+	c = CreateFrame("Button", nil, Browser.frame.scroll.content)
+	c:SetSize(ICON, ICON)
+	c.tex = c:CreateTexture(nil, "ARTWORK")
+	c.tex:SetAllPoints(c)
+	c.edges = T:Border(c, C.line)
+	c:SetScript("OnEnter", function(self) T:SetBorderColor(self.edges, C.accent) end)
+	c:SetScript("OnLeave", function(self) T:SetBorderColor(self.edges, C.line) end)
+	c:SetScript("OnClick", function(self) Browser:Choose(self.icon) end)
+	iconCells[i] = c
+	return c
+end
+
+function Browser:FillIcons()
+	local f = self.frame
+	local icons = self:GameIcons()
+	local step = ICON + ICON_GAP
+	local columns = math.max(1, math.floor((f.scroll:GetWidth() - 8 + ICON_GAP) / step))
+	local rows = math.ceil(#icons / columns)
+	f.scroll:SetContentHeight(rows * step)
+	local first = math.floor(f.scroll:GetVerticalScroll() / step)
+	local visibleRows = math.ceil(f.scroll:GetHeight() / step) + 1
+	local n = 0
+	for row = first, math.min(rows - 1, first + visibleRows) do
+		for col = 0, columns - 1 do
+			local index = row * columns + col + 1
+			local icon = icons[index]
+			if icon then
+				n = n + 1
+				local c = iconCell(n)
+				c.icon = icon
+				c.tex:SetTexture(icon)
+				c:ClearAllPoints()
+				c:SetPoint("TOPLEFT", col * step, -row * step)
+				c:Show()
+			end
+		end
+	end
+	for i = n + 1, #iconCells do iconCells[i]:Hide() end
+	f.empty:SetShown(#icons == 0)
+	f.count:SetText(L["ICON_COUNT"]:format(#icons))
 end
 
 -- Opens the browser; onSelect(value) receives the chosen texture key
@@ -243,6 +315,27 @@ function Browser:Open(kind, current, onSelect)
 	if not self.frame then create() end
 	local f = self.frame
 	self.kind, self.current, self.onSelect = kind, current, onSelect
+	-- Icons: one grid, no tabs nor search (icons have no name)
+	local icons = kind == "icon"
+	f.tabs:SetShown(not icons)
+	f.search:SetShown(not icons)
+	f.scroll:ClearAllPoints()
+	f.scroll:SetPoint("TOPLEFT", 20, icons and -56 or -160)
+	f.scroll:SetPoint("BOTTOMRIGHT", -16, 16)
+	for _, c in ipairs(cells) do c:Hide() end
+	for _, c in ipairs(iconCells) do c:Hide() end
+	if icons then
+		f.title:SetText(L["BROWSER_TITLE_ICON"])
+		f.atlasRow:Hide()
+		f.count:ClearAllPoints()
+		f.count:SetPoint("TOPRIGHT", -56, -22)
+		f.scroll:SetVerticalScroll(0)
+		f:Show()
+		self:FillIcons()
+		return
+	end
+	f.count:ClearAllPoints()
+	f.count:SetPoint("TOPRIGHT", -20, -96)
 	f.title:SetText(kind == "border" and L["BROWSER_TITLE_BORDER"] or L["BROWSER_TITLE_BACKGROUND"])
 	-- Borders have no atlas tab (an atlas is not an edge file)
 	f.tabs.buttons[2]:SetShown(kind ~= "border")

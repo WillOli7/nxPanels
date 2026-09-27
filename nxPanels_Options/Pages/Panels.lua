@@ -576,18 +576,42 @@ local function buildText(form)
 		for i = 1, 8 do
 			list[#list + 1] = { "Interface\\TargetingFrame\\UI-RaidTargetingIcon_" .. i, _G["RAID_TARGET_" .. i] or ("#" .. i) }
 		end
-		local items = {}
-		for i, icon in ipairs(list) do
-			items[i] = { value = icon[1], text = icon[2], texture = icon[1] }
+		local items = { { value = "__all", text = L["ICON_ALL"] } }
+		for _, icon in ipairs(list) do
+			items[#items + 1] = { value = icon[1], text = icon[2], texture = icon[1] }
 		end
 		return items
 	end
-	W.DropdownRow(form, L["INSERT_ICON"], icons, function() return nil end, function(path)
+	-- Adds a piece of text at the end, with a space
+	local function append(piece)
 		clearFocus()
 		local value = text().value
-		-- "||" is how a single "|" is stored (edit box escaping)
-		text().value = value .. ((value == "" or value:find("%s$")) and "" or " ") .. "||T" .. path .. ":0||t"
+		text().value = value .. ((value == "" or value:find("%s$")) and "" or " ") .. piece
 		changed("look")
+	end
+	W.DropdownRow(form, L["INSERT_ICON"], icons, function() return nil end, function(path)
+		-- "||" is how a single "|" is stored (edit box escaping)
+		if path == "__all" then
+			O.Browser:Open("icon", nil, function(icon) append("||T" .. icon .. ":0||t") end)
+		else
+			append("||T" .. path .. ":0||t")
+		end
+	end, { width = 240, preview = "texture" })
+	-- Currencies of the character (collapsed categories of the currency tab are not listed)
+	local function currencies()
+		local items = {}
+		local info = C_CurrencyInfo
+		if not (info and info.GetCurrencyListSize) then return items end
+		for i = 1, info.GetCurrencyListSize() do
+			local entry = info.GetCurrencyListInfo(i)
+			local link = entry and not entry.isHeader and info.GetCurrencyListLink and info.GetCurrencyListLink(i)
+			local id = link and tonumber(link:match("currency:(%d+)"))
+			if id then items[#items + 1] = { value = id, text = entry.name, texture = entry.iconFileID } end
+		end
+		return items
+	end
+	W.DropdownRow(form, L["INSERT_CURRENCY"], currencies, function() return nil end, function(id)
+		append("{currency:" .. id .. "}")
 	end, { width = 240, preview = "texture" })
 
 	form:Section(L["SECTION_FONT"])

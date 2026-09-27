@@ -552,6 +552,24 @@ elseif scenario == "options" then
 	check(chatPanel.text.value == "Zone: {zone}" and chat.text.textValue == "Zone: Valdrakken", "variable inserted")
 	choose(findRow(editor.tabs.text.form, L["INSERT_ICON"]), "Interface\\MoneyFrame\\UI-GoldIcon")
 	check(chat.text.textValue == "Zone: Valdrakken |TInterface\\MoneyFrame\\UI-GoldIcon:0|t", "icon inserted as a texture code")
+	-- Every icon of the game: only the visible cells are drawn
+	chatPanel.text.value = ""
+	choose(findRow(editor.tabs.text.form, L["INSERT_ICON"]), "__all")
+	local browser = O.Browser.frame
+	browser.scroll.w, browser.scroll.h = 720, 440
+	O.Browser:FillIcons()
+	check(browser.count.textValue == L["ICON_COUNT"]:format(500) and browser.scroll.content.h == math.ceil(500 / 16) * 44, "500 icons in the grid")
+	browser.scroll:SetVerticalScroll(44 * 20)
+	browser.scroll.scripts.OnMouseWheel(browser.scroll, 0)
+	O.Browser:Choose(100000 + 16 * 20 + 1)
+	check(chatPanel.text.value == "||T100321:0||t", "icon of the game inserted")
+	-- Currencies and items
+	chatPanel.text.value = ""
+	choose(findRow(editor.tabs.text.form, L["INSERT_CURRENCY"]), 3008)
+	chatPanel.text.value = chatPanel.text.value .. " {item:6948}"
+	ns.Layouts:PanelChanged(chatId, "look")
+	check(chat.text.textValue == "|T5868902:0|t 12345 |T134400:0|t 7", "currency and item amounts with their icons")
+	chatPanel.text.value = "Zone: {zone}"
 
 	-- Frame picker
 	local target = CreateFrame("Frame", "PickMeFrame", UIParent)
@@ -567,7 +585,20 @@ elseif scenario == "options" then
 	M.cursor = { 900, 520 }
 	local pickRow = findRow(general, L["PICK_ON_SCREEN"])
 	click(pickRow.buttons[1])
+	local picker = O.Picker.frame
+	local batches = 0
+	while not O.Picker.scanDone and batches < 1000 do
+		picker.scripts.OnUpdate(picker, 0.1)
+		batches = batches + 1
+	end
+	check(O.Picker.scanned == #M.frames and batches == math.ceil(#M.frames / 1500), "interface scanned once, in batches (no freeze)")
 	check(O.Picker.frame.shown and not Options.frame.shown and O.Picker.list[1] and O.Picker.list[1].name == "PickMeFrame", "picker finds the frame under the mouse")
+	O.Picker.list = {}
+	picker.scripts.OnUpdate(picker, 0.1)
+	check(#O.Picker.list == 0, "mouse still: no new search")
+	M.cursor = { 901, 520 }
+	picker.scripts.OnUpdate(picker, 0.1)
+	check(O.Picker.list[1] and O.Picker.list[1].name == "PickMeFrame", "mouse moved: search again")
 	O.Picker.frame.scripts.OnMouseDown(O.Picker.frame, "LeftButton")
 	check(chatPanel.anchor.relativeTo == "PickMeFrame" and Options.frame.shown, "anchored to the picked frame")
 	chatPanel.anchor.relativeTo = "panel:" .. barId

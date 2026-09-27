@@ -297,6 +297,19 @@ M.atlases = {
 	["QuestBG-Parchment"] = { file = 67890, leftTexCoord = 0, rightTexCoord = 1, topTexCoord = 0, bottomTexCoord = 1 },
 }
 C_Texture = { GetAtlasInfo = function(name) return M.atlases[name] end }
+-- One currency (under a header of the currency tab), one item, 500 macro icons
+C_CurrencyInfo = {
+	GetCurrencyInfo = function(id) if id == 3008 then return { name = "Valorstone", quantity = 12345, iconFileID = 5868902 } end end,
+	GetCurrencyListSize = function() return 2 end,
+	GetCurrencyListInfo = function(i)
+		if i == 1 then return { isHeader = true, name = "Season" } end
+		return { name = "Valorstone", iconFileID = 5868902 }
+	end,
+	GetCurrencyListLink = function(i) if i == 2 then return "|cffffffff|Hcurrency:3008:0|h[Valorstone]|h|r" end end,
+}
+function BreakUpLargeNumbers(n) return tostring(n) end
+C_Item = { GetItemCount = function() return 7 end, GetItemIconByID = function() return 134400 end }
+function GetMacroIcons(list) for i = 1, 500 do list[#list + 1] = 100000 + i end end
 
 -- Fires an event on every frame registered for it
 function M.Fire(event, ...)

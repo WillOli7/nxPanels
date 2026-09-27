@@ -5,6 +5,7 @@ local L = ns.L
 Variables in the text of a panel, replaced without any script:
 	{player} {realm} {class} {spec} {level} {guild} {ilvl}
 	{zone} {subzone} {time} {date} {fps} {latency} {gold}
+	{currency:<id>} {item:<id>}   amount with its icon
 Unknown words between braces are left as they are. Texts using variables are
 refreshed every second while they are shown.
 ]]
@@ -44,20 +45,47 @@ TextVars.NAMES = { "player", "realm", "class", "spec", "level", "guild", "ilvl",
 local tracked = {}   -- [frame] = true: frames with variables in their text
 local ticker
 
-local function replace(word)
-	local fn = VARS[word:lower()]
-	if not fn then return end
-	local ok, value = pcall(fn)
+-- Texture code of an icon, as big as the text
+local function icon(file)
+	return file and ("|T" .. file .. ":0|t ") or ""
+end
+
+-- Variables with a number: {currency:<id>} and {item:<id>} (amount with its icon)
+local PARAM_VARS = {
+	currency = function(id)
+		local info = C_CurrencyInfo and C_CurrencyInfo.GetCurrencyInfo and C_CurrencyInfo.GetCurrencyInfo(id)
+		if not info then return end
+		local amount = BreakUpLargeNumbers and BreakUpLargeNumbers(info.quantity) or info.quantity
+		return icon(info.iconFileID) .. amount
+	end,
+	item = function(id)
+		local getCount = C_Item and C_Item.GetItemCount or GetItemCount
+		local getIcon = C_Item and C_Item.GetItemIconByID or GetItemIcon
+		local count = getCount and getCount(id, true) or 0
+		return icon(getIcon and getIcon(id)) .. count
+	end,
+}
+
+local function known(word, param)
+	word = word:lower()
+	if param ~= "" then return PARAM_VARS[word] ~= nil end
+	return VARS[word] ~= nil
+end
+
+local function replace(word, param)
+	if not known(word, param) then return end
+	local fn = param ~= "" and PARAM_VARS[word:lower()] or VARS[word:lower()]
+	local ok, value = pcall(fn, tonumber(param))
 	return ok and value ~= nil and tostring(value) or ""
 end
 
 function TextVars:Render(text)
-	return (text:gsub("{(%a+)}", replace))
+	return (text:gsub("{(%a+):?(%d*)}", replace))
 end
 
 function TextVars:Uses(text)
-	for word in text:gmatch("{(%a+)}") do
-		if VARS[word:lower()] then return true end
+	for word, param in text:gmatch("{(%a+):?(%d*)}") do
+		if known(word, param) then return true end
 	end
 	return false
 end
