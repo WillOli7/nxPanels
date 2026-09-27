@@ -2,7 +2,7 @@
 
 **nxPanels** adds artistic panels to your World of Warcraft interface: backgrounds, borders, text and scripts, placed anywhere and attached to any frame. Build an interface that is truly yours.
 
-> 🚧 **Alpha.** The display engine and the import of older layouts are ready; the configuration window is being built.
+> 🚧 **Alpha.** The display engine, the import of older layouts, the configuration window and the edit mode are written; in-game testing is in progress.
 
 ## Supported clients
 

@@ -3,8 +3,11 @@
 cd "$(dirname "$0")/../.." || exit 1
 LJ="${1:-luajit}"
 status=0
-for s in migrate original empty forever zhcn; do
+for s in migrate original empty forever zhcn options; do
 	"$LJ" tools/tests/run.lua "$s" || status=1
+done
+for locale in enUS zhCN zhTW; do
+	"$LJ" tools/tests/run.lua options "$locale" || status=1
 done
 if [ -n "$NXP_REAL_SV" ]; then
 	"$LJ" tools/tests/run.lua real || status=1

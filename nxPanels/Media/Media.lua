@@ -27,6 +27,12 @@ function Media:AddToLibrary(kind, name, path)
 	LSM:Register(kind, name, path)
 end
 
+-- Removes an entry from the user library. LibSharedMedia cannot unregister a
+-- media: it stays usable until the next reload.
+function Media:RemoveFromLibrary(kind, name)
+	ns.db.global.media[kind][name] = nil
+end
+
 -- Texture path of a background/border key; nil for "none" or unknown keys
 function Media:Fetch(kind, key, panelId)
 	if not key then return nil end

@@ -11,6 +11,8 @@ nxPanelsDB (AceDB)
 	global.media.background  user library: [name] = path
 	global.media.border      user library: [name] = path
 	global.migration         { source = "...", date = time() } set by an import module
+	global.optionsScale      scale of the options window
+	global.editMode          grid and snapping of the edit mode
 	profile.layout           id of the active layout
 	profile.enabled          panels shown or hidden
 	profile.minimap          LibDBIcon settings
@@ -21,6 +23,15 @@ local DEFAULTS = {
 		nextId = 1,
 		layouts = {},
 		media = { background = {}, border = {} },
+		optionsScale = 1,
+		editMode = {
+			showGrid = true,
+			gridSize = 16,
+			snapGrid = true,
+			snapPanels = true,
+			snapDistance = 8,
+			bigStep = 10,
+		},
 	},
 	profile = {
 		enabled = true,

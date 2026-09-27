@@ -31,14 +31,25 @@ strmatch, strsub, strlen, strbyte, strchar, format, strfind, strlower = string.m
 tinsert, tremove = table.insert, table.remove
 function securecallfunction(f, ...) return f(...) end
 function geterrorhandler() return function(e) error(e, 0) end end
-function hooksecurefunc() end
+function hooksecurefunc(t, name, fn)
+	if type(t) ~= "table" then t, name, fn = _G, t, name end
+	local old = t[name]
+	t[name] = function(...)
+		local r = { old(...) }
+		fn(...)
+		return unpack(r)
+	end
+end
 function ReloadUI() M.reloaded = true end
 C_UIFileAsset = { IsKnownFile = function() return true end }
 C_GameRules = { IsGameRuleActive = function() return false end }
 Enum = { GameRule = {} }
 StaticPopupDialogs = {}
 SlashCmdList = {}
-function StaticPopup_Show(name) M.popups[#M.popups + 1] = name end
+function StaticPopup_Show(name, text, _, data)
+	M.popups[#M.popups + 1] = name
+	M.lastPopup = { name = name, text = text, data = data }
+end
 
 function CreateColor(r, g, b, a) return { r = r, g = g, b = b, a = a } end
 
@@ -164,6 +175,49 @@ function Region:SetFrameLevel(l) assert(l >= 0, "negative frame level") self.lev
 function Region:EnableMouse(v) self.mouse = v end
 function Region:IsForbidden() return false end
 
+-- Used by the options window
+function Region:GetFrameLevel() return self.level or 0 end
+function Region:GetStringWidth() return #tostring(self.textValue or "") * 7 end
+function Region:GetText() return self.textValue end
+function Region:Insert(text) self.textValue = (self.textValue or "") .. text end
+function Region:SetFocus() M.focus = self end
+function Region:HasFocus() return M.focus == self end
+function Region:ClearFocus()
+	if M.focus ~= self then return end
+	M.focus = nil
+	if self.scripts.OnEditFocusLost then self.scripts.OnEditFocusLost(self) end
+end
+function Region:HookScript(name, fn)
+	local old = self.scripts[name]
+	self.scripts[name] = old and function(...) old(...) fn(...) end or fn
+end
+function Region:SetThumbTexture() self.thumb = newRegion("Texture", self) end
+function Region:GetThumbTexture() return self.thumb end
+function Region:SetVerticalScroll(v) self.vscroll = v end
+function Region:GetVerticalScroll() return self.vscroll or 0 end
+function Region:IsVisible() return self.shown and (not self.parent or self.parent:IsVisible()) end
+function Region:GetEffectiveScale() return self.scale * (self.parent and self.parent:GetEffectiveScale() or 1) end
+-- Tests set frame.rect = { left, bottom, width, height }
+function Region:GetRect()
+	if self.rect then return unpack(self.rect) end
+	return 0, 0, self.w, self.h
+end
+for _, name in ipairs({
+	"EnableKeyboard", "EnableMouseWheel", "RegisterForClicks", "RegisterForDrag", "SetAtlas", "SetAutoFocus",
+	"SetDesaturated", "SetMaxLetters", "SetMovable", "SetMultiLine", "SetObeyStepOnDrag", "SetOrientation",
+	"SetPropagateKeyboardInput", "SetTextInsets", "SetToplevel", "SetClampedToScreen", "SetValueStep", "SetWordWrap",
+	"SetEnabled", "StartMoving", "StopMovingOrSizing", "HighlightText", "SetCursorPosition", "SetMinMaxValues",
+	"SetValue", "SetScrollChild", "SetOwner", "AddLine",
+}) do
+	Region[name] = function() end
+end
+-- Like the game, SetText on an edit box fires OnTextChanged (not typed by the user)
+local setText = Region.SetText
+function Region:SetText(t)
+	setText(self, t)
+	if self.kind == "EditBox" and self.scripts.OnTextChanged then self.scripts.OnTextChanged(self, false) end
+end
+
 M.frames = {}
 function CreateFrame(kind, name, parent)
 	local f = newRegion(kind, parent)
@@ -173,6 +227,21 @@ function CreateFrame(kind, name, parent)
 end
 UIParent = newRegion("Frame")
 UIParent.w, UIParent.h = 1920, 1080
+
+function CreateFont(name)
+	local f = newRegion("Font")
+	_G[name] = f
+	return f
+end
+GameTooltip = newRegion("GameTooltip")
+UISpecialFrames = {}
+YES, NO, ACCEPT, CANCEL, CLOSE, DELETE = "Yes", "No", "Accept", "Cancel", "Close", "Delete"
+M.cursor = { 0, 0 }
+function GetCursorPosition() return M.cursor[1], M.cursor[2] end
+function IsShiftKeyDown() return M.shift end
+function IsControlKeyDown() return M.ctrl end
+function InCombatLockdown() return M.combat end
+function GetCurrentKeyBoardFocus() return M.focus end
 
 -- Fires an event on every frame registered for it
 function M.Fire(event, ...)

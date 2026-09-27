@@ -39,6 +39,19 @@ local function createPopup()
 
 	popup.scroll = W.Scroll(popup)
 	popup.buttons = {}
+	Dropdown.popup = popup
+end
+
+-- Chooses an item of the open list (keyboard-free selection, used by the tests)
+function Dropdown:Choose(value)
+	if not (popup and popup.catcher:IsShown()) then return false end
+	for _, b in ipairs(popup.buttons) do
+		if b:IsShown() and b.item and b.item.value == value then
+			b:GetScript("OnClick")(b, "LeftButton")
+			return true
+		end
+	end
+	return false
 end
 
 local function rowButton(i)
@@ -143,19 +156,13 @@ function Dropdown:Close()
 end
 
 ---------------------------------------------------------------------------
--- Setting row with a dropdown
+-- Dropdown button; button:Refresh() shows the current value
 -- items: table or function returning the items
 ---------------------------------------------------------------------------
-function W.DropdownRow(form, label, items, get, set, opts)
+function W.DropdownButton(parent, width, items, get, set, opts)
 	opts = opts or {}
-	local row = CreateFrame("Frame")
-	row.label = T:Text(row, T.fonts.normal, C.text)
-	row.label:SetPoint("LEFT", 16, 0)
-	row.label:SetText(label)
-
-	local button = CreateFrame("Button", nil, row)
-	button:SetSize(opts.width or 190, 24)
-	button:SetPoint("RIGHT", -16, 0)
+	local button = CreateFrame("Button", nil, parent)
+	button:SetSize(width or 190, 24)
 	T:Fill(button, C.input)
 	local edges = T:Border(button, C.lineStrong)
 	button.text = T:Text(button, T.fonts.normal, C.text)
@@ -166,7 +173,6 @@ function W.DropdownRow(form, label, items, get, set, opts)
 	button.arrow:SetText("v")
 	button:SetScript("OnEnter", function() T:SetBorderColor(edges, C.accent) end)
 	button:SetScript("OnLeave", function() T:SetBorderColor(edges, C.lineStrong) end)
-	row.label:SetPoint("RIGHT", button, "LEFT", -8, 0)
 
 	local function list()
 		return type(items) == "function" and items() or items
@@ -174,11 +180,11 @@ function W.DropdownRow(form, label, items, get, set, opts)
 	button:SetScript("OnClick", function()
 		Dropdown:Open(button, list(), get(), function(value)
 			set(value)
-			row:Refresh()
+			button:Refresh()
 		end, opts)
 	end)
 
-	function row:Refresh()
+	function button:Refresh()
 		local current, text, font = get(), nil, nil
 		for _, item in ipairs(list()) do
 			if item.value == current then
@@ -186,13 +192,34 @@ function W.DropdownRow(form, label, items, get, set, opts)
 				break
 			end
 		end
-		button.text:SetText(text or (current ~= nil and tostring(current)) or "")
+		self.text:SetText(text or (current ~= nil and tostring(current)) or "")
 		if opts.preview == "font" and font then
-			button.text:SetFont(font, 13, "")
+			self.text:SetFont(font, 13, "")
 		else
-			button.text:SetFontObject(T.fonts.normal)
+			self.text:SetFontObject(T.fonts.normal)
 		end
 	end
+	return button
+end
+
+---------------------------------------------------------------------------
+-- Setting row with a dropdown
+---------------------------------------------------------------------------
+function W.DropdownRow(form, label, items, get, set, opts)
+	opts = opts or {}
+	local row = CreateFrame("Frame")
+	row.label = T:Text(row, T.fonts.normal, C.text)
+	row.label:SetPoint("LEFT", 16, 0)
+	row.label:SetText(label)
+
+	local button = W.DropdownButton(row, opts.width, items, get, function(value)
+		set(value)
+		row:Refresh()
+	end, opts)
+	button:SetPoint("RIGHT", -16, 0)
+	row.label:SetPoint("RIGHT", button, "LEFT", -8, 0)
+
+	function row:Refresh() button:Refresh() end
 	row.button = button
 	return form:Add(row, opts.full)
 end

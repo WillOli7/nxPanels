@@ -87,8 +87,9 @@ end
 ---------------------------------------------------------------------------
 -- Drawing
 ---------------------------------------------------------------------------
-function Panel:Apply(frame, panel, parent, anchor)
-	frame:SetParent(parent)
+-- Size and position only (cheap: used while dragging in edit mode)
+function Panel:ApplyGeometry(frame, panel, parent, anchor)
+	if frame:GetParent() ~= parent then frame:SetParent(parent) end
 	local scale = panel.scale and panel.scale > 0 and panel.scale or 1
 	frame:SetScale(scale)
 
@@ -99,6 +100,10 @@ function Panel:Apply(frame, panel, parent, anchor)
 	local a = panel.anchor
 	frame:ClearAllPoints()
 	frame:SetPoint(a.point, anchor, a.relativePoint, a.x / scale, a.y / scale)
+end
+
+function Panel:Apply(frame, panel, parent, anchor)
+	self:ApplyGeometry(frame, panel, parent, anchor)
 	frame:SetFrameStrata(panel.strata)
 	frame:SetFrameLevel(math.max(0, panel.level))
 	frame:EnableMouse(panel.mouse)

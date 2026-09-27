@@ -194,14 +194,16 @@ end
 local Form = {}
 Form.__index = Form
 
-function W.Form(parent, width)
-	local form = setmetatable({ parent = parent, width = width, items = {}, rows = {}, cards = {} }, Form)
+-- columns: 2 (default) or 1 (every row takes the whole width)
+function W.Form(parent, width, columns)
+	local form = setmetatable({ parent = parent, width = width, columns = columns or 2, items = {}, rows = {}, cards = {} }, Form)
 	return form
 end
 
 function Form:Section(title)
 	local header = T:Text(self.parent, T.fonts.small, C.textMuted)
-	header:SetText(title and title:upper() or "")
+	-- No upper(): it would break accented and non-latin letters
+	header:SetText(title or "")
 	self.items[#self.items + 1] = { kind = "section", header = header }
 end
 
@@ -265,7 +267,7 @@ function Form:Layout()
 				row:Show()
 				row:ClearAllPoints()
 				local h = row.fixedHeight or ROW_HEIGHT
-				if item.full then
+				if item.full or self.columns == 1 then
 					if col == 1 then y = y + ROW_HEIGHT; col = 0 end
 					row:SetPoint("TOPLEFT", self.parent, "TOPLEFT", 0, -y)
 					row:SetSize(self.width, h)
@@ -321,8 +323,14 @@ local function formatValue(value, step)
 	return tostring(math.floor(value + 0.5))
 end
 
-function W.SliderRow(form, label, min, max, step, get, set)
+-- min and max can be functions (range depending on another setting).
+-- opts.free: the input box accepts values outside the slider range.
+function W.SliderRow(form, label, min, max, step, get, set, opts)
+	opts = opts or {}
 	local row = baseRow(label)
+	local function range()
+		return type(min) == "function" and min() or min, type(max) == "function" and max() or max
+	end
 	local valueBox = W.EditBox(row, 52, 22)
 	valueBox:SetPoint("RIGHT", -PAD, 0)
 	valueBox.edit:SetJustifyH("CENTER")
@@ -332,7 +340,7 @@ function W.SliderRow(form, label, min, max, step, get, set)
 	slider:SetOrientation("HORIZONTAL")
 	slider:SetSize(130, 16)
 	slider:SetPoint("RIGHT", valueBox, "LEFT", -10, 0)
-	slider:SetMinMaxValues(min, max)
+	-- The range is set by Refresh (it can depend on the edited panel)
 	slider:SetValueStep(step)
 	slider:SetObeyStepOnDrag(true)
 	local track = slider:CreateTexture(nil, "BACKGROUND")
@@ -358,22 +366,33 @@ function W.SliderRow(form, label, min, max, step, get, set)
 		valueBox.edit:SetText(formatValue(value, step))
 		if userInput and not updating then set(value) end
 	end)
+	-- opts.onRelease: called when the slider is released
+	slider:SetScript("OnMouseUp", function() if opts.onRelease then opts.onRelease() end end)
 	valueBox.edit:SetScript("OnEnterPressed", function(self)
 		local v = tonumber(self:GetText())
 		if v then
-			v = math.min(max, math.max(min, v))
+			local lo, hi = range()
+			if not opts.free then v = math.min(hi, math.max(lo, v)) end
 			set(v)
+			if opts.onRelease then opts.onRelease() end
 		end
 		self:ClearFocus()
 		row:Refresh()
 	end)
+	valueBox.edit:SetScript("OnEditFocusLost", function(self)
+		T:SetBorderColor(valueBox.edges, C.lineStrong)
+		row:Refresh()
+	end)
 	function row:Refresh()
 		updating = true
-		local v = get() or min
-		slider:SetValue(math.min(max, math.max(min, v)))
+		local lo, hi = range()
+		slider:SetMinMaxValues(lo, hi)
+		local v = get() or lo
+		slider:SetValue(math.min(hi, math.max(lo, v)))
 		valueBox.edit:SetText(formatValue(v, step))
 		updating = false
 	end
+	row.slider, row.valueBox = slider, valueBox
 	return form:Add(row)
 end
 
@@ -424,20 +443,34 @@ function W.ColorRow(form, label, get, set, hasAlpha)
 	swatch:SetScript("OnClick", function()
 		local c = get()
 		local previous = { r = c.r, g = c.g, b = c.b, a = c.a }
+		local picker = ColorPickerFrame
+		local function alpha()
+			if picker.GetColorAlpha then return picker:GetColorAlpha() end
+			-- Older picker: the slider holds the transparency
+			return OpacitySliderFrame and 1 - OpacitySliderFrame:GetValue() or previous.a
+		end
 		local function apply()
-			local r, g, b = ColorPickerFrame:GetColorRGB()
-			local a = hasAlpha and ColorPickerFrame:GetColorAlpha() or previous.a
-			set({ r = r, g = g, b = b, a = a })
+			local r, g, b = picker:GetColorRGB()
+			set({ r = r, g = g, b = b, a = hasAlpha and alpha() or previous.a })
 			row:Refresh()
 		end
-		ColorPickerFrame:SetupColorPickerAndShow({
-			r = c.r, g = c.g, b = c.b,
-			opacity = c.a,
-			hasOpacity = hasAlpha,
-			swatchFunc = apply,
-			opacityFunc = apply,
-			cancelFunc = function() set(previous) row:Refresh() end,
-		})
+		local function cancel() set(previous) row:Refresh() end
+		if picker.SetupColorPickerAndShow then
+			picker:SetupColorPickerAndShow({
+				r = c.r, g = c.g, b = c.b,
+				opacity = c.a,
+				hasOpacity = hasAlpha,
+				swatchFunc = apply,
+				opacityFunc = apply,
+				cancelFunc = cancel,
+			})
+		else
+			picker:Hide()
+			picker.func, picker.opacityFunc, picker.cancelFunc = apply, apply, cancel
+			picker.hasOpacity, picker.opacity = hasAlpha, 1 - (c.a or 1)
+			picker:SetColorRGB(c.r, c.g, c.b)
+			ShowUIPanel(picker)
+		end
 	end)
 	function row:Refresh()
 		local c = get()
@@ -449,10 +482,12 @@ end
 -- buttons = { { text = "...", style = "...", width = n, onClick = fn }, ... }
 function W.ButtonsRow(form, buttons, label)
 	local row = baseRow(label)
+	row.buttons = {}
 	local previous
 	for i = #buttons, 1, -1 do
 		local def = buttons[i]
 		local b = W.Button(row, def.text, def.width or 130, def.style, def.onClick)
+		row.buttons[i] = b
 		if previous then
 			b:SetPoint("RIGHT", previous, "LEFT", -8, 0)
 		else
@@ -475,5 +510,95 @@ function W.TextRow(form, text, height)
 	row.text:SetJustifyV("TOP")
 	function row:SetText(t) self.text:SetText(t) end
 	row:SetText(text)
+	return form:Add(row, true)
+end
+
+---------------------------------------------------------------------------
+-- Multi-line text area with a scrollbar (text of a panel, scripts, strings)
+-- area.edit is the EditBox; area:SetText / area:GetText
+---------------------------------------------------------------------------
+function W.TextArea(parent, width, height)
+	local area = CreateFrame("Frame", nil, parent)
+	area:SetSize(width, height)
+	T:Fill(area, C.input)
+	area.edges = T:Border(area, C.lineStrong)
+
+	local scroll = W.Scroll(area)
+	scroll:SetPoint("TOPLEFT", 8, -6)
+	scroll:SetPoint("BOTTOMRIGHT", -4, 6)
+	area.scroll = scroll
+
+	local e = CreateFrame("EditBox", nil, scroll.content)
+	e:SetMultiLine(true)
+	e:SetAutoFocus(false)
+	e:SetMaxLetters(0)
+	e:SetFontObject(T.fonts.normal)
+	e:SetTextColor(unpack(C.text))
+	e:SetPoint("TOPLEFT")
+	e:SetPoint("TOPRIGHT", -10, 0)
+	e:SetHeight(20)
+	area.edit = e
+
+	local function fit()
+		scroll:SetContentHeight(math.max(e:GetHeight(), 20))
+	end
+	e:SetScript("OnSizeChanged", fit)
+	e:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	e:SetScript("OnEditFocusGained", function() T:SetBorderColor(area.edges, C.accent) end)
+	e:SetScript("OnEditFocusLost", function() T:SetBorderColor(area.edges, C.lineStrong) end)
+	-- Tab inserts spaces instead of leaving the box
+	e:SetScript("OnTabPressed", function(self) self:Insert("    ") end)
+	-- Keeps the cursor visible
+	e:SetScript("OnCursorChanged", function(_, _, y, _, h)
+		local top, visible = -y, scroll:GetHeight()
+		local offset = scroll:GetVerticalScroll()
+		if top < offset then
+			scroll:SetVerticalScroll(top)
+		elseif top + h > offset + visible then
+			scroll:SetVerticalScroll(top + h - visible)
+		end
+		scroll:UpdateBar()
+	end)
+	-- A click anywhere in the area focuses the text
+	area:EnableMouse(true)
+	area:SetScript("OnMouseDown", function()
+		e:SetFocus()
+		e:SetCursorPosition(#(e:GetText() or ""))
+	end)
+
+	function area:SetText(text)
+		e:SetText(text or "")
+		e:SetCursorPosition(0)
+		scroll:SetVerticalScroll(0)
+		fit()
+	end
+	function area:GetText() return e:GetText() end
+	return area
+end
+
+-- Setting row holding a text area; commits with the returned row.commit()
+-- opts.height, opts.live (set on every change instead of on focus lost)
+function W.TextAreaRow(form, label, get, set, opts)
+	opts = opts or {}
+	local row = CreateFrame("Frame")
+	local height = opts.height or 120
+	row.fixedHeight = height + (label and 36 or 20)
+	row.label = T:Text(row, T.fonts.normal, C.text)
+	row.label:SetPoint("TOPLEFT", PAD, -10)
+	row.label:SetText(label or "")
+	local area = W.TextArea(row, 100, height)
+	area:SetPoint("TOPLEFT", PAD, label and -30 or -10)
+	area:SetPoint("TOPRIGHT", -PAD, label and -30 or -10)
+	row.area = area
+
+	local function commit() set(area:GetText()) end
+	row.commit = commit
+	area.edit:HookScript("OnTextChanged", function(_, userInput)
+		if userInput and opts.live then commit() end
+	end)
+	area.edit:HookScript("OnEditFocusLost", function() if not opts.live then commit() end end)
+	function row:Refresh()
+		if not area.edit:HasFocus() then area:SetText(get()) end
+	end
 	return form:Add(row, true)
 end

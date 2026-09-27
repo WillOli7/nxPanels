@@ -74,7 +74,7 @@ Options:RegisterPage({
 			end)
 		end)
 		new:SetPoint("TOPLEFT", 0, 0)
-		local import = W.Button(page, L["IMPORT"], 130, "default", function() Options:Show("share") end)
+		local import = W.Button(page, L["IMPORT"], 130, "default", function() O.SharePage:ShowImport() end)
 		import:SetPoint("LEFT", new, "RIGHT", 8, 0)
 
 		page.scroll = W.Scroll(page)

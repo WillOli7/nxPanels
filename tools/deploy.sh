@@ -15,7 +15,7 @@ TARGET="${1:-all}"
 TESTDATA=0
 [ "$2" = "--forever-testdata" ] && TESTDATA=1
 
-FOLDERS="nxPanels nxPanels_Import kgPanels_Reloaded kgPanelsConfig_Reloaded"
+FOLDERS="nxPanels nxPanels_Options nxPanels_Import kgPanels_Reloaded kgPanelsConfig_Reloaded"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 
 deploy() {

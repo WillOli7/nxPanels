@@ -39,6 +39,11 @@ StaticPopupDialogs["NXPANELS_CONFIRM"] = {
 	hideOnEscape = true,
 	showAlert = true,
 }
+-- Recent clients use dialog:GetEditBox(), older ones a field
+local function dialogEditBox(dialog)
+	return dialog.GetEditBox and dialog:GetEditBox() or dialog.editBox or dialog.EditBox
+end
+
 StaticPopupDialogs["NXPANELS_PROMPT"] = {
 	text = "%s",
 	button1 = ACCEPT,
@@ -46,13 +51,13 @@ StaticPopupDialogs["NXPANELS_PROMPT"] = {
 	hasEditBox = true,
 	editBoxWidth = 260,
 	OnShow = function(self, data)
-		local edit = self.editBox or self.EditBox
+		local edit = dialogEditBox(self)
 		edit:SetText(data.default or "")
 		edit:HighlightText()
 		edit:SetFocus()
 	end,
 	OnAccept = function(self, data)
-		local edit = self.editBox or self.EditBox
+		local edit = dialogEditBox(self)
 		data.onAccept(edit:GetText())
 	end,
 	EditBoxOnEnterPressed = function(self, data)
@@ -275,4 +280,50 @@ function Options:ScrollForm(page, width, top)
 	scroll.content:SetWidth(width)
 	local form = W.Form(scroll.content, width - 12)
 	return scroll, form
+end
+
+-- Dropdown items from a list of neutral keys: the text is L[prefix .. key]
+function Options:Choices(keys, prefix)
+	local items = {}
+	for i, key in ipairs(keys) do
+		items[i] = { value = key, text = L[prefix .. (key == "" and "NONE" or key)] }
+	end
+	return items
+end
+
+-- Names drawn with their own font only when they are plain latin text
+-- (a latin font cannot draw a Chinese name)
+local function isLatin(text)
+	return not text:find("[\128-\255]")
+end
+
+--[[
+Dropdown items of the LibSharedMedia lists.
+kind = "background" | "border": "none" is false, like in the data
+kind = "font": the language default font is nil
+]]
+function Options:MediaItems(kind)
+	local LSM = core.Media.LSM
+	local items = {}
+	if kind == "font" then
+		items[1] = { value = nil, text = L["DEFAULT_FONT"], font = core.Media:DefaultFont() }
+	else
+		items[1] = { value = false, text = L["NONE"] }
+	end
+	local paths = LSM:HashTable(kind)
+	for _, name in ipairs(LSM:List(kind)) do
+		local path = paths[name]
+		if name ~= "None" and path and path ~= "" then
+			local item = { value = name, text = name }
+			if kind == "font" then
+				item.font = isLatin(name) and path or nil
+			elseif kind == "border" then
+				item.border = path
+			else
+				item.texture = path
+			end
+			items[#items + 1] = item
+		end
+	end
+	return items
 end
