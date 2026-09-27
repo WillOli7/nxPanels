@@ -20,24 +20,13 @@ Dernière mise à jour : 2026-09-27
 | LibDataBroker-1.1 | 4 | [WowAce SVN (libdbicon)](https://repos.wowace.com/wow/libdbicon-1-0/trunk/) | trunk r162 |
 | LibDBIcon-1.0 | 56 | [WowAce SVN](https://repos.wowace.com/wow/libdbicon-1-0/trunk/) | trunk r162 |
 
-## Configuration — `nxPanels_Options/Libs`
+`nxPanels_Options` n'embarque aucune librairie : il utilise celles du socle.
 
-Conservées pendant la transition, jusqu'à la nouvelle interface de configuration.
-
-| Librairie | Version (MINOR) | Source | Révision |
-|---|---|---|---|
-| AceGUI-3.0 | 41 | [WoWUIDev/Ace3](https://github.com/WoWUIDev/Ace3) | master `a360495` |
-| AceConfig-3.0 | 3 | [WoWUIDev/Ace3](https://github.com/WoWUIDev/Ace3) | master `a360495` |
-| AceConfigDialog-3.0 | 93 | [WoWUIDev/Ace3](https://github.com/WoWUIDev/Ace3) | master `a360495` |
-| AceConfigRegistry-3.0 | 22 | [WoWUIDev/Ace3](https://github.com/WoWUIDev/Ace3) | master `a360495` |
-| AceConfigCmd-3.0 | 14 | [WoWUIDev/Ace3](https://github.com/WoWUIDev/Ace3) | master `a360495` |
-| AceDBOptions-3.0 | 17 | [WoWUIDev/Ace3](https://github.com/WoWUIDev/Ace3) | master `a360495` |
-| AceGUI-3.0-SharedMediaWidgets | 9004 (r65) | [WowAce](https://www.wowace.com/projects/ace-gui-3-0-shared-media-widgets) | r65 (2020, plus maintenue) |
-
-## Retirées (phase 1)
+## Retirées
 
 | Librairie | Raison |
 |---|---|
 | AceAddon-3.0, AceConsole-3.0 | Remplacées par du code maison (v1.0) |
 | LibBackdrop-1.0 | Abandonnée depuis 2018 → bordure maison |
 | LibStub dans LibDualSpec-1.0 | Doublon |
+| AceGUI-3.0, AceConfig-3.0 (Dialog, Registry, Cmd), AceDBOptions-3.0, AceGUI-3.0-SharedMediaWidgets | Remplacées par la fenêtre de configuration maison (phase 2b) |

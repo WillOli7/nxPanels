@@ -102,7 +102,7 @@ Principe : les librairies ne sont plus copiées dans le dépôt ; elles sont ré
 | LibDeflate | Compression des exports | Ajouter |
 | AceAddon-3.0, AceConsole-3.0 | Cycle de vie, commande `/kgpanels` | Remplacer par du code maison (quelques dizaines de lignes) |
 | LibBackdrop-1.0 | Bordures | Supprimer → bordure maison en 9 parties |
-| AceConfig / AceGUI / AceDBOptions / SharedMediaWidgets | Interface de config actuelle | Remplacer par la nouvelle interface ; conservés pendant la transition |
+| AceConfig / AceGUI / AceDBOptions / SharedMediaWidgets | Ancienne interface de config | ✅ Retirées : remplacées par la fenêtre maison (`nxPanels_Options`) |
 
 - **Modèle de données versionné** : identifiants stables (GUID) pour les panneaux, noms = simples libellés ; migrations depuis le format kgPanels (version 6) ; clés neutres.
 - **Rendu** : `KGPanelMixin` + pools Blizzard (`CreateFramePool`) ; calques : fond, masque, bordure maison en 9 parties (fin de LibBackdrop), ombre, texte.
