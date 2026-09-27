@@ -16,7 +16,7 @@ W.ROW_HEIGHT = ROW_HEIGHT
 ---------------------------------------------------------------------------
 local BUTTON_STYLES = {
 	default = { bg = C.card, hover = C.cardHover, border = C.lineStrong, text = C.text },
-	primary = { bg = { 0.2, 0.8, 1, 0.16 }, hover = { 0.2, 0.8, 1, 0.28 }, border = C.accent, text = C.accent },
+	primary = { bg = C.accentSoft, hover = C.accentHover, border = C.accent, text = C.accent },
 	danger = { bg = C.dangerSoft, hover = { 1, 0.38, 0.38, 0.26 }, border = C.danger, text = C.danger },
 	ghost = { bg = { 0, 0, 0, 0 }, hover = C.cardHover, border = { 0, 0, 0, 0 }, text = C.textDim },
 }
@@ -209,7 +209,7 @@ function W.Form(parent, width, columns)
 end
 
 function Form:Section(title)
-	local header = T:Text(self.parent, T.fonts.small, C.textMuted)
+	local header = T:Text(self.parent, T.fonts.small, C.section)
 	-- No upper(): it would break accented and non-latin letters
 	header:SetText(title or "")
 	self.items[#self.items + 1] = { kind = "section", header = header }
@@ -347,7 +347,7 @@ function W.SliderRow(form, label, min, max, step, get, set, opts)
 
 	local slider = CreateFrame("Slider", nil, row)
 	slider:SetOrientation("HORIZONTAL")
-	slider:SetSize(130, 16)
+	slider:SetSize(110, 16)
 	slider:SetPoint("RIGHT", valueBox, "LEFT", -10, 0)
 	-- The range is set by Refresh (it can depend on the edited panel)
 	slider:SetValueStep(step)
@@ -489,7 +489,8 @@ function W.ColorRow(form, label, get, set, hasAlpha)
 end
 
 -- buttons = { { text = "...", style = "...", width = n, onClick = fn }, ... }
-function W.ButtonsRow(form, buttons, label)
+-- half: the row takes one column instead of the whole width
+function W.ButtonsRow(form, buttons, label, half)
 	local row = baseRow(label)
 	row.buttons = {}
 	local previous
@@ -505,7 +506,7 @@ function W.ButtonsRow(form, buttons, label)
 		previous = b
 		def.button = b
 	end
-	return form:Add(row, true)
+	return form:Add(row, not half)
 end
 
 -- Paragraph of text on the whole width
@@ -532,25 +533,64 @@ function W.TextArea(parent, width, height)
 	T:Fill(area, C.input)
 	area.edges = T:Border(area, C.lineStrong)
 
-	local scroll = W.Scroll(area)
+	-- Same construction as the Blizzard and AceGUI multi-line boxes: the edit box
+	-- itself is the scroll child, its width follows the scroll frame and its
+	-- height grows with the text
+	local scroll = CreateFrame("ScrollFrame", nil, area)
 	scroll:SetPoint("TOPLEFT", 8, -6)
-	scroll:SetPoint("BOTTOMRIGHT", -4, 6)
+	scroll:SetPoint("BOTTOMRIGHT", -12, 6)
 	area.scroll = scroll
 
-	local e = CreateFrame("EditBox", nil, scroll.content)
+	local e = CreateFrame("EditBox", nil, scroll)
+	e:SetAllPoints(scroll)
 	e:SetMultiLine(true)
 	e:SetAutoFocus(false)
 	e:SetMaxLetters(0)
 	e:SetFontObject(T.fonts.normal)
 	e:SetTextColor(unpack(C.text))
-	e:SetPoint("TOPLEFT")
-	e:SetPoint("TOPRIGHT", -10, 0)
-	e:SetHeight(20)
+	scroll:SetScrollChild(e)
+	e:SetWidth(math.max(20, width - 20))
 	area.edit = e
 
-	local function fit()
-		scroll:SetContentHeight(math.max(e:GetHeight(), 20))
+	local bar = CreateFrame("Frame", nil, area)
+	bar:SetPoint("TOPRIGHT", -4, -6)
+	bar:SetPoint("BOTTOMRIGHT", -4, 6)
+	bar:SetWidth(4)
+	T:Fill(bar, C.line)
+	local thumb = bar:CreateTexture(nil, "ARTWORK")
+	thumb:SetTexture(T.WHITE)
+	thumb:SetVertexColor(unpack(C.textMuted))
+	thumb:SetWidth(4)
+
+	local function maxScroll()
+		return math.max(0, e:GetHeight() - scroll:GetHeight())
 	end
+	function scroll:UpdateBar()
+		local visible, total = self:GetHeight(), e:GetHeight()
+		if total <= visible + 1 or visible <= 0 then
+			bar:Hide()
+			return
+		end
+		bar:Show()
+		local h = math.max(24, visible * visible / total)
+		local offset = math.min(1, self:GetVerticalScroll() / (total - visible)) * (visible - h)
+		thumb:SetHeight(h)
+		thumb:ClearAllPoints()
+		thumb:SetPoint("TOP", bar, "TOP", 0, -offset)
+	end
+	local function fit()
+		if scroll:GetVerticalScroll() > maxScroll() then scroll:SetVerticalScroll(maxScroll()) end
+		scroll:UpdateBar()
+	end
+	scroll:SetScript("OnSizeChanged", function(_, w)
+		e:SetWidth(math.max(20, w))
+		fit()
+	end)
+	scroll:EnableMouseWheel(true)
+	scroll:SetScript("OnMouseWheel", function(self, delta)
+		self:SetVerticalScroll(math.min(maxScroll(), math.max(0, self:GetVerticalScroll() - delta * 40)))
+		self:UpdateBar()
+	end)
 	e:SetScript("OnSizeChanged", fit)
 	e:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
 	e:SetScript("OnEditFocusGained", function() T:SetBorderColor(area.edges, C.accent) end)
@@ -564,7 +604,7 @@ function W.TextArea(parent, width, height)
 		if top < offset then
 			scroll:SetVerticalScroll(top)
 		elseif top + h > offset + visible then
-			scroll:SetVerticalScroll(top + h - visible)
+			scroll:SetVerticalScroll(math.min(maxScroll(), top + h - visible))
 		end
 		scroll:UpdateBar()
 	end)

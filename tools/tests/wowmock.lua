@@ -18,9 +18,17 @@ function GetCurrentRegion() return 3 end
 function GetCurrentRegionName() return "EU" end
 function UnitNameUnmodified() return "Muse" end
 function UnitName() return "Muse" end
-function UnitClass() return "Mage", "MAGE" end
+function UnitClass() return "Mage", "MAGE", 8 end
+-- Specializations: M.spec = index (Retail), M.specGroup = 1 or 2 (Forever)
+C_SpecializationInfo = {
+	GetSpecialization = function() return M.spec end,
+	GetNumSpecializationsForClassID = function() return 3 end,
+	GetActiveSpecGroup = function() return M.specGroup end,
+}
+function GetSpecializationInfo(i) return 61 + i, "Spec" .. i end
+function GetSpecializationInfoForClassID(_, i) return 61 + i, "Spec" .. i end
 function UnitRace() return "Humain", "Human" end
-function UnitFactionGroup() return "Alliance" end
+function UnitFactionGroup() return "Alliance", "Alliance" end
 function time() return 1790000000 end
 function strlenutf8(s) return #s end
 function wipe(t) for k in pairs(t) do t[k] = nil end return t end
@@ -207,7 +215,7 @@ for _, name in ipairs({
 	"SetDesaturated", "SetMaxLetters", "SetMovable", "SetMultiLine", "SetObeyStepOnDrag", "SetOrientation",
 	"SetPropagateKeyboardInput", "SetTextInsets", "SetToplevel", "SetClampedToScreen", "SetValueStep", "SetWordWrap",
 	"SetEnabled", "StartMoving", "StopMovingOrSizing", "HighlightText", "SetCursorPosition", "SetMinMaxValues",
-	"SetValue", "SetScrollChild", "SetOwner", "AddLine",
+	"SetValue", "SetScrollChild", "SetOwner", "AddLine", "SetRotation",
 }) do
 	Region[name] = function() end
 end

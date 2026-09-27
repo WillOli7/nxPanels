@@ -1,14 +1,13 @@
 local _, O = ...
-local T, W, Options = O.Theme, O.Widgets, O.Options
+local W, Options = O.Widgets, O.Options
 local L = O.L
 local core = O.core
 
 --[[
-Profiles (AceDB): a profile chooses the active layout and whether the panels
-are shown. Layouts themselves are shared by every profile.
+Profiles (AceDB): a profile chooses the default layout, a layout per
+specialization, and whether the panels are shown. Layouts themselves are shared
+by every profile, so a profile can be used by a whole class or faction.
 ]]
-local LibDualSpec = LibStub("LibDualSpec-1.0", true)
-
 local function db() return core.db end
 
 local function profileItems(exceptCurrent)
@@ -24,35 +23,31 @@ local function profileItems(exceptCurrent)
 	return items
 end
 
-local function layoutItems()
-	local items = { { value = false, text = L["LAYOUT_NONE_ITEM"] } }
+-- firstText: text of the "false" item (no layout, or the default layout)
+local function layoutItems(firstText)
+	local items = { { value = false, text = firstText } }
 	for _, entry in ipairs(core.Database:SortedLayouts()) do
 		items[#items + 1] = { value = entry.id, text = entry.layout.name }
 	end
 	return items
 end
 
--- Specializations: named specs on Retail, primary / secondary talents on WoW Forever
-local function specList()
-	local specs = {}
-	if core.isForever or not (GetNumSpecializations and GetSpecializationInfo) then
-		specs[1] = TALENT_SPEC_PRIMARY or "1"
-		specs[2] = TALENT_SPEC_SECONDARY or "2"
-	else
-		for i = 1, GetNumSpecializations() do
-			local _, name = GetSpecializationInfo(i)
-			specs[i] = name or tostring(i)
-		end
+-- Shows the layout that must be shown now, only when it changed
+local function applyIfChanged()
+	if core.Layouts.activeId ~= core.Database:GetActiveLayoutId() then
+		core.Layouts:ApplyActive()
 	end
-	return specs
+	Options:Refresh()
 end
 
-local function hasDualSpec()
-	return LibDualSpec and db().IsDualSpecEnabled ~= nil
-end
+local function className() return (UnitClass("player")) end
+local function factionName() return select(2, UnitFactionGroup("player")) end
 
-local function specUnlocked()
-	return LibDualSpec and (LibDualSpec.currentSpec or 0) > 0
+local function useProfile(name)
+	if name and name ~= db():GetCurrentProfile() then
+		db():SetProfile(name)
+	end
+	Options:Refresh()
 end
 
 local function build(page, width)
@@ -61,16 +56,12 @@ local function build(page, width)
 
 	form:Section(L["SECTION_CURRENT_PROFILE"])
 	W.DropdownRow(form, L["PROFILE"], function() return profileItems(false) end,
-		function() return db():GetCurrentProfile() end,
-		function(name) db():SetProfile(name) Options:Refresh() end)
+		function() return db():GetCurrentProfile() end, useProfile)
 	W.ButtonsRow(form, {
 		{ text = L["NEW_PROFILE"], style = "primary", width = 150, onClick = function()
 			Options:Prompt(L["PROMPT_NEW_PROFILE"], "", function(text)
 				text = strtrim(text or "")
-				if text ~= "" then
-					db():SetProfile(text)
-					Options:Refresh()
-				end
+				if text ~= "" then useProfile(text) end
 			end)
 		end },
 		{ text = L["RESET_PROFILE"], style = "danger", width = 150, onClick = function()
@@ -79,22 +70,52 @@ local function build(page, width)
 				Options:Refresh()
 			end)
 		end },
-	})
+	}, nil, true)
+	W.DropdownRow(form, L["NEW_CHARACTERS"], {
+		{ value = "default", text = L["NEW_CHARACTERS_DEFAULT"] },
+		{ value = "class", text = L["NEW_CHARACTERS_CLASS"] },
+		{ value = "faction", text = L["NEW_CHARACTERS_FACTION"] },
+	},
+		function() return db().global.newCharacters end,
+		function(v) db().global.newCharacters = v end)
+	local shared = W.ButtonsRow(form, {
+		{ text = "", width = 150, onClick = function() useProfile(className()) end },
+		{ text = "", width = 150, onClick = function() useProfile(factionName()) end },
+	}, nil, true)
+	function shared:Refresh()
+		self.buttons[1]:SetText(L["PROFILE_OF_CLASS"]:format(className() or "?"))
+		self.buttons[2]:SetText(L["PROFILE_OF_FACTION"]:format(factionName() or "?"))
+		self.buttons[2]:SetEnabledState(factionName() ~= nil)
+	end
+	W.TextRow(form, L["PROFILES_HELP"], 56)
 
 	form:Section(L["SECTION_PROFILE_CONTENT"])
-	W.DropdownRow(form, L["PROFILE_LAYOUT"], layoutItems,
-		function() return core.Database:GetActiveLayoutId() or false end,
+	W.DropdownRow(form, L["DEFAULT_LAYOUT"], function() return layoutItems(L["LAYOUT_NONE_ITEM"]) end,
+		function() return core.Database:GetDefaultLayoutId() or false end,
 		function(id)
-			if id then
-				core.Layouts:Activate(id)
-			else
-				core.Database:SetActiveLayoutId(nil)
-				core.Layouts:ApplyActive()
-			end
-			Options:Refresh()
-		end, { width = 220 })
+			core.Database:SetDefaultLayoutId(id or nil)
+			applyIfChanged()
+		end, { width = 200 })
 	W.ToggleRow(form, L["SHOW_PANELS"], function() return db().profile.enabled end,
 		function(on) core.Layouts:SetEnabled(on) Options:Refresh() end)
+
+	form:Section(L["SECTION_SPECS"])
+	for _, spec in ipairs(core.Specs:List()) do
+		local row = W.DropdownRow(form, spec.name, function() return layoutItems(L["SPEC_DEFAULT_LAYOUT"]) end,
+			function() return core.Database:GetSpecLayoutId(spec.key) or false end,
+			function(id)
+				core.Database:SetSpecLayoutId(spec.key, id or nil)
+				applyIfChanged()
+			end, { width = 180 })
+		local refresh = row.Refresh
+		function row:Refresh()
+			refresh(self)
+			local active = core.Specs:Current() == spec.key
+			-- The current specialization is shown in the accent color
+			self.label:SetTextColor(unpack(active and O.Theme.colors.accent or O.Theme.colors.text))
+		end
+	end
+	W.TextRow(form, L["SPEC_LAYOUTS_HELP"], 56)
 
 	form:Section(L["SECTION_OTHER_PROFILES"])
 	W.DropdownRow(form, L["COPY_FROM"], function() return profileItems(true) end, function() return nil end,
@@ -111,27 +132,6 @@ local function build(page, width)
 				Options:Refresh()
 			end)
 		end)
-	W.TextRow(form, L["PROFILES_HELP"], 56)
-
-	if hasDualSpec() then
-		form:Section(L["SECTION_SPECS"])
-		local enable = W.ToggleRow(form, L["SPEC_PROFILES"], function() return db():IsDualSpecEnabled() end,
-			function(on) db():SetDualSpecEnabled(on) Options:Refresh() end, L["SPEC_PROFILES_DESC"])
-		enable.isShown = specUnlocked
-		W.TextRow(form, L["SPEC_LOCKED"], 40).isShown = function() return not specUnlocked() end
-		for i, name in ipairs(specList()) do
-			local row = W.DropdownRow(form, name, function() return profileItems(false) end,
-				function() return db():GetDualSpecProfile(i) end,
-				function(profile) db():SetDualSpecProfile(profile, i) Options:Refresh() end, { width = 150 })
-			row.isShown = function() return specUnlocked() and db():IsDualSpecEnabled() end
-			local refresh = row.Refresh
-			function row:Refresh()
-				refresh(self)
-				local active = LibDualSpec.currentSpec == i
-				self.label:SetText(active and L["SPEC_ACTIVE"]:format(name) or name)
-			end
-		end
-	end
 end
 
 Options:RegisterPage({

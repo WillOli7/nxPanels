@@ -537,7 +537,7 @@ local function buildScripts(form)
 			if Panels.drafts[tostring(Panels.selected) .. hook] then
 				text = text .. "  |cffffd100" .. L["MODIFIED"] .. "|r"
 			elseif code and code:find("%S") then
-				text = text .. "  |cff33ccff*|r"
+				text = text .. "  " .. T.accentCode .. "*|r"
 			end
 			items[i] = { value = hook, text = text }
 		end

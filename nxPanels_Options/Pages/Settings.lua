@@ -16,6 +16,20 @@ local function build(page, width)
 	local scroll, form = Options:ScrollForm(page, width)
 	page.scroll, page.form = scroll, form
 
+	-- The window is drawn with these colors: a reload applies a change
+	local T = O.Theme
+	local theme = core.db.global.optionsTheme
+	local function askReload()
+		Options:Confirm(L["THEME_RELOAD"], function() ReloadUI() end)
+	end
+	form:Section(L["SECTION_APPEARANCE"])
+	W.DropdownRow(form, L["THEME_STYLE"], Options:Choices(T.STYLE_ORDER, "STYLE_THEME_"),
+		function() return theme.style end,
+		function(v) if v ~= theme.style then theme.style = v askReload() end end)
+	W.DropdownRow(form, L["THEME_ACCENT"], Options:Choices(T.ACCENT_ORDER, "ACCENT_"),
+		function() return theme.accent end,
+		function(v) if v ~= theme.accent then theme.accent = v askReload() end end)
+
 	form:Section(L["SECTION_GENERAL"])
 	W.ToggleRow(form, L["SHOW_PANELS"], function() return core.db.profile.enabled end,
 		function(on) core.Layouts:SetEnabled(on) Options:Refresh() end)
@@ -35,7 +49,7 @@ local function build(page, width)
 			Options.frame:SetPoint("CENTER")
 			Options:Refresh()
 		end },
-	})
+	}, nil, true)
 
 	form:Section(L["SECTION_EDIT_MODE"])
 	W.ToggleRow(form, L["SHOW_GRID"], function() return edit().showGrid end,

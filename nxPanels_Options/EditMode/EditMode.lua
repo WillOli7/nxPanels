@@ -25,6 +25,7 @@ local HANDLE = 10
 local MIN_SIZE = 4
 
 local function S() return core.db.global.editMode end
+local function accentAlpha(a) return { C.accent[1], C.accent[2], C.accent[3], a } end
 
 local function activeLayout()
 	return core.Database:GetLayout(core.Layouts.activeId)
@@ -363,8 +364,8 @@ end
 
 local function createMover()
 	local m = CreateFrame("Button", nil, EditMode.frame)
-	m.fill = T:Fill(m, { 0.2, 0.8, 1, 0.12 }, "BACKGROUND")
-	m.edges = T:Border(m, { 0.2, 0.8, 1, 0.5 })
+	m.fill = T:Fill(m, accentAlpha(0.12), "BACKGROUND")
+	m.edges = T:Border(m, accentAlpha(0.5))
 	m.label = T:Text(m, T.fonts.small, C.text, "CENTER")
 	m.label:SetPoint("CENTER")
 	m.handles = {}
@@ -385,10 +386,10 @@ local function createMover()
 		Options:EditPanel(id)
 	end)
 	m:SetScript("OnEnter", function(self)
-		if EditMode.selected ~= self.id then self.fill:SetVertexColor(0.2, 0.8, 1, 0.22) end
+		if EditMode.selected ~= self.id then self.fill:SetVertexColor(unpack(accentAlpha(0.22))) end
 	end)
 	m:SetScript("OnLeave", function(self)
-		if EditMode.selected ~= self.id then self.fill:SetVertexColor(0.2, 0.8, 1, 0.12) end
+		if EditMode.selected ~= self.id then self.fill:SetVertexColor(unpack(accentAlpha(0.12))) end
 	end)
 	return m
 end
@@ -435,8 +436,8 @@ function EditMode:Select(id)
 	self.selected = id
 	for moverId, m in pairs(movers) do
 		local on = moverId == id
-		m.fill:SetVertexColor(0.2, 0.8, 1, on and 0.28 or 0.12)
-		T:SetBorderColor(m.edges, on and C.accent or { 0.2, 0.8, 1, 0.5 })
+		m.fill:SetVertexColor(unpack(accentAlpha(on and 0.28 or 0.12)))
+		T:SetBorderColor(m.edges, on and C.accent or accentAlpha(0.5))
 		for _, h in ipairs(m.handles) do h.dot:SetShown(on) end
 	end
 	self:RefreshInfo()
@@ -470,7 +471,7 @@ function EditMode:DrawGrid()
 			if PixelUtil then PixelUtil.SetHeight(tex, 1) else tex:SetHeight(1) end
 		end
 		if center then
-			tex:SetVertexColor(0.2, 0.8, 1, 0.5)
+			tex:SetVertexColor(unpack(accentAlpha(0.5)))
 		else
 			tex:SetVertexColor(1, 1, 1, 0.08)
 		end
@@ -520,7 +521,7 @@ end
 
 local function createToolbar(f)
 	local bar = CreateFrame("Frame", nil, f)
-	bar:SetSize(820, 78)
+	bar:SetSize(900, 92)
 	bar:SetPoint("TOP", 0, -40)
 	bar:SetFrameLevel(f:GetFrameLevel() + 2000)
 	bar:EnableMouse(true)
@@ -572,7 +573,9 @@ local function createToolbar(f)
 	minus:SetPoint("RIGHT", bar.gridValue, "LEFT", -2, 0)
 
 	bar.info = T:Text(bar, T.fonts.normal, C.textDim)
-	bar.info:SetPoint("BOTTOMLEFT", 16, 14)
+	bar.info:SetPoint("TOPLEFT", 16, -48)
+	bar.info:SetWordWrap(true)
+	bar.info:SetJustifyV("TOP")
 	bar.editButton = W.Button(bar, L["PANEL_SETTINGS"], 150, "default", function()
 		local id = EditMode.selected
 		EditMode.reopen = false

@@ -1,29 +1,32 @@
-local ADDON, ns = ...
+local _, ns = ...
 
 local Database = {}
 ns.Database = Database
 
 --[[
 nxPanelsDB (AceDB)
-	global.schema            data schema version (ns.SCHEMA)
+	global.schema            data schema version (ns.SCHEMA), not in the defaults so it is always saved
 	global.nextId            counter used to build stable ids
 	global.layouts[id]       { name = "...", folders = { "name", ... }, panels = { [panelId] = panel } }
 	global.media.background  user library: [name] = path
 	global.media.border      user library: [name] = path
 	global.migration         { source = "...", date = time() } set by an import module
 	global.optionsScale      scale of the options window
+	global.optionsTheme      look of the options window: { style = "...", accent = "..." }
 	global.editMode          grid and snapping of the edit mode
-	profile.layout           id of the active layout
+	global.newCharacters     profile of the characters that have none yet: "default", "class", "faction"
+	profile.layout           id of the default layout of the profile
+	profile.specLayouts      [spec key] = layout id, replaces the default layout for that spec (see Specs)
 	profile.enabled          panels shown or hidden
 	profile.minimap          LibDBIcon settings
 ]]
 local DEFAULTS = {
 	global = {
-		schema = ns.SCHEMA,
 		nextId = 1,
 		layouts = {},
 		media = { background = {}, border = {} },
 		optionsScale = 1,
+		optionsTheme = { style = "atelier", accent = "gold" },
 		editMode = {
 			showGrid = true,
 			gridSize = 16,
@@ -32,21 +35,30 @@ local DEFAULTS = {
 			snapDistance = 8,
 			bigStep = 10,
 		},
+		newCharacters = "default",
 	},
 	profile = {
 		enabled = true,
 		minimap = { hide = false },
+		specLayouts = {},
 	},
 }
 
-function Database:Init()
-	self.db = LibStub("AceDB-3.0"):New("nxPanelsDB", DEFAULTS, true)
-	ns.db = self.db
-
-	local LibDualSpec = LibStub("LibDualSpec-1.0", true)
-	if LibDualSpec then
-		pcall(LibDualSpec.EnhanceDatabase, LibDualSpec, self.db, ADDON)
+-- Profile given to a character that has none yet (read before AceDB starts)
+local function newCharacterProfile()
+	local sv = _G.nxPanelsDB
+	local choice = type(sv) == "table" and type(sv.global) == "table" and sv.global.newCharacters
+	if choice == "class" then
+		return (UnitClass("player")) or true
+	elseif choice == "faction" then
+		return select(2, UnitFactionGroup("player")) or true
 	end
+	return true
+end
+
+function Database:Init()
+	self.db = LibStub("AceDB-3.0"):New("nxPanelsDB", DEFAULTS, newCharacterProfile())
+	ns.db = self.db
 
 	local function onProfile()
 		ns.Layouts:ApplyActive()
@@ -61,10 +73,17 @@ function Database:Init()
 	end
 end
 
--- Future schema changes go here, one step per version
+-- One step per schema version. A missing schema is version 1 (it used to be a
+-- default value, so AceDB did not save it).
 function Database:Upgrade()
 	local g = self.db.global
-	g.schema = g.schema or ns.SCHEMA
+	local from = g.schema or 1
+	if from < 2 then
+		-- Profiles per specialization (LibDualSpec) replaced by layouts per specialization
+		local namespaces = self.db.sv.namespaces
+		if namespaces then namespaces["LibDualSpec-1.0"] = nil end
+	end
+	g.schema = ns.SCHEMA
 end
 
 function Database:NormalizeLayout(layout)
@@ -135,15 +154,49 @@ function Database:CountPanels(layout)
 	return n
 end
 
+-- Layout to show: the one of the current specialization, else the profile default
 function Database:GetActiveLayoutId()
-	local id = self.db.profile.layout
-	if id and self.db.global.layouts[id] then
+	local layouts, profile = self.db.global.layouts, self.db.profile
+	local spec = ns.Specs:Current()
+	local id = spec and profile.specLayouts[spec]
+	if id and layouts[id] then
+		return id
+	end
+	id = profile.layout
+	if id and layouts[id] then
 		return id
 	end
 end
 
+-- Activating a layout by hand: replaces the layout of the current specialization
+-- when it has one, the default layout of the profile otherwise
 function Database:SetActiveLayoutId(id)
+	local spec = ns.Specs:Current()
+	local profile = self.db.profile
+	if spec and profile.specLayouts[spec] and id then
+		profile.specLayouts[spec] = id
+	else
+		profile.layout = id
+	end
+end
+
+function Database:GetDefaultLayoutId()
+	local id = self.db.profile.layout
+	return id and self.db.global.layouts[id] and id or nil
+end
+
+function Database:SetDefaultLayoutId(id)
 	self.db.profile.layout = id
+end
+
+-- nil: the specialization uses the default layout of the profile
+function Database:GetSpecLayoutId(spec)
+	local id = self.db.profile.specLayouts[spec]
+	return id and self.db.global.layouts[id] and id or nil
+end
+
+function Database:SetSpecLayoutId(spec, id)
+	self.db.profile.specLayouts[spec] = id
 end
 
 function Database:RenameLayout(id, name)
@@ -183,6 +236,9 @@ function Database:DeleteLayout(id)
 	self.db.global.layouts[id] = nil
 	for _, profile in pairs(self.db.profiles) do
 		if profile.layout == id then profile.layout = nil end
+		for spec, layoutId in pairs(type(profile.specLayouts) == "table" and profile.specLayouts or {}) do
+			if layoutId == id then profile.specLayouts[spec] = nil end
+		end
 	end
 end
 

@@ -16,7 +16,6 @@ AceDB-3.0|$CORE/AceDB-3.0/AceDB-3.0.lua|$ACE/AceDB-3.0/AceDB-3.0.lua
 AceLocale-3.0|$CORE/AceLocale-3.0/AceLocale-3.0.lua|$ACE/AceLocale-3.0/AceLocale-3.0.lua
 AceSerializer-3.0|$CORE/AceSerializer-3.0/AceSerializer-3.0.lua|$ACE/AceSerializer-3.0/AceSerializer-3.0.lua
 LibSharedMedia-3.0|$CORE/LibSharedMedia-3.0/LibSharedMedia-3.0.lua|$SVN/libsharedmedia-3-0/trunk/LibSharedMedia-3.0/LibSharedMedia-3.0.lua
-LibDualSpec-1.0|$CORE/LibDualSpec-1.0/LibDualSpec-1.0.lua|https://raw.githubusercontent.com/AdiAddons/LibDualSpec-1.0/master/LibDualSpec-1.0.lua
 LibSerialize|$CORE/LibSerialize/LibSerialize.lua|https://raw.githubusercontent.com/rossnichols/LibSerialize/master/LibSerialize.lua
 LibDeflate|$CORE/LibDeflate/LibDeflate.lua|https://raw.githubusercontent.com/SafeteeWoW/LibDeflate/main/LibDeflate.lua
 LibDataBroker-1.1|$CORE/LibDataBroker-1.1/LibDataBroker-1.1.lua|$SVN/libdbicon-1-0/trunk/LibDataBroker-1.1/LibDataBroker-1.1.lua

@@ -1,7 +1,7 @@
 local _, ns = ...
 
 -- Data schema version of nxPanelsDB. Bump it and add a step in Database:Upgrade on changes.
-ns.SCHEMA = 1
+ns.SCHEMA = 2
 
 -- Every key here is neutral (never translated). Media are LibSharedMedia keys;
 -- false means "no texture", a nil font means "language default font".

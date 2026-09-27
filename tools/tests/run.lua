@@ -172,7 +172,15 @@ if scenario == "migrate" or scenario == "forever" or scenario == "zhcn" then
 	check(db.profileKeys["Muse - Hyjal"] == "Default" and db.profileKeys["Alt - Hyjal"] == "Alt", "profile keys kept")
 	check(db.profiles.Default.layout == mainId and db.profiles.Alt.layout == secondId, "profile layouts mapped to ids")
 	check(db.profiles.Alt.enabled == false and db.profiles.Empty.layout == nil, "profile flags")
-	check(db.namespaces["LibDualSpec-1.0"] ~= nil, "LibDualSpec settings kept")
+	local specs = ns.Specs:List()
+	local specKeys = scenario == "forever" and "G1G2" or "S62S63S64"
+	local joined = ""
+	for _, spec in ipairs(specs) do joined = joined .. spec.key end
+	check(joined == specKeys, "specializations of the client: " .. joined)
+	local specLayouts = db.profiles.Default.specLayouts or {}
+	check(specLayouts[specs[1].key] == mainId and specLayouts[specs[2].key] == secondId, "profiles per spec became layouts per spec")
+	check(not (db.namespaces and db.namespaces["LibDualSpec-1.0"]), "LibDualSpec settings not copied")
+	check(db.global.schema == ns.SCHEMA, "schema saved")
 	check(deepEqual(kgPanelsDB, fixture()), "legacy data left untouched")
 	check(M.disabled.kgPanels_Reloaded and M.disabled.kgPanelsConfig_Reloaded, "legacy addons disabled")
 	check(#M.popups == 0, "no reload popup when only the bridge was used")
@@ -282,6 +290,21 @@ if scenario == "migrate" or scenario == "forever" or scenario == "zhcn" then
 	check(old and old.count == 2 and old.format == L["FORMAT_LEGACY"], "old kgPanels string decoded by the import module")
 	local oldId = ns.Share:Import(old, "From old")
 	check(ns.Database:GetLayout(oldId) and ns.Database:CountPanels(ns.Database:GetLayout(oldId)) == 2, "old kgPanels string imported")
+
+	-- Layout per specialization
+	local function setSpec(n)
+		if scenario == "forever" then M.specGroup = n else M.spec = n end
+		M.Fire(scenario == "forever" and "ACTIVE_TALENT_GROUP_CHANGED" or "PLAYER_SPECIALIZATION_CHANGED", "player")
+	end
+	ns.Layouts:Activate(mainId)
+	setSpec(2)
+	check(ns.Layouts.activeId == secondId, "layout of the specialization shown")
+	ns.Layouts:Activate(mainId)
+	check(db.profiles.Default.specLayouts[specs[2].key] == mainId and ns.Layouts.activeId == mainId, "activating by hand changes the layout of the spec")
+	ns.Database:SetSpecLayoutId(specs[2].key, secondId)
+	ns.Database:DeleteLayout(secondId)
+	check(db.profiles.Default.specLayouts[specs[2].key] == nil, "deleted layout removed from the specs")
+	setSpec(nil)
 
 	if scenario == "zhcn" then
 		check(chat.text.font[1] == "Fonts\\ARKai_T.ttf", "Chinese font used by default")
@@ -435,13 +458,28 @@ elseif scenario == "options" then
 	click(profiles.rows[2].buttons[1])
 	M.lastPopup.data.onAccept("Test")
 	check(ns.db:GetCurrentProfile() == "Test" and not ns.Layouts.activeId, "new empty profile")
-	choose(findRow(profiles, L["PROFILE_LAYOUT"]), mainId)
+	choose(findRow(profiles, L["DEFAULT_LAYOUT"]), mainId)
 	check(ns.db.profile.layout == mainId and ns.Layouts.activeId == mainId, "layout chosen for the profile")
 	choose(findRow(profiles, L["PROFILE"]), "Default")
 	check(ns.db:GetCurrentProfile() == "Default", "profile switched")
 	choose(findRow(profiles, L["DELETE_PROFILE"]), "Test")
 	M.lastPopup.data()
 	check(not ns.db.profiles.Test, "profile deleted")
+	-- Layout per specialization, from the Profiles page
+	M.spec = 2
+	check(choose(findRow(profiles, "Spec2"), copyId) and ns.Layouts.activeId == copyId, "layout chosen for the current spec is shown")
+	check(findRow(profiles, "Spec2").label.textColor[1] == O.Theme.colors.accent[1], "current spec highlighted")
+	choose(findRow(profiles, "Spec2"), false)
+	check(ns.db.profile.specLayouts.S63 == nil and ns.Layouts.activeId == ns.db.profile.layout, "spec back to the default layout")
+	M.spec = nil
+	-- Shared profile per class / faction
+	local shared = profiles.rows[4]
+	check(shared.buttons[1].label.textValue == L["PROFILE_OF_CLASS"]:format("Mage"), "class profile button")
+	click(shared.buttons[2])
+	check(ns.db:GetCurrentProfile() == "Alliance", "faction profile used")
+	choose(findRow(profiles, L["PROFILE"]), "Default")
+	choose(findRow(profiles, L["NEW_CHARACTERS"]), "class")
+	check(ns.db.global.newCharacters == "class", "profile of new characters")
 
 	-- Settings
 	Options:Show("settings")
@@ -450,6 +488,11 @@ elseif scenario == "options" then
 	minimap.switch.scripts.OnClick(minimap.switch)
 	check(ns.db.profile.minimap.hide == true, "minimap button hidden")
 	setSlider(findRow(settings, L["GRID_SIZE"]), 16)
+	choose(findRow(settings, L["THEME_STYLE"]), "night")
+	check(ns.db.global.optionsTheme.style == "night" and M.lastPopup.name == "NXPANELS_CONFIRM", "style changed, reload asked")
+	M.lastPopup.data()
+	check(M.reloaded, "interface reloaded")
+	check(findRow(settings, L["THEME_ACCENT"]).button.text.textValue == L["ACCENT_GOLD"], "accent shown")
 
 	-- Edit mode
 	ns.Layouts:Activate(mainId)

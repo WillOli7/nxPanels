@@ -98,7 +98,7 @@ Principe : les librairies ne sont plus copiées dans le dépôt ; elles sont ré
 | LibSharedMedia-3.0 | Textures / polices partagées entre addons | Garder (indispensable pour un addon artistique) |
 | AceSerializer-3.0 | Chaînes d'export | Garder (import des anciens exports kgPanels) |
 | AceLocale-3.0 | Traductions | Garder (traduction collaborative via CurseForge) |
-| LibDualSpec-1.0 | Profil par spécialisation | Garder, mettre à jour (v35 gère Forever) |
+| LibDualSpec-1.0 | Profil par spécialisation | ✅ Retirée : remplacée par un layout par spécialisation |
 | LibDeflate | Compression des exports | Ajouter |
 | AceAddon-3.0, AceConsole-3.0 | Cycle de vie, commande `/kgpanels` | Remplacer par du code maison (quelques dizaines de lignes) |
 | LibBackdrop-1.0 | Bordures | Supprimer → bordure maison en 9 parties |

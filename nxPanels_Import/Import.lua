@@ -104,13 +104,15 @@ function Import:Auto()
 			ns.db:SetProfile(current)
 		end
 	end
+	-- Profiles per specialization (LibDualSpec) become layouts per specialization.
+	-- Only for this character: the specializations of the others are unknown here.
 	local dualSpec = type(legacy.namespaces) == "table" and legacy.namespaces["LibDualSpec-1.0"]
-	if type(dualSpec) == "table" then
-		sv.namespaces = sv.namespaces or {}
-		local target = sv.namespaces["LibDualSpec-1.0"] or {}
-		sv.namespaces["LibDualSpec-1.0"] = target
-		for section, values in pairs(dualSpec) do
-			if target[section] == nil then target[section] = values end
+	local mine = type(dualSpec) == "table" and type(dualSpec.char) == "table" and dualSpec.char[ns.db.keys.char]
+	if type(mine) == "table" and mine.enabled and type(legacy.profiles) == "table" then
+		for i, spec in ipairs(ns.Specs:List()) do
+			local profile = legacy.profiles[mine[i]]
+			local layoutId = type(profile) == "table" and ids[profile.layout]
+			if layoutId then ns.db.profile.specLayouts[spec.key] = layoutId end
 		end
 	end
 

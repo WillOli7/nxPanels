@@ -34,6 +34,7 @@ Locales\zhTW.lua
 Core\Init.lua
 Core\Defaults.lua
 Core\Database.lua
+Core\Specs.lua
 Media\Media.lua
 Render\Border.lua
 Render\Panel.lua

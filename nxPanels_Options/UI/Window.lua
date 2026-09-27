@@ -105,7 +105,12 @@ local function navButton(parent, def)
 	b:SetScript("OnClick", function() Options:Show(def.key) end)
 	function b:SetSelected(on)
 		self.bar:SetShown(on)
-		self.bg:SetVertexColor(unpack(on and C.accentSoft or { 0, 0, 0, 0 }))
+		if on and T.style == "atelier" then
+			-- Accent fading to the right, like a brush stroke
+			T:Gradient(self.bg, C.accentHover, { C.accent[1], C.accent[2], C.accent[3], 0 })
+		else
+			self.bg:SetVertexColor(unpack(on and C.accentSoft or { 0, 0, 0, 0 }))
+		end
 		self.label:SetTextColor(unpack(on and C.text or C.textDim))
 		self.icon:SetDesaturated(not on)
 	end
@@ -148,14 +153,21 @@ function Options:Create()
 	local logo = CreateFrame("Frame", nil, side)
 	logo:SetSize(34, 34)
 	logo:SetPoint("TOPLEFT", 22, -24)
-	T:Fill(logo, C.accentSoft)
-	T:Border(logo, C.accent)
-	local logoText = T:Text(logo, T.fonts.header, C.accent, "CENTER")
+	local logoText
+	if T.style == "atelier" then
+		-- Solid block of color, dark letters
+		T:Fill(logo, C.accent)
+		logoText = T:Text(logo, T.fonts.header, C.sidebar, "CENTER")
+	else
+		T:Fill(logo, C.accentSoft)
+		T:Border(logo, C.accent)
+		logoText = T:Text(logo, T.fonts.header, C.accent, "CENTER")
+	end
 	logoText:SetPoint("CENTER")
 	logoText:SetText("nx")
 	local title = T:Text(side, T.fonts.logo, C.text)
 	title:SetPoint("LEFT", logo, "RIGHT", 12, 0)
-	title:SetText("nx|cff33ccffPanels|r")
+	title:SetText("nx" .. T.accentCode .. "Panels|r")
 
 	self.nav = {}
 	local y = -86
@@ -179,6 +191,15 @@ function Options:Create()
 	self.title:SetPoint("TOPLEFT", SIDEBAR + CONTENT_PAD, -26)
 	self.subtitle = T:Text(f, T.fonts.normal, C.textDim)
 	self.subtitle:SetPoint("TOPLEFT", self.title, "BOTTOMLEFT", 0, -6)
+	if T.style == "atelier" then
+		-- Short stroke of the accent under the title
+		local stroke = f:CreateTexture(nil, "ARTWORK")
+		stroke:SetTexture(T.WHITE)
+		stroke:SetSize(180, 2)
+		stroke:SetPoint("BOTTOMLEFT", self.title, "BOTTOMLEFT", 0, -3)
+		T:Gradient(stroke, C.accent, { C.accent[1], C.accent[2], C.accent[3], 0 })
+		self.subtitle:SetPoint("TOPLEFT", self.title, "BOTTOMLEFT", 0, -10)
+	end
 
 	local close = CreateFrame("Button", nil, f)
 	close:SetSize(30, 30)
@@ -287,7 +308,7 @@ end
 function Options:Choices(keys, prefix)
 	local items = {}
 	for i, key in ipairs(keys) do
-		items[i] = { value = key, text = L[prefix .. (key == "" and "NONE" or key)] }
+		items[i] = { value = key, text = L[prefix .. (key == "" and "NONE" or key:upper())] }
 	end
 	return items
 end
