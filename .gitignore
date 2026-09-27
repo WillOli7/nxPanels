@@ -10,3 +10,6 @@ WTF/
 SavedVariables/
 # Build output of the packager
 .release/
+
+# Local test data (personal saved variables)
+.local/
