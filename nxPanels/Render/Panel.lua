@@ -75,7 +75,8 @@ function Panel:Release(frame)
 	frame:EnableMouse(false)
 	frame:ClearAllPoints()
 	frame:SetParent(UIParent)
-	frame.text:SetText("")
+	ns.TextVars:Set(frame, "")
+	ns.Visibility:Forget(frame)
 	if frame.panelId and _G["nxPanel_" .. frame.panelId] == frame then
 		_G["nxPanel_" .. frame.panelId] = nil
 	end
@@ -109,9 +110,30 @@ function Panel:Apply(frame, panel, parent, anchor)
 	frame:EnableMouse(panel.mouse)
 
 	self:ApplyBackground(frame, panel)
-	local border = panel.border
-	ns.Border:Apply(frame, ns.Media:Fetch("border", border.texture, frame.panelId), border.size, border.color, border.hidden)
+	self:ApplyBorder(frame, panel)
 	self:ApplyText(frame, panel)
+end
+
+-- Colors only (automatic colors changed: target, ...)
+function Panel:ApplyColors(frame, panel)
+	self:ApplyBackground(frame, panel)
+	self:ApplyBorder(frame, panel)
+end
+
+function Panel:ApplyBorder(frame, panel)
+	local border = panel.border
+	local r, g, b, a = ns.Colors:Get(border.colorMode, border.color)
+	ns.Border:Apply(frame, ns.Media:Fetch("border", border.texture, frame.panelId), border.size,
+		{ r = r, g = g, b = b, a = a }, border.hidden)
+end
+
+-- Blizzard atlas of a texture key "atlas:<name>": file and texture rectangle
+local function atlasOf(key)
+	local name = type(key) == "string" and key:match("^atlas:(.+)$")
+	if not name then return end
+	local info = C_Texture and C_Texture.GetAtlasInfo and C_Texture.GetAtlasInfo(name)
+	if not info then return false end
+	return info.file or info.filename, info.leftTexCoord, info.rightTexCoord, info.topTexCoord, info.bottomTexCoord
 end
 
 function Panel:ApplyBackground(frame, panel)
@@ -121,7 +143,13 @@ function Panel:ApplyBackground(frame, panel)
 	tex:SetPoint("TOPLEFT", frame, "TOPLEFT", insets.left, -insets.top)
 	tex:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -insets.right, insets.bottom)
 
-	local path = ns.Media:Fetch("background", bg.texture, frame.panelId)
+	local atlasFile, left, right, top, bottom = atlasOf(bg.texture)
+	local path
+	if atlasFile ~= nil then
+		path = atlasFile or nil
+	else
+		path = ns.Media:Fetch("background", bg.texture, frame.panelId)
+	end
 	frame.tileSize = nil
 	if not path then
 		tex:Hide()
@@ -132,10 +160,12 @@ function Panel:ApplyBackground(frame, panel)
 	tex:SetBlendMode(bg.blend)
 	tex:SetAlpha(bg.alpha)
 
-	local c, c2 = bg.color, bg.color2
-	if bg.tile then
+	local r, g, b, a = ns.Colors:Get(bg.colorMode, bg.color)
+	local c2 = bg.color2
+	-- An atlas is a part of a bigger sheet: it cannot be repeated
+	if bg.tile and not atlasFile then
 		tex:SetTexture(path, "REPEAT", "REPEAT")
-		tex:SetVertexColor(c.r, c.g, c.b, c.a)
+		tex:SetVertexColor(r, g, b, a)
 		frame.tileSize = bg.tileSize
 		self:UpdateTiling(frame)
 		return
@@ -146,15 +176,23 @@ function Panel:ApplyBackground(frame, panel)
 	tex:SetVertTile(false)
 	-- The color alpha never exceeds the background opacity (legacy behavior)
 	if bg.style == "SOLID" then
-		tex:SetVertexColor(c.r, c.g, c.b, math.min(c.a, bg.alpha))
+		tex:SetVertexColor(r, g, b, math.min(a, bg.alpha))
 	elseif bg.style == "GRADIENT" then
 		tex:SetGradient(bg.orientation,
-			CreateColor(c.r, c.g, c.b, math.min(c.a, bg.alpha)),
+			CreateColor(r, g, b, math.min(a, bg.alpha)),
 			CreateColor(c2.r, c2.g, c2.b, math.min(c2.a, bg.alpha)))
 	else
 		tex:SetVertexColor(1, 1, 1, 1)
 	end
-	tex:SetTexCoord(unpack(texCoords(bg)))
+	local c = texCoords(bg)
+	if atlasFile then
+		-- Rotation and flips inside the rectangle of the atlas
+		for i = 1, 8, 2 do
+			c[i] = left + c[i] * (right - left)
+			c[i + 1] = top + c[i + 1] * (bottom - top)
+		end
+	end
+	tex:SetTexCoord(unpack(c))
 end
 
 -- Tiled backgrounds: fixed tile size, or the texture's own size when 0
@@ -185,6 +223,7 @@ function Panel:ApplyText(frame, panel)
 	fs:SetJustifyH(t.justifyH)
 	fs:SetJustifyV(t.justifyV)
 	fs:SetTextColor(t.color.r, t.color.g, t.color.b, t.color.a)
-	-- "||" is how the legacy editor stored a single "|" (color and texture codes)
-	fs:SetText((t.value:gsub("||", "|")))
+	-- "||" is how the legacy editor stored a single "|" (color and texture codes).
+	-- {zone}, {time}... are replaced and kept up to date by TextVars
+	ns.TextVars:Set(frame, (t.value:gsub("||", "|")))
 end

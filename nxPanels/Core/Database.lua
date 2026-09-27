@@ -83,6 +83,7 @@ function Database:Upgrade()
 		local namespaces = self.db.sv.namespaces
 		if namespaces then namespaces["LibDualSpec-1.0"] = nil end
 	end
+	-- 3: display conditions and color modes, added to every panel by NormalizeLayout
 	g.schema = ns.SCHEMA
 end
 

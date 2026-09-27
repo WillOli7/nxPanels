@@ -95,7 +95,8 @@ function Layouts:Place(panelId)
 	end
 	self.waiting[panelId] = nil
 	ns.Panel:Apply(frame, panel, parent, anchor)
-	frame:Show()
+	-- Shown unless its display conditions say otherwise
+	ns.Visibility:Refresh(panelId, true)
 	return true
 end
 
@@ -191,6 +192,7 @@ end
 A panel of the active layout was edited.
 	what = "look"      background, border, text, size, position: redraw it
 	what = "geometry"  only size or position: moves it (edit mode, while dragging)
+	what = "display"   display conditions or opacity
 	what = "anchors"   parent or anchor changed: loops may appear or disappear
 	what = "scripts"   scripts changed: restart them
 	what = "added"     new panel: creates its frame, the other panels keep running
@@ -205,6 +207,8 @@ function Layouts:PanelChanged(panelId, what)
 		self:RestartScripts(panelId)
 	elseif what == "geometry" then
 		self:UpdateGeometry(panelId)
+	elseif what == "display" then
+		ns.Visibility:Refresh(panelId, false)
 	elseif what == "added" then
 		if not self.frames[panelId] then
 			self.frames[panelId] = ns.Panel:Acquire(panelId)

@@ -37,9 +37,12 @@ Core\Database.lua
 Core\Specs.lua
 Media\Media.lua
 Render\Border.lua
+Render\Colors.lua
 Render\Panel.lua
 Engine\Anchors.lua
 Engine\Scripts.lua
+Engine\TextVars.lua
+Engine\Visibility.lua
 Engine\Layouts.lua
 Core\Share.lua
 Core\API.lua

@@ -55,3 +55,11 @@ function Specs:Init()
 	ns:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED", changed)
 	ns:RegisterEvent("PLAYER_ENTERING_WORLD", changed)
 end
+
+-- Name of the current specialization
+function Specs:CurrentName()
+	local key = self:Current()
+	for _, spec in ipairs(self:List()) do
+		if spec.key == key then return spec.name end
+	end
+end

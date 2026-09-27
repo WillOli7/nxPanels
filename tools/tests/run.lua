@@ -291,6 +291,109 @@ if scenario == "migrate" or scenario == "forever" or scenario == "zhcn" then
 	local oldId = ns.Share:Import(old, "From old")
 	check(ns.Database:GetLayout(oldId) and ns.Database:CountPanels(ns.Database:GetLayout(oldId)) == 2, "old kgPanels string imported")
 
+	-- Display conditions, opacity and fades
+	ns.Layouts:Activate(mainId)
+	local chatId, barId
+	chat, chatId = frameOf(main, "Chat BG")
+	barId = select(2, frameOf(main, "Bottom Bar"))
+	local chatP = main.panels[chatId]
+	local d = chatP.display
+	local driver = ns.Visibility.driver
+	local function redraw() ns.Layouts:PanelChanged(chatId, "display") end
+	d.combat = "IN"
+	redraw()
+	check(not chat.shown and chat.nxManaged, "hidden out of combat")
+	M.Fire("PLAYER_REGEN_DISABLED")
+	check(chat.shown and chat.alpha == 1, "shown in combat")
+	M.Fire("PLAYER_REGEN_ENABLED")
+	check(not chat.shown, "hidden again after combat")
+	d.fade = 1
+	M.Fire("PLAYER_REGEN_DISABLED")
+	check(chat.shown and chat.alpha == 0, "fade starts transparent")
+	driver.scripts.OnUpdate(driver, 0.5)
+	check(math.abs(chat.alpha - 0.5) < 0.01, "fading in")
+	driver.scripts.OnUpdate(driver, 0.6)
+	check(chat.alpha == 1, "fade finished")
+	M.Fire("PLAYER_REGEN_ENABLED")
+	driver.scripts.OnUpdate(driver, 2)
+	check(not chat.shown and chat.alpha == 0, "faded out, then hidden")
+	d.combat, d.fade = "ANY", 0
+	d.alpha, d.hoverAlpha = 0.3, 1
+	redraw()
+	check(chat.shown and chat.alpha == 0.3, "base opacity")
+	M.state.hover[chat] = true
+	driver.scripts.OnUpdate(driver, 0.2)
+	check(chat.alpha == 1, "mouse-over opacity")
+	M.state.hover[chat] = nil
+	d.alpha, d.hoverAlpha = 1, 1
+	d.macro = "[combat] show; hide"
+	redraw()
+	check(not chat.shown, "macro condition hides")
+	d.macro = ""
+	d.group = "RAID"
+	redraw()
+	check(not chat.shown, "raid only: hidden solo")
+	M.state.raid = true
+	M.Fire("GROUP_ROSTER_UPDATE")
+	check(chat.shown, "shown in a raid")
+	M.state.raid = false
+	M.Fire("GROUP_ROSTER_UPDATE")
+	ns.Visibility:SetForceShow(true)
+	check(chat.shown and chat.alpha == 1, "edit mode shows hidden panels")
+	ns.Visibility:SetForceShow(false)
+	check(not chat.shown, "hidden again after the edit mode")
+	d.group = "ANY"
+	redraw()
+	check(chat.shown and chat.alpha == 1 and not chat.nxManaged, "default settings: panel left to its scripts")
+
+	-- Automatic colors
+	chatP.background.style, chatP.background.texture = "SOLID", "Solid"
+	chatP.background.colorMode = "CLASS"
+	ns.Layouts:PanelChanged(chatId, "look")
+	check(chat.bg.vertexColor[1] == 0.25 and chat.bg.vertexColor[4] == math.min(chatP.background.color.a, chatP.background.alpha), "class color, own opacity")
+	chatP.background.colorMode = "REACTION"
+	ns.Layouts:PanelChanged(chatId, "look")
+	check(chat.bg.vertexColor[1] == chatP.background.color.r, "no target: custom color")
+	M.state.target = "hostile"
+	M.Fire("PLAYER_TARGET_CHANGED")
+	check(chat.bg.vertexColor[1] == 0.86, "hostile target: red")
+	M.state.target = nil
+	chatP.border.texture, chatP.border.colorMode = "Blizzard Tooltip", "FACTION"
+	ns.Layouts:PanelChanged(chatId, "look")
+	check(chat.border.textures.TOP.vertexColor[1] == 0.18, "faction color on the border")
+	chatP.background.colorMode, chatP.border.colorMode = "CUSTOM", "CUSTOM"
+
+	-- Blizzard atlas
+	chatP.background.texture = "atlas:test-atlas"
+	ns.Layouts:PanelChanged(chatId, "look")
+	local tc = chat.bg.texCoord
+	check(chat.bg.texture == 12345 and chat.bg.shown and tc[1] == 0.5 and tc[2] == 0 and tc[7] == 1 and tc[8] == 0.25, "atlas drawn from its sheet")
+	chatP.background.texture = "atlas:missing"
+	ns.Layouts:PanelChanged(chatId, "look")
+	check(not chat.bg.shown, "unknown atlas: no background")
+	chatP.background.texture = "Solid"
+
+	-- Text variables
+	chatP.text.value = "{zone} {fps} {unknown}"
+	ns.Layouts:PanelChanged(chatId, "look")
+	check(chat.text.textValue == "Valdrakken 60 {unknown}" and chat.textTemplate, "text variables replaced")
+	local textTicker = M.ticker
+	chatP.text.value = "plain"
+	ns.Layouts:PanelChanged(chatId, "look")
+	check(chat.text.textValue == "plain" and textTicker.cancelled, "no variables: timer stopped")
+
+	-- Script check, panel export, media packs
+	local scriptErr = ns.Scripts:Check("LOAD", "local x =")
+	check(scriptErr and scriptErr:find("LOAD:1") and not ns.Scripts:Check("EVENT", "print(event, arg1)"), "script syntax check with line number")
+	local panelsText = ns.Share:ExportPanels(mainId, { chatId, barId })
+	local partial = ns.Share:Decode(panelsText)
+	check(partial and partial.kind == "panels" and partial.count == 2, "panels exported")
+	local added = partial.addTo(mainId)
+	local copyChatId, copyChat = ns.Database:FindPanel(main, "Chat BG (2)")
+	local copyBarId = ns.Database:FindPanel(main, "Bottom Bar (2)")
+	check(#added == 2 and copyChat and copyChat.anchor.relativeTo == "panel:" .. copyBarId, "panels added to a layout, anchors kept")
+	check(nxPanels.RegisterMedia("background", "Pack Stone", "Interface\\AddOns\\Pack\\stone.tga") and ns.Media.LSM:Fetch("background", "Pack Stone"), "media pack API")
+
 	-- Layout per specialization
 	local function setSpec(n)
 		if scenario == "forever" then M.specGroup = n else M.spec = n end

@@ -106,6 +106,8 @@ ns:RegisterEvent("ADDON_LOADED", function(_, name)
 	ns.Media:Init()
 	ns.Layouts:Init()
 	ns.Specs:Init()
+	ns.Colors:Init()
+	ns.Visibility:Init()
 	ns.Commands:Init()
 end)
 

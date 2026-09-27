@@ -52,3 +52,15 @@ function API.Print(...)
 	end
 	ns:Print(strjoin(" ", tostringall(...)))
 end
+
+--[[
+Media packs: another addon adds its art to nxPanels (and to every addon using
+LibSharedMedia). kind = "background", "border", "font" or "statusbar".
+	nxPanels.RegisterMedia("background", "My Pack: Stone", "Interface\\AddOns\\MyPack\\stone.tga")
+]]
+function API.RegisterMedia(...)
+	local kind, name, path = ...
+	if kind == API then kind, name, path = select(2, ...) end
+	if type(kind) ~= "string" or type(name) ~= "string" or not path then return false end
+	return ns.Media.LSM:Register(kind, name, path) and true or false
+end

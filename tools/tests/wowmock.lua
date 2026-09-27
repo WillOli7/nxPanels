@@ -215,7 +215,7 @@ for _, name in ipairs({
 	"SetDesaturated", "SetMaxLetters", "SetMovable", "SetMultiLine", "SetObeyStepOnDrag", "SetOrientation",
 	"SetPropagateKeyboardInput", "SetTextInsets", "SetToplevel", "SetClampedToScreen", "SetValueStep", "SetWordWrap",
 	"SetEnabled", "StartMoving", "StopMovingOrSizing", "HighlightText", "SetCursorPosition", "SetMinMaxValues",
-	"SetValue", "SetScrollChild", "SetOwner", "AddLine", "SetRotation",
+	"SetValue", "SetScrollChild", "SetOwner", "AddLine", "SetRotation", "SetAtlas",
 }) do
 	Region[name] = function() end
 end
@@ -250,6 +250,39 @@ function IsShiftKeyDown() return M.shift end
 function IsControlKeyDown() return M.ctrl end
 function InCombatLockdown() return M.combat end
 function GetCurrentKeyBoardFocus() return M.focus end
+
+-- Game state read by the display conditions, colors and text variables
+M.state = { group = false, raid = false, instance = "none", mounted = false, target = nil, combat = false, hover = {} }
+function UnitAffectingCombat() return M.state.combat end
+function IsInGroup() return M.state.group or M.state.raid end
+function IsInRaid() return M.state.raid end
+function IsInInstance() return M.state.instance ~= "none", M.state.instance end
+function IsMounted() return M.state.mounted end
+function UnitExists(unit) return unit == "target" and M.state.target ~= nil end
+function UnitCanAttack() return M.state.target == "hostile" end
+function UnitIsFriend() return M.state.target == "friendly" end
+function MouseIsOver(frame) return M.state.hover[frame] or false end
+-- "[combat] show; hide" style, enough for the tests
+function SecureCmdOptionParse(text)
+	for clause in text:gmatch("[^;]+") do
+		local cond, action = clause:match("^%s*%[(.-)%]%s*(%S+)")
+		if not cond then return strtrim(clause) end
+		if (cond == "combat" and M.state.combat) or (cond == "nocombat" and not M.state.combat) then return action end
+	end
+end
+function Region:GetAlpha() return self.alpha or 1 end
+date = os.date
+function UnitLevel() return 80 end
+function GetGuildInfo() return "Les Testeurs" end
+function GetRealZoneText() return "Valdrakken" end
+function GetSubZoneText() return "" end
+function GetFramerate() return 59.6 end
+function GetNetStats() return 0, 0, 20, 42 end
+function GetMoney() return 1234567 end
+C_ClassColor = { GetClassColor = function() return { r = 0.25, g = 0.78, b = 0.92 } end }
+-- Atlases known by the mock client
+M.atlases = { ["test-atlas"] = { file = 12345, leftTexCoord = 0.5, rightTexCoord = 1, topTexCoord = 0, bottomTexCoord = 0.25, width = 64, height = 32 } }
+C_Texture = { GetAtlasInfo = function(name) return M.atlases[name] end }
 
 -- Fires an event on every frame registered for it
 function M.Fire(event, ...)
