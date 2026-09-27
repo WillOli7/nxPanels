@@ -5,7 +5,6 @@
 cd "$(dirname "$0")/.." || exit 1
 
 CORE=nxPanels/Libs
-CONF=nxPanels_Options/Libs
 ACE=https://raw.githubusercontent.com/WoWUIDev/Ace3/master
 SVN=https://repos.wowace.com/wow
 
@@ -17,17 +16,10 @@ AceDB-3.0|$CORE/AceDB-3.0/AceDB-3.0.lua|$ACE/AceDB-3.0/AceDB-3.0.lua
 AceLocale-3.0|$CORE/AceLocale-3.0/AceLocale-3.0.lua|$ACE/AceLocale-3.0/AceLocale-3.0.lua
 AceSerializer-3.0|$CORE/AceSerializer-3.0/AceSerializer-3.0.lua|$ACE/AceSerializer-3.0/AceSerializer-3.0.lua
 LibSharedMedia-3.0|$CORE/LibSharedMedia-3.0/LibSharedMedia-3.0.lua|$SVN/libsharedmedia-3-0/trunk/LibSharedMedia-3.0/LibSharedMedia-3.0.lua
-LibDualSpec-1.0|$CORE/LibDualSpec-1.0/LibDualSpec-1.0.lua|https://raw.githubusercontent.com/AdiAddons/LibDualSpec-1.0/master/LibDualSpec-1.0.lua
 LibSerialize|$CORE/LibSerialize/LibSerialize.lua|https://raw.githubusercontent.com/rossnichols/LibSerialize/master/LibSerialize.lua
 LibDeflate|$CORE/LibDeflate/LibDeflate.lua|https://raw.githubusercontent.com/SafeteeWoW/LibDeflate/main/LibDeflate.lua
 LibDataBroker-1.1|$CORE/LibDataBroker-1.1/LibDataBroker-1.1.lua|$SVN/libdbicon-1-0/trunk/LibDataBroker-1.1/LibDataBroker-1.1.lua
 LibDBIcon-1.0|$CORE/LibDBIcon-1.0/LibDBIcon-1.0.lua|$SVN/libdbicon-1-0/trunk/LibDBIcon-1.0/LibDBIcon-1.0.lua
-AceGUI-3.0|$CONF/AceGUI-3.0/AceGUI-3.0.lua|$ACE/AceGUI-3.0/AceGUI-3.0.lua
-AceConfig-3.0|$CONF/AceConfig-3.0/AceConfig-3.0.lua|$ACE/AceConfig-3.0/AceConfig-3.0.lua
-AceConfigDialog-3.0|$CONF/AceConfig-3.0/AceConfigDialog-3.0/AceConfigDialog-3.0.lua|$ACE/AceConfig-3.0/AceConfigDialog-3.0/AceConfigDialog-3.0.lua
-AceConfigRegistry-3.0|$CONF/AceConfig-3.0/AceConfigRegistry-3.0/AceConfigRegistry-3.0.lua|$ACE/AceConfig-3.0/AceConfigRegistry-3.0/AceConfigRegistry-3.0.lua
-AceConfigCmd-3.0|$CONF/AceConfig-3.0/AceConfigCmd-3.0/AceConfigCmd-3.0.lua|$ACE/AceConfig-3.0/AceConfigCmd-3.0/AceConfigCmd-3.0.lua
-AceDBOptions-3.0|$CONF/AceDBOptions-3.0/AceDBOptions-3.0.lua|$ACE/AceDBOptions-3.0/AceDBOptions-3.0.lua
 "
 
 # Première déclaration de version trouvée dans le fichier (formats LibStub, LibDeflate, LibDBIcon)

@@ -9,7 +9,9 @@ Other formats can be added by other modules with Share:RegisterDecoder.
 A decoded string is described by:
 	{ format = "display name", name = "suggested layout name", count = panels,
 	  scripted = { names of the panels that contain scripts },
-	  import = function(layoutName) -> new layout id }
+	  import = function(layoutName) -> new layout id,
+	  kind = "layout" | "panels" (some panels, to add to a layout),
+	  addTo = function(layoutId) -> new panel ids (optional) }
 ]]
 local Share = {}
 ns.Share = Share
@@ -57,11 +59,16 @@ local function hasScript(panel)
 	return false
 end
 
--- Creates a layout from an nxPanels payload; references between panels are kept
-local function importPayload(payload, name)
-	local id, layout = ns.Database:CreateLayout(name)
-	layout.folders = ns.DeepCopy(payload.layout.folders or {})
-	local map = {}
+--[[
+Adds the panels of a payload to a layout, with new ids. References between
+these panels are kept; references to panels that are not in the payload go
+to the screen. Names are made unique in the layout. Returns the new ids.
+]]
+local function addPanels(layoutId, layout, payload)
+	for _, folder in ipairs(payload.layout.folders or {}) do
+		ns.Database:AddFolder(layoutId, folder)
+	end
+	local map, ids = {}, {}
 	for panelId in pairs(payload.layout.panels) do
 		map[panelId] = ns.Database:NewId("P")
 	end
@@ -74,7 +81,9 @@ local function importPayload(payload, name)
 		local p = ns.FillDefaults(ns.DeepCopy(panel), ns.PanelDefaults)
 		p.parent = remap(p.parent)
 		p.anchor.relativeTo = remap(p.anchor.relativeTo)
+		p.name = ns.Database:UniquePanelName(layout, tostring(p.name))
 		layout.panels[map[panelId]] = p
+		ids[#ids + 1] = map[panelId]
 	end
 	local library = ns.db.global.media
 	for kind, list in pairs(type(payload.media) == "table" and payload.media or {}) do
@@ -84,7 +93,49 @@ local function importPayload(payload, name)
 			end
 		end
 	end
+	return ids
+end
+
+-- Creates a layout from an nxPanels payload
+local function importPayload(payload, name)
+	local id, layout = ns.Database:CreateLayout(name)
+	addPanels(id, layout, payload)
 	return id
+end
+
+-- Adds the panels of a payload to an existing layout; returns the new panel ids
+local function addToLayout(payload, layoutId)
+	local layout = ns.Database:GetLayout(layoutId)
+	if not layout then return {} end
+	return addPanels(layoutId, layout, payload)
+end
+Share.AddPanels = addToLayout
+
+-- Some panels of a layout (a panel, a folder...): pasted into another layout
+function Share:ExportPanels(layoutId, panelIds)
+	local layout = ns.Database:GetLayout(layoutId)
+	if not layout then return end
+	local subset, seen = { name = layout.name, folders = {}, panels = {} }, {}
+	for _, panelId in ipairs(panelIds) do
+		local panel = layout.panels[panelId]
+		if panel then
+			subset.panels[panelId] = panel
+			if panel.folder and not seen[panel.folder] then
+				seen[panel.folder] = true
+				subset.folders[#subset.folders + 1] = panel.folder
+			end
+		end
+	end
+	table.sort(subset.folders)
+	local payload = {
+		kind = "panels",
+		schema = ns.SCHEMA,
+		addonVersion = ns.version,
+		layout = subset,
+		media = usedMedia(subset),
+	}
+	local compressed = LibDeflate:CompressDeflate(LibSerialize:Serialize(payload), { level = 9 })
+	return PREFIX .. LibDeflate:EncodeForPrint(compressed)
 end
 
 local function decodeNative(text)
@@ -110,7 +161,9 @@ local function decodeNative(text)
 		name = payload.layout.name,
 		count = count,
 		scripted = scripted,
+		kind = payload.kind == "panels" and "panels" or "layout",
 		import = function(name) return importPayload(payload, name) end,
+		addTo = function(layoutId) return addToLayout(payload, layoutId) end,
 	}
 end
 

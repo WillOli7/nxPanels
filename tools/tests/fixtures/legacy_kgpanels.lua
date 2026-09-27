@@ -31,7 +31,7 @@ kgPanelsDB = {
 		Alt = { layout = "Second", enabled = false },
 		Empty = { layout = "Aucun" },
 	},
-	namespaces = { ["LibDualSpec-1.0"] = { char = { ["Muse - Hyjal"] = { enabled = true } } } },
+	namespaces = { ["LibDualSpec-1.0"] = { char = { ["Muse - Hyjal"] = { enabled = true, "Default", "Alt" } } } },
 	global = {
 		artwork = { ["My Art"] = "Interface\\AddOns\\MyMedia\\art.tga", ["Solid"] = "Interface\\Buttons\\WHITE8x8" },
 		border = { ["Bulle d'aide de Blizzard"] = "Interface\\Tooltips\\UI-Tooltip-Border", ["My Border"] = "Interface\\AddOns\\MyMedia\\border.tga" },

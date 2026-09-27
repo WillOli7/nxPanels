@@ -18,9 +18,17 @@ function GetCurrentRegion() return 3 end
 function GetCurrentRegionName() return "EU" end
 function UnitNameUnmodified() return "Muse" end
 function UnitName() return "Muse" end
-function UnitClass() return "Mage", "MAGE" end
+function UnitClass() return "Mage", "MAGE", 8 end
+-- Specializations: M.spec = index (Retail), M.specGroup = 1 or 2 (Forever)
+C_SpecializationInfo = {
+	GetSpecialization = function() return M.spec end,
+	GetNumSpecializationsForClassID = function() return 3 end,
+	GetActiveSpecGroup = function() return M.specGroup end,
+}
+function GetSpecializationInfo(i) return 61 + i, "Spec" .. i end
+function GetSpecializationInfoForClassID(_, i) return 61 + i, "Spec" .. i end
 function UnitRace() return "Humain", "Human" end
-function UnitFactionGroup() return "Alliance" end
+function UnitFactionGroup() return "Alliance", "Alliance" end
 function time() return 1790000000 end
 function strlenutf8(s) return #s end
 function wipe(t) for k in pairs(t) do t[k] = nil end return t end
@@ -31,14 +39,25 @@ strmatch, strsub, strlen, strbyte, strchar, format, strfind, strlower = string.m
 tinsert, tremove = table.insert, table.remove
 function securecallfunction(f, ...) return f(...) end
 function geterrorhandler() return function(e) error(e, 0) end end
-function hooksecurefunc() end
+function hooksecurefunc(t, name, fn)
+	if type(t) ~= "table" then t, name, fn = _G, t, name end
+	local old = t[name]
+	t[name] = function(...)
+		local r = { old(...) }
+		fn(...)
+		return unpack(r)
+	end
+end
 function ReloadUI() M.reloaded = true end
 C_UIFileAsset = { IsKnownFile = function() return true end }
 C_GameRules = { IsGameRuleActive = function() return false end }
 Enum = { GameRule = {} }
 StaticPopupDialogs = {}
 SlashCmdList = {}
-function StaticPopup_Show(name) M.popups[#M.popups + 1] = name end
+function StaticPopup_Show(name, text, _, data)
+	M.popups[#M.popups + 1] = name
+	M.lastPopup = { name = name, text = text, data = data }
+end
 
 function CreateColor(r, g, b, a) return { r = r, g = g, b = b, a = a } end
 
@@ -164,15 +183,134 @@ function Region:SetFrameLevel(l) assert(l >= 0, "negative frame level") self.lev
 function Region:EnableMouse(v) self.mouse = v end
 function Region:IsForbidden() return false end
 
+-- Used by the options window
+function Region:GetFrameLevel() return self.level or 0 end
+function Region:GetStringWidth() return #tostring(self.textValue or "") * 7 end
+function Region:GetText() return self.textValue end
+function Region:Insert(text) self.textValue = (self.textValue or "") .. text end
+function Region:SetFocus() M.focus = self end
+function Region:HasFocus() return M.focus == self end
+function Region:ClearFocus()
+	if M.focus ~= self then return end
+	M.focus = nil
+	if self.scripts.OnEditFocusLost then self.scripts.OnEditFocusLost(self) end
+end
+function Region:HookScript(name, fn)
+	local old = self.scripts[name]
+	self.scripts[name] = old and function(...) old(...) fn(...) end or fn
+end
+function Region:SetThumbTexture() self.thumb = newRegion("Texture", self) end
+function Region:GetThumbTexture() return self.thumb end
+function Region:SetVerticalScroll(v) self.vscroll = v end
+function Region:GetVerticalScroll() return self.vscroll or 0 end
+function Region:IsVisible() return self.shown and (not self.parent or self.parent:IsVisible()) end
+function Region:GetEffectiveScale() return self.scale * (self.parent and self.parent:GetEffectiveScale() or 1) end
+-- Tests set frame.rect = { left, bottom, width, height }
+function Region:GetRect()
+	if self.rect then return unpack(self.rect) end
+	return 0, 0, self.w, self.h
+end
+for _, name in ipairs({
+	"EnableKeyboard", "EnableMouseWheel", "RegisterForClicks", "RegisterForDrag", "SetAtlas", "SetAutoFocus",
+	"SetDesaturated", "SetMaxLetters", "SetMovable", "SetMultiLine", "SetObeyStepOnDrag", "SetOrientation",
+	"SetPropagateKeyboardInput", "SetTextInsets", "SetToplevel", "SetClampedToScreen", "SetValueStep", "SetWordWrap",
+	"SetEnabled", "StartMoving", "StopMovingOrSizing", "HighlightText", "SetCursorPosition", "SetMinMaxValues",
+	"SetValue", "SetScrollChild", "SetOwner", "AddLine", "SetRotation", "SetAtlas",
+}) do
+	Region[name] = function() end
+end
+-- Like the game, SetText on an edit box fires OnTextChanged (not typed by the user)
+local setText = Region.SetText
+function Region:SetText(t)
+	setText(self, t)
+	if self.kind == "EditBox" and self.scripts.OnTextChanged then self.scripts.OnTextChanged(self, false) end
+end
+
 M.frames = {}
 function CreateFrame(kind, name, parent)
 	local f = newRegion(kind, parent)
 	M.frames[#M.frames + 1] = f
-	if name then _G[name] = f end
+	if name then _G[name] = f f.name = name end
 	return f
+end
+function Region:GetName() return self.name end
+-- Iterates the frames like the game (nil: first one)
+function EnumerateFrames(previous)
+	if not previous then return M.frames[1] end
+	for i, frame in ipairs(M.frames) do
+		if frame == previous then return M.frames[i + 1] end
+	end
 end
 UIParent = newRegion("Frame")
 UIParent.w, UIParent.h = 1920, 1080
+
+function CreateFont(name)
+	local f = newRegion("Font")
+	_G[name] = f
+	return f
+end
+GameTooltip = newRegion("GameTooltip")
+UISpecialFrames = {}
+YES, NO, ACCEPT, CANCEL, CLOSE, DELETE = "Yes", "No", "Accept", "Cancel", "Close", "Delete"
+M.cursor = { 0, 0 }
+function GetCursorPosition() return M.cursor[1], M.cursor[2] end
+function IsShiftKeyDown() return M.shift end
+function IsControlKeyDown() return M.ctrl end
+function InCombatLockdown() return M.combat end
+function GetCurrentKeyBoardFocus() return M.focus end
+-- Retail 12 "secret values": M.SECRET stands for one
+M.SECRET = setmetatable({}, { __tostring = function() return "<secret>" end })
+function issecretvalue(v) return v == M.SECRET end
+
+-- Game state read by the display conditions, colors and text variables
+M.state = { group = false, raid = false, instance = "none", mounted = false, target = nil, combat = false, hover = {} }
+function UnitAffectingCombat() return M.state.combat end
+function IsInGroup() return M.state.group or M.state.raid end
+function IsInRaid() return M.state.raid end
+function IsInInstance() return M.state.instance ~= "none", M.state.instance end
+function IsMounted() return M.state.mounted end
+function UnitExists(unit) return unit == "target" and M.state.target ~= nil end
+function UnitCanAttack() return M.state.target == "hostile" end
+function UnitIsFriend() return M.state.target == "friendly" end
+function MouseIsOver(frame) return M.state.hover[frame] or false end
+-- "[combat] show; hide" style, enough for the tests
+function SecureCmdOptionParse(text)
+	for clause in text:gmatch("[^;]+") do
+		local cond, action = clause:match("^%s*%[(.-)%]%s*(%S+)")
+		if not cond then return strtrim(clause) end
+		if (cond == "combat" and M.state.combat) or (cond == "nocombat" and not M.state.combat) then return action end
+	end
+end
+function Region:GetAlpha() return self.alpha or 1 end
+function Region:GetFont() return unpack(self.font or {}) end
+date = os.date
+function UnitLevel() return 80 end
+function GetGuildInfo() return "Les Testeurs" end
+function GetRealZoneText() return "Valdrakken" end
+function GetSubZoneText() return "" end
+function GetFramerate() return 59.6 end
+function GetNetStats() return 0, 0, 20, 42 end
+function GetMoney() return 1234567 end
+C_ClassColor = { GetClassColor = function() return { r = 0.25, g = 0.78, b = 0.92 } end }
+-- Atlases known by the mock client
+M.atlases = {
+	["test-atlas"] = { file = 12345, leftTexCoord = 0.5, rightTexCoord = 1, topTexCoord = 0, bottomTexCoord = 0.25, width = 64, height = 32 },
+	["QuestBG-Parchment"] = { file = 67890, leftTexCoord = 0, rightTexCoord = 1, topTexCoord = 0, bottomTexCoord = 1 },
+}
+C_Texture = { GetAtlasInfo = function(name) return M.atlases[name] end }
+-- One currency (under a header of the currency tab), one item, 500 macro icons
+C_CurrencyInfo = {
+	GetCurrencyInfo = function(id) if id == 3008 then return { name = "Valorstone", quantity = 12345, iconFileID = 5868902 } end end,
+	GetCurrencyListSize = function() return 2 end,
+	GetCurrencyListInfo = function(i)
+		if i == 1 then return { isHeader = true, name = "Season" } end
+		return { name = "Valorstone", iconFileID = 5868902 }
+	end,
+	GetCurrencyListLink = function(i) if i == 2 then return "|cffffffff|Hcurrency:3008:0|h[Valorstone]|h|r" end end,
+}
+function BreakUpLargeNumbers(n) return tostring(n) end
+C_Item = { GetItemCount = function() return 7 end, GetItemIconByID = function() return 134400 end }
+function GetMacroIcons(list) for i = 1, 500 do list[#list + 1] = 100000 + i end end
 
 -- Fires an event on every frame registered for it
 function M.Fire(event, ...)

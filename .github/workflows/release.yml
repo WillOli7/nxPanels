@@ -1,0 +1,47 @@
+name: Release
+
+# A version tag (1.0.0-alpha.2, 1.0.0-beta.1, 1.0.0...) builds the package with the
+# BigWigs packager and publishes it: GitHub release always, CurseForge only when the
+# CF_API_KEY secret exists. Tags containing "alpha" or "beta" give alpha / beta files.
+# "Run workflow" by hand builds the zip without publishing anything (test build).
+
+on:
+  push:
+    tags:
+      - "[0-9]*"
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    env:
+      CF_API_KEY: ${{ secrets.CF_API_KEY }}
+      GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install LuaJIT
+        run: sudo apt-get update && sudo apt-get install -y luajit
+
+      - name: Offline scenarios
+        run: bash tools/tests/run-all.sh luajit
+
+      - name: Test build (no upload)
+        if: github.event_name == 'workflow_dispatch'
+        uses: BigWigsMods/packager@v2
+        with:
+          args: -d
+
+      - name: Package and publish
+        if: github.event_name == 'push'
+        uses: BigWigsMods/packager@v2
+
+      - name: Keep the zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: nxPanels-package
+          path: .release/*.zip

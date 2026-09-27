@@ -24,10 +24,11 @@ function Anchors:Resolve(ref, frames, selfId)
 		return frames[id]
 	end
 	local frame = _G[ref]
-	if type(frame) == "table" and type(frame.GetObjectType) == "function"
-		and not (frame.IsForbidden and frame:IsForbidden()) then
-		return frame
-	end
+	if type(frame) ~= "table" or type(frame.GetObjectType) ~= "function" then return end
+	local forbidden = frame.IsForbidden and frame:IsForbidden()
+	-- Retail 12 can hide this value ("secret"): it cannot be tested, the frame is used as is
+	if issecretvalue and issecretvalue(forbidden) then return frame end
+	if not forbidden then return frame end
 end
 
 --[[

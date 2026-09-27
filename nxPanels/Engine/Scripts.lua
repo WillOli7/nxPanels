@@ -35,8 +35,10 @@ local env = setmetatable({}, { __index = _G })
 Scripts.env = env
 
 local reported = {}
+Scripts.lastErrors = {}   -- [panelId .. hook] = last error, shown in the script editor
 
-local function report(panelName, hook, err)
+local function report(panelName, hook, err, panelId)
+	if panelId then Scripts.lastErrors[panelId .. hook] = tostring(err) end
 	local key = panelName .. "\0" .. hook
 	if reported[key] then return end
 	reported[key] = true
@@ -57,7 +59,7 @@ local function guard(fn, frame, scriptName, panelName, hook)
 		local ok, err = pcall(fn, ...)
 		if not ok then
 			frame:SetScript(scriptName, nil)
-			report(panelName, hook, err)
+			report(panelName, hook, err, frame.panelId)
 		end
 	end
 end
@@ -73,7 +75,7 @@ function Scripts:Attach(frame, panel)
 		local fn, err = compile(code, "self, nxPanels", nil, ("=%s:LOAD"):format(name))
 		if fn then
 			local ok, runErr = pcall(fn, frame, ns.API)
-			if not ok then report(name, "LOAD", runErr) end
+			if not ok then report(name, "LOAD", runErr, frame.panelId) end
 		else
 			ns:Print(L["SCRIPT_COMPILE_ERROR"], name, "LOAD", err)
 		end
@@ -114,4 +116,19 @@ end
 
 function Scripts:ResetErrors()
 	wipe(reported)
+	wipe(self.lastErrors)
+end
+
+-- Syntax check for the editor: nil when the code compiles, the error otherwise.
+-- Line numbers match the editor (the user code starts on line 1).
+function Scripts:Check(hook, code)
+	local def = HOOKS[hook]
+	local args = def and def[2] or (hook == "LOAD" and "self, nxPanels" or "self, button")
+	local _, err = compile(code, args, def and def[3], "=" .. hook)
+	if err then
+		-- An unfinished last line is reported on the line of the wrapper's "end"
+		local lines = select(2, code:gsub("\n", "")) + 1
+		err = err:gsub(":(%d+):", function(n) return ":" .. math.min(tonumber(n), lines) .. ":" end, 1)
+	end
+	return err
 end

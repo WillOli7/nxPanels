@@ -13,7 +13,7 @@ Statuts : 💡 idée · 🔍 à étudier · 📐 spécifié · 🚧 en cours · 
 | P2 | Correctif v0.4.1 (bugs bloquants du code actuel) | 📐 | `L` nil, `IsAddOnLoaded`, `SetColorTexture`, compteur `checkFrames`, chemins cassés… |
 | P3 | Compatibilité **WoW Forever** (Interface 16001, `_Camelot.toc`) | 🔍 | Client « Mainline » allégé : pas de `GetSpecialization`, `BackdropTemplate` possiblement absent. |
 | P4 | Réécriture v1.0 (sortie de l'héritage eePanels) | 🔍 | Voir « Architecture v1.0 ». |
-| P5 | Nouvelle interface de configuration (inspiration EllesmereUI) | 💡 | Mode édition visuel + fenêtre de config moderne. |
+| P5 | Nouvelle interface de configuration (inspiration EllesmereUI) | 🚧 | Mode édition visuel + fenêtre de config moderne. |
 
 ---
 
@@ -60,7 +60,7 @@ Point technique : un addon ne peut lire que son propre fichier de sauvegarde (fi
 |---|---|---|
 | 1 | Librairies : mises à jour, suppressions, ajouts (`Libs-VERSIONS.md`, `tools/check-libs.sh`) | ✅ branche `v1/phase1-libs` |
 | 2a | Moteur nxPanels : données, migration, rendu, bordures, ancrages, scripts, commandes, minicarte, tests hors jeu | 🚧 branche `v1/phase2-core` — en test local |
-| 2b | Fenêtre de configuration (`nxPanels_Options`) + mode édition | 🔍 |
+| 2b | Fenêtre de configuration (`nxPanels_Options`) + mode édition | 🚧 branche `feature/options-window` — écrite, testée hors jeu, à tester en jeu |
 | 2c | Nouvelles options (visibilité, animations, masques…) | 💡 |
 
 **Nom : nxPanels** (« next »), licence **GPLv3**, décidés le 2026-09-27.
@@ -98,11 +98,11 @@ Principe : les librairies ne sont plus copiées dans le dépôt ; elles sont ré
 | LibSharedMedia-3.0 | Textures / polices partagées entre addons | Garder (indispensable pour un addon artistique) |
 | AceSerializer-3.0 | Chaînes d'export | Garder (import des anciens exports kgPanels) |
 | AceLocale-3.0 | Traductions | Garder (traduction collaborative via CurseForge) |
-| LibDualSpec-1.0 | Profil par spécialisation | Garder, mettre à jour (v35 gère Forever) |
+| LibDualSpec-1.0 | Profil par spécialisation | ✅ Retirée : remplacée par un layout par spécialisation |
 | LibDeflate | Compression des exports | Ajouter |
 | AceAddon-3.0, AceConsole-3.0 | Cycle de vie, commande `/kgpanels` | Remplacer par du code maison (quelques dizaines de lignes) |
 | LibBackdrop-1.0 | Bordures | Supprimer → bordure maison en 9 parties |
-| AceConfig / AceGUI / AceDBOptions / SharedMediaWidgets | Interface de config actuelle | Remplacer par la nouvelle interface ; conservés pendant la transition |
+| AceConfig / AceGUI / AceDBOptions / SharedMediaWidgets | Ancienne interface de config | ✅ Retirées : remplacées par la fenêtre maison (`nxPanels_Options`) |
 
 - **Modèle de données versionné** : identifiants stables (GUID) pour les panneaux, noms = simples libellés ; migrations depuis le format kgPanels (version 6) ; clés neutres.
 - **Rendu** : `KGPanelMixin` + pools Blizzard (`CreateFramePool`) ; calques : fond, masque, bordure maison en 9 parties (fin de LibBackdrop), ombre, texte.
@@ -117,32 +117,32 @@ Principe : les librairies ne sont plus copiées dans le dépôt ; elles sont ré
 ## Nouvelles options (backlog)
 
 ### Affichage & comportement
-- 💡 **Conditions d'affichage sans script** : combat / hors combat, groupe / raid, type d'instance, monture, cible existante, combat de mascottes, conditions de macro (`[combat] show; hide`).
-- 💡 **Animations** : fondu d'apparition/disparition, opacité au survol, opacité différente en combat.
-- 💡 Changement automatique de layout par spécialisation, personnage ou résolution d'écran.
+- 🚧 **Conditions d'affichage sans script** : combat / hors combat, groupe / raid, type d'instance, monture, cible existante, combat de mascottes, conditions de macro (`[combat] show; hide`).
+- 🚧 **Animations** : fondu d'apparition/disparition, opacité au survol, opacité différente en combat.
+- 🚧 Changement automatique de layout par spécialisation (fait) ; reste : par résolution d'écran.
 
 ### Rendu artistique
-- 💡 **Couleurs dynamiques** : classe, faction, réaction de la cible (fond et bordure).
+- 🚧 **Couleurs dynamiques** : classe, faction, réaction de la cible (fond et bordure).
 - 💡 **Masques** (`MaskTexture`) : coins arrondis, cercles, formes personnalisées.
 - 💡 **Plusieurs calques de texture** par panneau.
-- 💡 Support direct des **atlas Blizzard** (`C_Texture.GetAtlasInfo`).
+- 🚧 Support direct des **atlas Blizzard** (`C_Texture.GetAtlasInfo`).
 - 💡 **Ombres / halos**, bordure intérieure + extérieure, bordures 1 px au pixel près (`PixelUtil`).
 - 💡 Dégradés à 4 coins / multi-étapes ; dégradés de bordure.
 - 💡 Désaturation, couleur de sommet (vertex color).
 
 ### Texte
 - 💡 Contour et ombre du texte (options de police).
-- 💡 **Variables sans Lua** : `{player}`, `{zone}`, `{time}`, `{fps}`, `{latency}`…
+- 🚧 **Variables sans Lua** : `{player}`, `{zone}`, `{time}`, `{fps}`, `{latency}`…
 
 ### Création & édition
-- 💡 **Mode édition visuel** : grille, aimantation (bords, centre, autres panneaux), guides d'alignement, flèches du clavier, sélection multiple, annuler/rétablir.
-- 💡 **Navigateur de textures en vignettes** (au lieu d'une liste déroulante).
-- 💡 **Sélecteur de frame au survol** (façon `/fstack`) pour ancrer sur EllesmereUI, ElvUI, frames du mode édition…
-- 💡 Éditeur de scripts : coloration syntaxique, affichage de la ligne en erreur, bibliothèque d'extraits.
+- 🚧 **Mode édition visuel** : grille, aimantation (bords, centre, autres panneaux), guides d'alignement, flèches du clavier, sélection multiple, annuler/rétablir.
+- 🚧 **Navigateur de textures en vignettes** (au lieu d'une liste déroulante).
+- ❌ **Sélecteur de frame au survol** : essayé puis retiré (frames protégées depuis Midnight, trop coûteux sur une grosse interface). Reste « Autre frame… » avec `/fstack`.
+- 🚧 Éditeur de scripts : affichage de la ligne en erreur (fait). Reste : coloration syntaxique, bibliothèque d'extraits.
 
 ### Partage
 - 💡 **Chaînes d'export compressées** (LibDeflate, préfixe versionné), compatibles avec les anciens exports kgPanels.
-- 💡 **Galerie de modèles** prêts à l'emploi.
+- 🚧 **Galerie de modèles** prêts à l'emploi.
 - 💡 Avertissement de sécurité à l'import quand le layout contient des scripts.
 
 ### Intégration

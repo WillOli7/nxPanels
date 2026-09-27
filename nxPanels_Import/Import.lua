@@ -76,6 +76,9 @@ function Import:Auto()
 	if not ns.db then return end
 	local g = ns.db.global
 	if g.migration or next(g.layouts) then return end
+	-- The old addon itself is running (original kgPanels, or kgPanels Reloaded installed
+	-- by hand next to nxPanels): its panels stay on screen until a reload
+	local legacyRunning = isLoaded(ORIGINAL) or isLoaded(RELOADED)
 
 	local legacy, source = self:GetLegacyData()
 	if type(legacy) ~= "table" or type(legacy.global) ~= "table" then return end
@@ -104,18 +107,21 @@ function Import:Auto()
 			ns.db:SetProfile(current)
 		end
 	end
+	-- Profiles per specialization (LibDualSpec) become layouts per specialization.
+	-- Only for this character: the specializations of the others are unknown here.
 	local dualSpec = type(legacy.namespaces) == "table" and legacy.namespaces["LibDualSpec-1.0"]
-	if type(dualSpec) == "table" then
-		sv.namespaces = sv.namespaces or {}
-		local target = sv.namespaces["LibDualSpec-1.0"] or {}
-		sv.namespaces["LibDualSpec-1.0"] = target
-		for section, values in pairs(dualSpec) do
-			if target[section] == nil then target[section] = values end
+	local mine = type(dualSpec) == "table" and type(dualSpec.char) == "table" and dualSpec.char[ns.db.keys.char]
+	if type(mine) == "table" and mine.enabled and type(legacy.profiles) == "table" then
+		for i, spec in ipairs(ns.Specs:List()) do
+			local profile = legacy.profiles[mine[i]]
+			local layoutId = type(profile) == "table" and ids[profile.layout]
+			if layoutId then ns.db.profile.specLayouts[spec.key] = layoutId end
 		end
 	end
 
 	g.migration = { source = source, date = time(), layouts = layoutCount, panels = panelCount }
 	self.done = g.migration
+	self.needReload = legacyRunning
 end
 
 -- After login: report, and switch the legacy addons off
@@ -125,7 +131,7 @@ function Import:Finish()
 	self.done = nil
 	ns:Print(L["MIGRATED"], done.layouts, done.panels, done.source)
 
-	local needReload = isLoaded(ORIGINAL)
+	local needReload = self.needReload
 	for _, name in ipairs(LEGACY_ADDONS) do
 		if exists(name) then C_AddOns.DisableAddOn(name) end
 	end

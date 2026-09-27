@@ -70,6 +70,15 @@ function Layouts:ApplyActive()
 	self:StartRetry()
 end
 
+-- Parent and anchor frames of a panel (nil when they do not exist yet)
+function Layouts:Targets(panelId, panel)
+	if self.cyclic[panelId] then
+		return UIParent, UIParent
+	end
+	return ns.Anchors:Resolve(panel.parent, self.frames, panelId),
+		ns.Anchors:Resolve(panel.anchor.relativeTo, self.frames, panelId)
+end
+
 -- Returns true when the panel could be shown
 function Layouts:Place(panelId)
 	local layout = activeLayout()
@@ -77,12 +86,7 @@ function Layouts:Place(panelId)
 	local frame = self.frames[panelId]
 	if not panel or not frame then return false end
 
-	local parent, anchor = UIParent, UIParent
-	if not self.cyclic[panelId] then
-		parent = ns.Anchors:Resolve(panel.parent, self.frames, panelId)
-		anchor = ns.Anchors:Resolve(panel.anchor.relativeTo, self.frames, panelId)
-	end
-
+	local parent, anchor = self:Targets(panelId, panel)
 	if not parent or not anchor then
 		self.waiting[panelId] = true
 		ns.Panel:Apply(frame, panel, parent or UIParent, anchor or UIParent)
@@ -91,7 +95,8 @@ function Layouts:Place(panelId)
 	end
 	self.waiting[panelId] = nil
 	ns.Panel:Apply(frame, panel, parent, anchor)
-	frame:Show()
+	-- Shown unless its display conditions say otherwise
+	ns.Visibility:Refresh(panelId, true)
 	return true
 end
 
@@ -186,9 +191,13 @@ end
 --[[
 A panel of the active layout was edited.
 	what = "look"      background, border, text, size, position: redraw it
+	what = "geometry"  only size or position: moves it (edit mode, while dragging)
+	what = "display"   display conditions or opacity
 	what = "anchors"   parent or anchor changed: loops may appear or disappear
 	what = "scripts"   scripts changed: restart them
-	what = "structure" panel added or removed: rebuild the layout
+	what = "added"     new panel: creates its frame, the other panels keep running
+	what = "removed"   panel deleted: releases its frame, re-places the others
+	what = "structure" many changes: rebuild the layout
 ]]
 function Layouts:PanelChanged(panelId, what)
 	if not self.activeId then return end
@@ -196,15 +205,51 @@ function Layouts:PanelChanged(panelId, what)
 		self:ApplyActive()
 	elseif what == "scripts" then
 		self:RestartScripts(panelId)
-	elseif what == "anchors" then
-		local order, cyclic = ns.Anchors:Order(activeLayout().panels)
-		self.cyclic = cyclic
-		for _, id in ipairs(order) do
-			if self:Place(id) then self:StartScripts(id) end
+	elseif what == "geometry" then
+		self:UpdateGeometry(panelId)
+	elseif what == "display" then
+		ns.Visibility:Refresh(panelId, false)
+	elseif what == "added" then
+		if not self.frames[panelId] then
+			self.frames[panelId] = ns.Panel:Acquire(panelId)
 		end
-		self:StartRetry()
+		self:Reanchor()
+	elseif what == "removed" then
+		local frame = self.frames[panelId]
+		if frame then
+			ns.Scripts:Detach(frame)
+			ns.Panel:Release(frame)
+			self.frames[panelId] = nil
+		end
+		self.waiting[panelId] = nil
+		started[panelId] = nil
+		self:Reanchor()
+	elseif what == "anchors" then
+		self:Reanchor()
 	else
 		self:RefreshPanel(panelId)
+	end
+end
+
+-- Places every panel again (anchors changed, loops may appear or disappear)
+function Layouts:Reanchor()
+	local order, cyclic = ns.Anchors:Order(activeLayout().panels)
+	self.cyclic = cyclic
+	for _, id in ipairs(order) do
+		if self:Place(id) then self:StartScripts(id) end
+	end
+	self:StartRetry()
+end
+
+-- Moves or resizes a shown panel without redrawing it
+function Layouts:UpdateGeometry(panelId)
+	local layout = activeLayout()
+	local panel = layout and layout.panels[panelId]
+	local frame = self.frames[panelId]
+	if not panel or not frame or self.waiting[panelId] then return end
+	local parent, anchor = self:Targets(panelId, panel)
+	if parent and anchor then
+		ns.Panel:ApplyGeometry(frame, panel, parent, anchor)
 	end
 end
 
