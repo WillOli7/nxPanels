@@ -1,0 +1,278 @@
+local _, O = ...
+local T, W = O.Theme, O.Widgets
+local C = T.colors
+local L = O.L
+local core = O.core
+
+-- Main window: sidebar navigation, page header, content, footer
+local Options = {}
+O.Options = Options
+core.Options = Options
+
+local WIDTH, HEIGHT, SIDEBAR = 1060, 680, 230
+local CONTENT_PAD = 28
+Options.pages = {}
+Options.order = {}
+
+---------------------------------------------------------------------------
+-- Pages
+-- def = { key, title, subtitle, build(page, width), refresh(page), onShow(page), action (no page) }
+---------------------------------------------------------------------------
+function Options:RegisterPage(def)
+	self.pages[def.key] = def
+	self.order[#self.order + 1] = def.key
+end
+
+-- Width available for the content of a page
+Options.contentWidth = WIDTH - SIDEBAR - 2 * CONTENT_PAD
+
+---------------------------------------------------------------------------
+-- Dialogs
+---------------------------------------------------------------------------
+StaticPopupDialogs["NXPANELS_CONFIRM"] = {
+	text = "%s",
+	button1 = YES,
+	button2 = NO,
+	OnAccept = function(_, data) data() end,
+	timeout = 0,
+	whileDead = true,
+	hideOnEscape = true,
+	showAlert = true,
+}
+StaticPopupDialogs["NXPANELS_PROMPT"] = {
+	text = "%s",
+	button1 = ACCEPT,
+	button2 = CANCEL,
+	hasEditBox = true,
+	editBoxWidth = 260,
+	OnShow = function(self, data)
+		local edit = self.editBox or self.EditBox
+		edit:SetText(data.default or "")
+		edit:HighlightText()
+		edit:SetFocus()
+	end,
+	OnAccept = function(self, data)
+		local edit = self.editBox or self.EditBox
+		data.onAccept(edit:GetText())
+	end,
+	EditBoxOnEnterPressed = function(self, data)
+		local parent = self:GetParent()
+		data.onAccept(self:GetText())
+		parent:Hide()
+	end,
+	EditBoxOnEscapePressed = function(self) self:GetParent():Hide() end,
+	timeout = 0,
+	whileDead = true,
+	hideOnEscape = true,
+}
+
+function Options:Confirm(text, onAccept)
+	StaticPopup_Show("NXPANELS_CONFIRM", text, nil, onAccept)
+end
+
+function Options:Prompt(text, default, onAccept)
+	StaticPopup_Show("NXPANELS_PROMPT", text, nil, { default = default, onAccept = onAccept })
+end
+
+---------------------------------------------------------------------------
+-- Window
+---------------------------------------------------------------------------
+local function navButton(parent, def)
+	local b = CreateFrame("Button", nil, parent)
+	b:SetSize(SIDEBAR - 16, 36)
+	b.bg = T:Fill(b, { 0, 0, 0, 0 })
+	b.bar = b:CreateTexture(nil, "ARTWORK")
+	b.bar:SetTexture(T.WHITE)
+	b.bar:SetVertexColor(unpack(C.accent))
+	b.bar:SetWidth(3)
+	b.bar:SetPoint("TOPLEFT")
+	b.bar:SetPoint("BOTTOMLEFT")
+	b.icon = b:CreateTexture(nil, "ARTWORK")
+	b.icon:SetSize(18, 18)
+	b.icon:SetPoint("LEFT", 16, 0)
+	if def.atlas then b.icon:SetAtlas(def.atlas) else b.icon:SetTexture(def.icon) end
+	b.icon:SetDesaturated(true)
+	b.label = T:Text(b, T.fonts.nav, C.textDim)
+	b.label:SetPoint("LEFT", b.icon, "RIGHT", 12, 0)
+	b.label:SetText(def.title)
+	b:SetScript("OnEnter", function(self) if Options.current ~= def.key then self.bg:SetVertexColor(unpack(C.cardHover)) end end)
+	b:SetScript("OnLeave", function(self) if Options.current ~= def.key then self.bg:SetVertexColor(0, 0, 0, 0) end end)
+	b:SetScript("OnClick", function() Options:Show(def.key) end)
+	function b:SetSelected(on)
+		self.bar:SetShown(on)
+		self.bg:SetVertexColor(unpack(on and C.accentSoft or { 0, 0, 0, 0 }))
+		self.label:SetTextColor(unpack(on and C.text or C.textDim))
+		self.icon:SetDesaturated(not on)
+	end
+	b:SetSelected(false)
+	return b
+end
+
+function Options:Create()
+	if self.frame then return end
+	local f = CreateFrame("Frame", "nxPanelsOptionsFrame", UIParent)
+	f:SetSize(WIDTH, HEIGHT)
+	f:SetPoint("CENTER")
+	f:SetFrameStrata("HIGH")
+	f:SetToplevel(true)
+	f:SetClampedToScreen(true)
+	f:EnableMouse(true)
+	f:SetMovable(true)
+	f:RegisterForDrag("LeftButton")
+	f:SetScript("OnDragStart", f.StartMoving)
+	f:SetScript("OnDragStop", f.StopMovingOrSizing)
+	f:SetScale(core.db.global.optionsScale or 1)
+	T:Fill(f, C.window)
+	T:Border(f, C.lineStrong)
+	tinsert(UISpecialFrames, "nxPanelsOptionsFrame")
+	self.frame = f
+
+	-- Sidebar
+	local side = CreateFrame("Frame", nil, f)
+	side:SetPoint("TOPLEFT")
+	side:SetPoint("BOTTOMLEFT")
+	side:SetWidth(SIDEBAR)
+	T:Fill(side, C.sidebar)
+	local sideLine = side:CreateTexture(nil, "BORDER")
+	sideLine:SetTexture(T.WHITE)
+	sideLine:SetVertexColor(unpack(C.line))
+	sideLine:SetWidth(1)
+	sideLine:SetPoint("TOPRIGHT")
+	sideLine:SetPoint("BOTTOMRIGHT")
+
+	local logo = CreateFrame("Frame", nil, side)
+	logo:SetSize(34, 34)
+	logo:SetPoint("TOPLEFT", 22, -24)
+	T:Fill(logo, C.accentSoft)
+	T:Border(logo, C.accent)
+	local logoText = T:Text(logo, T.fonts.header, C.accent, "CENTER")
+	logoText:SetPoint("CENTER")
+	logoText:SetText("nx")
+	local title = T:Text(side, T.fonts.logo, C.text)
+	title:SetPoint("LEFT", logo, "RIGHT", 12, 0)
+	title:SetText("nx|cff33ccffPanels|r")
+
+	self.nav = {}
+	local y = -86
+	for _, key in ipairs(self.order) do
+		local def = self.pages[key]
+		local b = navButton(side, def)
+		b:SetPoint("TOPLEFT", 8, y)
+		y = y - 38
+		self.nav[key] = b
+	end
+
+	local version = T:Text(side, T.fonts.small, C.textMuted)
+	version:SetPoint("BOTTOMLEFT", 22, 16)
+	version:SetText("v" .. core.version)
+	self.stats = T:Text(side, T.fonts.small, C.textMuted, "RIGHT")
+	self.stats:SetPoint("BOTTOMRIGHT", -16, 16)
+
+	-- Header
+	self.title = T:Text(f, T.fonts.title, C.text)
+	self.title:SetPoint("TOPLEFT", SIDEBAR + CONTENT_PAD, -26)
+	self.subtitle = T:Text(f, T.fonts.normal, C.textDim)
+	self.subtitle:SetPoint("TOPLEFT", self.title, "BOTTOMLEFT", 0, -6)
+
+	local close = CreateFrame("Button", nil, f)
+	close:SetSize(30, 30)
+	close:SetPoint("TOPRIGHT", -14, -14)
+	local closeBg = T:Fill(close, { 0, 0, 0, 0 })
+	T:Border(close, C.lineStrong)
+	local x = T:Text(close, T.fonts.header, C.textDim, "CENTER")
+	x:SetPoint("CENTER", 0, 1)
+	x:SetText("X")
+	close:SetScript("OnEnter", function() closeBg:SetVertexColor(unpack(C.dangerSoft)) x:SetTextColor(unpack(C.danger)) end)
+	close:SetScript("OnLeave", function() closeBg:SetVertexColor(0, 0, 0, 0) x:SetTextColor(unpack(C.textDim)) end)
+	close:SetScript("OnClick", function() f:Hide() end)
+
+	-- Footer
+	local footer = CreateFrame("Frame", nil, f)
+	footer:SetPoint("BOTTOMLEFT", SIDEBAR, 0)
+	footer:SetPoint("BOTTOMRIGHT")
+	footer:SetHeight(56)
+	local footerLine = T:Line(footer)
+	footerLine:SetPoint("TOPLEFT")
+	footerLine:SetPoint("TOPRIGHT")
+	local closeButton = W.Button(footer, CLOSE, 130, "primary", function() f:Hide() end)
+	closeButton:SetPoint("RIGHT", -CONTENT_PAD, 0)
+	local reload = W.Button(footer, L["RELOAD_UI"], 160, "default", function() ReloadUI() end)
+	reload:SetPoint("LEFT", CONTENT_PAD, 0)
+	local edit = W.Button(footer, L["EDIT_MODE"], 160, "default", function() O.EditMode:Start() end)
+	edit:SetPoint("LEFT", reload, "RIGHT", 8, 0)
+
+	-- Content area
+	local content = CreateFrame("Frame", nil, f)
+	content:SetPoint("TOPLEFT", SIDEBAR + CONTENT_PAD, -92)
+	content:SetPoint("BOTTOMRIGHT", -CONTENT_PAD, 68)
+	self.content = content
+
+	f:SetScript("OnShow", function() Options:Refresh() end)
+	f:SetScript("OnHide", function() O.Dropdown:Close() end)
+end
+
+-- Shows a page (and the window)
+function Options:Show(key)
+	self:Create()
+	key = key or self.current or self.order[1]
+	local def = self.pages[key]
+	if not def then return end
+	if def.action then
+		def.action()
+		return
+	end
+	if self.current and self.current ~= key and self.pages[self.current].frame then
+		self.pages[self.current].frame:Hide()
+	end
+	self.current = key
+	for k, b in pairs(self.nav) do b:SetSelected(k == key) end
+	self.title:SetText(def.title)
+	self.subtitle:SetText(def.subtitle or "")
+	if not def.frame then
+		def.frame = CreateFrame("Frame", nil, self.content)
+		def.frame:SetAllPoints(self.content)
+		def.build(def.frame, self.contentWidth)
+	end
+	def.frame:Show()
+	self.frame:Show()
+	self:Refresh()
+end
+
+function Options:Toggle(key)
+	if key == "editmode" then
+		O.EditMode:Start()
+		return
+	end
+	if self.frame and self.frame:IsShown() and (not key or key == self.current) then
+		self.frame:Hide()
+	else
+		self:Show(key)
+	end
+end
+
+-- Reads every value again (after any change)
+function Options:Refresh()
+	if not (self.frame and self.frame:IsShown()) then return end
+	local def = self.pages[self.current]
+	if def and def.refresh then def.refresh(def.frame) end
+	local shown, waiting = core.Layouts:CountShown()
+	self.stats:SetText(L["STATS"]:format(shown, waiting))
+end
+
+---------------------------------------------------------------------------
+-- Helpers shared by the pages
+---------------------------------------------------------------------------
+function Options:ActiveLayout()
+	local id = core.Database:GetActiveLayoutId()
+	return id, core.Database:GetLayout(id)
+end
+
+-- Page with a scrolling form; returns scroll, form
+function Options:ScrollForm(page, width, top)
+	local scroll = W.Scroll(page)
+	scroll:SetPoint("TOPLEFT", 0, -(top or 0))
+	scroll:SetPoint("BOTTOMRIGHT", 0, 0)
+	scroll.content:SetWidth(width)
+	local form = W.Form(scroll.content, width - 12)
+	return scroll, form
+end

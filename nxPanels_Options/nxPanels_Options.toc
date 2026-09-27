@@ -1,0 +1,35 @@
+## Interface: 120000, 120001, 120005, 120007, 120100, 16001
+## Title: nxPanels |cff33ccffOptions|r
+## Notes: Configuration window of nxPanels, loaded when you open it.
+## Notes-frFR: Fenêtre de configuration de nxPanels, chargée à l'ouverture.
+## Notes-zhCN: nxPanels 的设置窗口，打开时才加载。
+## Notes-zhTW: nxPanels 的設定視窗，開啟時才載入。
+## Author: Adna
+## Version: 1.0.0-alpha.2
+## X-License: GPL-3.0-or-later
+## RequiredDeps: nxPanels
+## LoadOnDemand: 1
+## IconTexture: Interface\Icons\INV_Inscription_Tradeskill01
+## Category: User Interface
+## Category-deDE: Benutzerinterface
+## Category-esES: Interfaz de usuario
+## Category-esMX: Interfaz de usuario
+## Category-frFR: Interface utilisateur
+## Category-itIT: Interfaccia utente
+## Category-koKR: 사용자 인터페이스
+## Category-ptBR: Interface do usuário
+## Category-ruRU: Интерфейс пользователя
+## Category-zhCN: 用户界面
+## Category-zhTW: 使用者介面
+
+UI\Theme.lua
+UI\Widgets.lua
+UI\Dropdown.lua
+UI\Window.lua
+Pages\Layouts.lua
+Pages\Panels.lua
+Pages\Library.lua
+Pages\Share.lua
+Pages\Profiles.lua
+Pages\Settings.lua
+EditMode\EditMode.lua
