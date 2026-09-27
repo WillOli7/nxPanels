@@ -33,7 +33,7 @@ local function layoutRow(parent, width)
 		x = x - width - 6
 		return b
 	end
-	action(DELETE, "danger", 90, function(id, layout)
+	action(L["DELETE"], "danger", 100, function(id, layout)
 		Options:Confirm(L["CONFIRM_DELETE_LAYOUT"]:format(layout.name), function()
 			core.Database:DeleteLayout(id)
 			afterChange()

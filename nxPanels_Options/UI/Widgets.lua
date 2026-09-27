@@ -33,7 +33,15 @@ function W.Button(parent, text, width, style, onClick)
 	b:SetScript("OnEnter", function() b.bg:SetVertexColor(unpack(s.hover)) end)
 	b:SetScript("OnLeave", function() b.bg:SetVertexColor(unpack(s.bg)) end)
 	b:SetScript("OnClick", function(self, button) if onClick then onClick(self, button) end end)
-	function b:SetText(t) self.label:SetText(t) end
+	-- Long translations: smaller font rather than text over the border
+	function b:SetText(t)
+		self.label:SetFontObject(T.fonts.normal)
+		self.label:SetText(t)
+		if self.label:GetStringWidth() > self:GetWidth() - 12 then
+			self.label:SetFontObject(T.fonts.small)
+		end
+	end
+	b:SetText(text)
 	function b:SetEnabledState(enabled)
 		self:SetEnabled(enabled)
 		self:SetAlpha(enabled and 1 or 0.4)
@@ -232,7 +240,8 @@ end
 -- Places every visible row; returns the total height
 function Form:Layout()
 	local colWidth = math.floor(self.width / 2)
-	local y, col, cardIndex, card, cardTop, hasHalf = 0, 0, 0, nil, 0, false
+	-- Starts at 4: room for the first header, clipped by the scroll frame otherwise
+	local y, col, cardIndex, card, cardTop, hasHalf = 4, 0, 0, nil, 4, false
 
 	local function closeCard()
 		if not card then return end
@@ -247,7 +256,7 @@ function Form:Layout()
 	for _, item in ipairs(self.items) do
 		if item.kind == "section" then
 			closeCard()
-			if y > 0 then y = y + 18 end
+			if y > 4 then y = y + 18 end
 			item.header:ClearAllPoints()
 			item.header:SetPoint("TOPLEFT", self.parent, "TOPLEFT", 2, -y)
 			y = y + 20

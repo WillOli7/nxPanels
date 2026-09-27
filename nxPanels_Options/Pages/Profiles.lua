@@ -122,7 +122,7 @@ local function build(page, width)
 		for i, name in ipairs(specList()) do
 			local row = W.DropdownRow(form, name, function() return profileItems(false) end,
 				function() return db():GetDualSpecProfile(i) end,
-				function(profile) db():SetDualSpecProfile(profile, i) Options:Refresh() end)
+				function(profile) db():SetDualSpecProfile(profile, i) Options:Refresh() end, { width = 150 })
 			row.isShown = function() return specUnlocked() and db():IsDualSpecEnabled() end
 			local refresh = row.Refresh
 			function row:Refresh()

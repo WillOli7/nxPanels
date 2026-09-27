@@ -170,8 +170,9 @@ function Options:Create()
 	local version = T:Text(side, T.fonts.small, C.textMuted)
 	version:SetPoint("BOTTOMLEFT", 22, 16)
 	version:SetText("v" .. core.version)
-	self.stats = T:Text(side, T.fonts.small, C.textMuted, "RIGHT")
-	self.stats:SetPoint("BOTTOMRIGHT", -16, 16)
+	-- Own line above the version: both are too wide to share one line
+	self.stats = T:Text(side, T.fonts.small, C.textMuted)
+	self.stats:SetPoint("BOTTOMLEFT", version, "TOPLEFT", 0, 6)
 
 	-- Header
 	self.title = T:Text(f, T.fonts.title, C.text)
