@@ -119,7 +119,7 @@ Principe : les librairies ne sont plus copiées dans le dépôt ; elles sont ré
 ### Affichage & comportement
 - 🚧 **Conditions d'affichage sans script** : combat / hors combat, groupe / raid, type d'instance, monture, cible existante, combat de mascottes, conditions de macro (`[combat] show; hide`).
 - 🚧 **Animations** : fondu d'apparition/disparition, opacité au survol, opacité différente en combat.
-- 💡 Changement automatique de layout par spécialisation, personnage ou résolution d'écran.
+- 🚧 Changement automatique de layout par spécialisation (fait) ; reste : par résolution d'écran.
 
 ### Rendu artistique
 - 🚧 **Couleurs dynamiques** : classe, faction, réaction de la cible (fond et bordure).
