@@ -2,6 +2,10 @@
 package-as: nxPanels
 enable-nolib-creation: no
 
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
+
 move-folders:
   nxPanels/nxPanels: nxPanels
   nxPanels/nxPanels_Options: nxPanels_Options
@@ -16,3 +20,4 @@ ignore:
   - .luarc.json
   - Libs-VERSIONS.md
   - CONTRIBUTING.md
+  - CLAUDE.md

@@ -76,6 +76,9 @@ function Import:Auto()
 	if not ns.db then return end
 	local g = ns.db.global
 	if g.migration or next(g.layouts) then return end
+	-- The old addon itself is running (original kgPanels, or kgPanels Reloaded installed
+	-- by hand next to nxPanels): its panels stay on screen until a reload
+	local legacyRunning = isLoaded(ORIGINAL) or isLoaded(RELOADED)
 
 	local legacy, source = self:GetLegacyData()
 	if type(legacy) ~= "table" or type(legacy.global) ~= "table" then return end
@@ -118,6 +121,7 @@ function Import:Auto()
 
 	g.migration = { source = source, date = time(), layouts = layoutCount, panels = panelCount }
 	self.done = g.migration
+	self.needReload = legacyRunning
 end
 
 -- After login: report, and switch the legacy addons off
@@ -127,7 +131,7 @@ function Import:Finish()
 	self.done = nil
 	ns:Print(L["MIGRATED"], done.layouts, done.panels, done.source)
 
-	local needReload = isLoaded(ORIGINAL)
+	local needReload = self.needReload
 	for _, name in ipairs(LEGACY_ADDONS) do
 		if exists(name) then C_AddOns.DisableAddOn(name) end
 	end

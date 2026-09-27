@@ -1,6 +1,6 @@
 -- Offline tests of nxPanels, run with LuaJIT from the repository root:
 --   luajit tools/tests/run.lua <scenario>
--- Scenarios: migrate, original, empty, forever, zhcn, options, real (NXP_REAL_SV=path/to/kgPanels_Reloaded.lua)
+-- Scenarios: migrate, original, handinstall, empty, forever, zhcn, options, real (NXP_REAL_SV=path/to/kgPanels_Reloaded.lua)
 
 local scenario = arg[1] or "migrate"
 local M = dofile("tools/tests/wowmock.lua")
@@ -78,6 +78,14 @@ if scenario == "original" then
 	M.addons = {
 		{ name = "kgPanels", loaded = true },
 		{ name = "kgPanels_Reloaded", lod = true, onLoad = function() kgPanelsDB = { global = { layouts = { Wrong = {} } } } end },
+		{ name = "nxPanels", loaded = true },
+	}
+elseif scenario == "handinstall" then
+	-- The old kgPanels Reloaded (full addon, not the bridge) installed by hand next to nxPanels
+	kgPanelsDB = fixture()
+	M.addons = {
+		{ name = "kgPanelsConfig_Reloaded", loaded = true },
+		{ name = "kgPanels_Reloaded", loaded = true },
 		{ name = "nxPanels", loaded = true },
 	}
 elseif scenario ~= "empty" then
@@ -822,6 +830,14 @@ elseif scenario == "original" then
 	check(db.global.migration.source == "kgPanels", "imported from the original kgPanels")
 	check(count(db.global.layouts) == 2, "layouts imported")
 	check(M.disabled.kgPanels, "original addon disabled")
+	check(M.popups[1] == "NXPANELS_MIGRATED", "reload popup shown")
+
+elseif scenario == "handinstall" then
+	check(#M.loadCalls == 0, "running legacy addon read without loading anything")
+	check(db.global.migration.source == "kgPanels_Reloaded", "imported from the running kgPanels Reloaded")
+	check(count(db.global.layouts) == 2, "layouts imported")
+	check(deepEqual(kgPanelsDB, fixture()), "legacy data left untouched")
+	check(M.disabled.kgPanels_Reloaded and M.disabled.kgPanelsConfig_Reloaded, "legacy addons disabled")
 	check(M.popups[1] == "NXPANELS_MIGRATED", "reload popup shown")
 
 elseif scenario == "empty" then

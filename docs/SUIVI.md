@@ -4,7 +4,7 @@ Document de reprise : l'état exact du projet, pour continuer dans une nouvelle 
 À lire avec `CLAUDE.md` (règles du projet) et `docs/ROADMAP.md` (idées et backlog).
 **Mettre ce fichier à jour à la fin de chaque session de travail.**
 
-Dernière mise à jour : 2026-09-27
+Dernière mise à jour : 2026-09-28
 
 ---
 
@@ -16,9 +16,10 @@ Dernière mise à jour : 2026-09-27
 | Branche de travail | `feature/options-window`, poussée sur GitHub |
 | Pull request | https://github.com/WillOli7/nxPanels/pull/1 (`feature/options-window` → `main`), tests GitHub verts, à relire et fusionner par le mainteneur |
 | `main` | Moteur alpha.1 + import ; ne contient pas encore la fenêtre de configuration |
-| Tests hors jeu | Tous verts : `bash tools/tests/run-all.sh <luajit>` (migrate, original, empty, forever, zhcn, options ×4 langues) + `real` avec les vraies données |
+| Tests hors jeu | Tous verts : `bash tools/tests/run-all.sh <luajit>` (migrate, original, handinstall, empty, forever, zhcn, options ×4 langues) + `real` avec les vraies données |
 | Installé en local | Oui, Retail (`_retail_`) et Forever (`_classic_beta_`) via `bash tools/deploy.sh all` |
-| CurseForge | **Rien publié.** Projet existant à renommer : ID `1444518` (voir section 7) |
+| CurseForge | **Rien publié.** Projet existant à renommer : ID `1444518` (kgPanels_Reloaded, 1 095 téléchargements, licence « All Rights Reserved », v0.4.0 marquée 12.0.0 / 12.0.1). Slug `nxpanels` libre au 28/09 |
+| Publication | Dossier prêt : `docs/publication/PUBLICATION.md` (étapes, test de mise à jour, message au modérateur, captures, brief du logo, GitHub) et `docs/publication/CURSEFORGE.md` (page CurseForge EN + FR / zhCN / zhTW). Workflow `.github/workflows/release.yml` (tag → release GitHub, CurseForge si secret `CF_API_KEY` ; lancement manuel = construction de test sans envoi) |
 
 ## 2. Contenu du dépôt
 
@@ -30,6 +31,7 @@ Dernière mise à jour : 2026-09-27
 | `kgPanels_Reloaded/` | **Pont de migration** : déclare `kgPanelsDB` pour que nxPanels puisse lire l'ancien fichier |
 | `kgPanelsConfig_Reloaded/` | Dossier vide qui remplace l'ancien module de config |
 | `tools/` | Tests hors jeu (`tests/`), `deploy.sh`, `check-libs.sh` |
+| `docs/publication/` | Textes et procédure de la sortie publique (CurseForge, GitHub, logo) |
 
 Outils locaux (hors PATH de Bash) :
 - LuaJIT : `C:\Users\Muse\AppData\Local\Programs\LuaJIT\bin\luajit.exe`
@@ -90,7 +92,10 @@ Invariants à garder :
 - `.pkgmeta` doit continuer à livrer ces deux dossiers (`move-folders`).
 - Ne jamais écrire dans `kgPanelsDB`.
 - Tests à faire passer avant toute publication : scénarios `migrate`, `original`, `forever`, `zhcn`, et `real` avec `NXP_REAL_SV=.local/kgPanels_Reloaded.lua` (copie privée des vraies données, jamais commitée).
-- Question ouverte : comment l'appli CurseForge gère un paquet dont les noms de dossiers changent (à tester avant la publication, voir section 7).
+- Tests à faire passer aussi : `handinstall` (ancien kgPanels Reloaded complet chargé à côté de nxPanels : import, puis proposition de recharger).
+- Appli CurseForge : le lien entre versions est le projet (1444518), pas les noms de dossiers. À la mise à jour, elle supprime les dossiers de l'ancien fichier et extrait ceux du nouveau ; `WTF` n'est pas touché. Un fichier **alpha** ne va qu'aux joueurs abonnés aux alphas : la migration de tous aura lieu au premier fichier « release ». Protocole de test (phases A, B, C) : `docs/publication/PUBLICATION.md` section 3.
+- Vérifié le 2026-09-28 : après la migration faite en jeu, le contenu de `kgPanelsDB` dans `WTF` est identique à la copie `.local/` (fichier réécrit par le jeu, jamais modifié par nxPanels).
+- Ancienne v0.4.0 sauvegardée dans `_retail_\Interface\AddOns-backup-kgPanels\20260927-135414\` (sert au test de mise à jour).
 
 ## 6. Tests en jeu (validation du mainteneur)
 
@@ -115,16 +120,16 @@ Reste à tester : layout par spécialisation sur Forever (talents principaux / s
 
 ## 7. Suite prévue
 
-1. Relire et fusionner la pull request `feature/options-window` → `main`.
-2. **CurseForge et GitHub** (nouvelle conversation, prompt prêt ci-dessous) :
-   - renommer le projet CurseForge 1444518 en nxPanels et passer la modération ;
-   - mettre à jour la page CurseForge et le README / la page GitHub (description, captures, langues prises en charge) ;
-   - nouveau logo (à faire avec un générateur d'images) ;
-   - vérifier que la mise à jour automatique ne casse pas la migration (section 5).
+1. Relire les fichiers préparés le 2026-09-28 (non commités à la fin de la session si le mainteneur ne l'a pas validé) : `README.md`, `.pkgmeta` (ignore `CLAUDE.md`, changelog manuel), `.github/workflows/release.yml`, `docs/publication/`, correctif `handinstall` de `nxPanels_Import/Import.lua`.
+2. Suivre l'ordre des opérations de `docs/publication/PUBLICATION.md` section 1 : push → construction de test → test de mise à jour local (phases A, B) → captures + logo → fusion de la PR #1 → renommage CurseForge + message au modérateur → métadonnées GitHub → tag `1.0.0-alpha.2` → test avec l'appli CurseForge (phase C).
+   - Le README référence `docs/media/logo-512.png` et 4 captures : à fournir avant de fusionner dans `main`.
+   - Logo : brief en section 7 de `PUBLICATION.md` ; intégration (TGA 64×64, `## IconTexture`, minicarte) à faire quand l'image existe.
 3. Faire relire les traductions zhCN / zhTW par un joueur natif.
 4. Backlog restant (`docs/ROADMAP.md`) : masques (coins arrondis), plusieurs calques, ombres, coloration du code des scripts, layout par résolution d'écran.
 
 ## 8. Reprendre le travail
 
 Dans une nouvelle conversation, commencer par :
-> Lis `CLAUDE.md`, `docs/SUIVI.md` et `docs/ROADMAP.md` du dépôt nxPanels (`D:\_CLAUDE\WoW - nxPanels`), puis vérifie l'état avec `git status` et `git log --oneline -10`.
+> Lis `CLAUDE.md`, `docs/SUIVI.md`, `docs/ROADMAP.md` et `docs/publication/PUBLICATION.md` du dépôt nxPanels (`D:\_CLAUDE\WoW - nxPanels`), puis vérifie l'état avec `git status` et `git log --oneline -10`.
+
+Reprise sur un autre ordinateur (Mac) : tout le travail est sur GitHub (`git pull` sur `feature/options-window`). Ne sont **pas** dans le dépôt : `.local/kgPanels_Reloaded.lua` (vraies données, scénario `real` impossible ailleurs que sur le PC de jeu), l'installation du jeu (`tools/deploy.sh`, test de mise à jour phase B) et les chemins d'outils du PC. Sur Mac : `brew install luajit`, puis `bash tools/tests/run-all.sh luajit`.

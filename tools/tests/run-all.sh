@@ -3,7 +3,7 @@
 cd "$(dirname "$0")/../.." || exit 1
 LJ="${1:-luajit}"
 status=0
-for s in migrate original empty forever zhcn options; do
+for s in migrate original handinstall empty forever zhcn options; do
 	"$LJ" tools/tests/run.lua "$s" || status=1
 done
 for locale in enUS zhCN zhTW; do

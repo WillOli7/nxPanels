@@ -30,6 +30,7 @@ All notable changes to nxPanels. Versions follow [Semantic Versioning](https://s
 - New panel menu: empty panel or a template (the gallery moved there); icons for the panel text.
 - Text: every icon of the game (browser), currencies and items with {currency:<id>} and {item:<id>}, "Insert a currency" menu.
 - Fixed: list rows kept the font of the font list (capitals, missing accents), icons were stretched.
+- Import: a reload is also offered when the old kgPanels Reloaded was still running next to nxPanels (installed by hand), so its panels are not shown twice.
 
 ## 1.0.0-alpha.1 — 2026-09-27
 - First version of nxPanels, a full rewrite: panels, backgrounds, borders, text, scripts.
