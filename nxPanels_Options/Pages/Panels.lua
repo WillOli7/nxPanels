@@ -534,7 +534,7 @@ local function buildText(form)
 	form:Section(L["SECTION_TEXT"])
 	W.TextAreaRow(form, nil, function() return text().value end,
 		function(v) text().value = v changed("look") end, { height = 80, live = true })
-	W.TextRow(form, L["TEXT_HELP"], 58)
+	W.TextRow(form, L["TEXT_HELP"], 74)
 	local vars = {}
 	for i, name in ipairs(core.TextVars.NAMES) do
 		vars[i] = { value = name, text = ("{%s}  %s"):format(name, L["VAR_" .. name:upper()]) }
