@@ -69,34 +69,53 @@ local function vPart(point)
 end
 
 ---------------------------------------------------------------------------
--- Undo
+-- Undo: each entry is a list of panel snapshots, restored together
 ---------------------------------------------------------------------------
 local function snapshot(id)
 	local p = panelOf(id)
 	return p and { id = id, x = p.anchor.x, y = p.anchor.y, width = p.width, height = p.height }
 end
 
-local function differs(a, b)
-	return a.x ~= b.x or a.y ~= b.y or a.width ~= b.width or a.height ~= b.height
+local function snapshots(ids)
+	local list = {}
+	for _, id in ipairs(ids) do list[#list + 1] = snapshot(id) end
+	return list
 end
 
-local function pushUndo(entry)
-	undoStack[#undoStack + 1] = entry
+local function changedSince(list)
+	for _, before in ipairs(list) do
+		local p = panelOf(before.id)
+		if p and (p.anchor.x ~= before.x or p.anchor.y ~= before.y or p.width ~= before.width or p.height ~= before.height) then
+			return true
+		end
+	end
+	return false
+end
+
+local function pushUndo(list)
+	undoStack[#undoStack + 1] = list
 	if #undoStack > UNDO_MAX then table.remove(undoStack, 1) end
 end
 
 function EditMode:Undo()
-	local entry = table.remove(undoStack)
-	local p = entry and panelOf(entry.id)
-	if not p then return end
-	p.anchor.x, p.anchor.y, p.width, p.height = entry.x, entry.y, entry.width, entry.height
-	core.Layouts:PanelChanged(entry.id, "look")
-	self:Select(entry.id)
+	local list = table.remove(undoStack)
+	if not list then return end
+	for _, entry in ipairs(list) do
+		local p = panelOf(entry.id)
+		if p then
+			p.anchor.x, p.anchor.y, p.width, p.height = entry.x, entry.y, entry.width, entry.height
+			core.Layouts:PanelChanged(entry.id, "look")
+		end
+	end
+	self:RefreshInfo()
 end
 
 ---------------------------------------------------------------------------
--- Snapping
+-- Selection: EditMode.selection = { [id] = true }; EditMode.selected is the
+-- main panel (the last one clicked), the reference to align the others
 ---------------------------------------------------------------------------
+EditMode.selection = {}
+
 -- Is `id` attached (parent or anchor, directly or not) to `target`?
 local function dependsOn(layout, id, target, seen)
 	seen = seen or {}
@@ -113,13 +132,77 @@ local function dependsOn(layout, id, target, seen)
 	return false
 end
 
--- Lines a moving panel can snap to (screen and the other panels)
-local function snapLines(id)
+local function selectedIds()
+	local ids = {}
+	for id in pairs(EditMode.selection) do ids[#ids + 1] = id end
+	table.sort(ids)
+	return ids
+end
+
+-- Selected panels that move by themselves: a panel attached to another
+-- selected panel already follows it
+local function movingIds()
+	local layout = activeLayout()
+	local ids = {}
+	for _, id in ipairs(selectedIds()) do
+		local follows = false
+		for other in pairs(EditMode.selection) do
+			if other ~= id and dependsOn(layout, id, other) then follows = true break end
+		end
+		if not follows then ids[#ids + 1] = id end
+	end
+	return ids
+end
+
+function EditMode:Paint()
+	for id, m in pairs(movers) do
+		local on = self.selection[id]
+		local main = id == self.selected
+		m.fill:SetVertexColor(unpack(accentAlpha(on and 0.28 or 0.12)))
+		T:SetBorderColor(m.edges, main and C.accent or on and accentAlpha(0.85) or accentAlpha(0.5))
+		for _, h in ipairs(m.handles) do h.dot:SetShown(main and not next(self.selection, next(self.selection))) end
+	end
+	self:RefreshInfo()
+end
+
+-- Selects one panel only (nil: nothing)
+function EditMode:Select(id)
+	if id and not movers[id] then id = nil end
+	wipe(self.selection)
+	if id then self.selection[id] = true end
+	self.selected = id
+	self:Paint()
+end
+
+-- Ctrl+click: adds or removes a panel
+function EditMode:Toggle(id)
+	if not movers[id] then return end
+	if self.selection[id] then
+		self.selection[id] = nil
+		if self.selected == id then self.selected = next(self.selection) end
+	else
+		self.selection[id] = true
+		self.selected = id
+	end
+	self:Paint()
+end
+
+---------------------------------------------------------------------------
+-- Snapping
+---------------------------------------------------------------------------
+-- Lines a moving selection can snap to (screen and the other panels)
+local function snapLines(exclude)
 	local w, h = UIParent:GetWidth(), UIParent:GetHeight()
 	local xs, ys = { 0, w / 2, w }, { 0, h / 2, h }
 	local layout = activeLayout()
 	for otherId, mover in pairs(movers) do
-		if otherId ~= id and mover:IsShown() and not dependsOn(layout, otherId, id) then
+		local skip = exclude[otherId]
+		if not skip then
+			for id in pairs(exclude) do
+				if dependsOn(layout, otherId, id) then skip = true break end
+			end
+		end
+		if not skip and mover:IsShown() then
 			local l, b, r, t = rect(mover.target)
 			if l then
 				xs[#xs + 1], xs[#xs + 2], xs[#xs + 3] = l, r, (l + r) / 2
@@ -167,6 +250,13 @@ local function snapAxis(values, lines, center)
 	return 0
 end
 
+-- UIParent units -> offset units of a panel
+local function toParent(id)
+	local frame = core.Layouts.frames[id]
+	local parent = frame and frame:GetParent() or UIParent
+	return uiScale() / parent:GetEffectiveScale()
+end
+
 ---------------------------------------------------------------------------
 -- Dragging
 ---------------------------------------------------------------------------
@@ -201,12 +291,19 @@ local function updateDrag()
 	local gx, gy
 
 	if d.mode == "move" then
+		-- The grabbed panel snaps, the rest of the selection moves with it
 		local sx, sy
 		sx, gx = snapAxis({ l + dx, (l + r) / 2 + dx, r + dx }, d.xs, w / 2)
 		sy, gy = snapAxis({ b + dy, (b + t) / 2 + dy, t + dy }, d.ys, h / 2)
 		dx, dy = dx + sx, dy + sy
-		p.anchor.x = round(d.x + dx * d.toParent)
-		p.anchor.y = round(d.y + dy * d.toParent)
+		for _, item in ipairs(d.items) do
+			local ip = panelOf(item.id)
+			if ip then
+				ip.anchor.x = round(item.x + dx * item.toParent)
+				ip.anchor.y = round(item.y + dy * item.toParent)
+				core.Layouts:PanelChanged(item.id, "geometry")
+			end
+		end
 	else
 		local e = d.edges
 		local hp, vp = hPart(p.anchor.point), vPart(p.anchor.point)
@@ -241,34 +338,49 @@ local function updateDrag()
 		end
 		p.anchor.x, p.anchor.y = round(x), round(y)
 		p.width, p.height = math.max(0, round(width)), math.max(0, round(height))
+		core.Layouts:PanelChanged(d.id, "geometry")
 	end
-	core.Layouts:PanelChanged(d.id, "geometry")
 	EditMode:ShowGuides(gx, gy)
 	EditMode:RefreshInfo()
 end
 
+-- mode "move": the selection (grabbed panel included); "resize": the grabbed panel
 function EditMode:StartDrag(id, mode, edges)
 	local frame = core.Layouts.frames[id]
 	local p = panelOf(id)
 	if not frame or not p then return end
-	self:Select(id)
+	if not self.selection[id] or mode == "resize" then
+		self:Select(id)
+	elseif self.selected ~= id then
+		self.selected = id
+		self:Paint()
+	end
 	local l, b, r, t = rect(frame)
 	if not l then return end
 	local parent = frame:GetParent() or UIParent
 	local ui = uiScale()
 	local cx, cy = cursor()
-	local xs, ys = snapLines(id)
+	local ids = mode == "move" and movingIds() or { id }
+	local exclude = {}
+	for _, selected in ipairs(ids) do exclude[selected] = true end
+	exclude[id] = true
+	local xs, ys = snapLines(exclude)
+	local items = {}
+	for _, itemId in ipairs(ids) do
+		local ip = panelOf(itemId)
+		items[#items + 1] = { id = itemId, x = ip.anchor.x, y = ip.anchor.y, toParent = toParent(itemId) }
+	end
 	-- UIParent units -> panel data units
 	local toFrame = ui / frame:GetEffectiveScale()
 	drag = {
-		id = id, mode = mode, edges = edges or {},
+		id = id, mode = mode, edges = edges or {}, items = items,
 		cx = cx, cy = cy, rect = { l, b, r, t },
 		x = p.anchor.x, y = p.anchor.y, width = p.width, height = p.height,
 		toParent = ui / parent:GetEffectiveScale(),
 		toWidth = p.widthUnit == "%" and toFrame * 100 / math.max(1, parent:GetWidth()) or toFrame,
 		toHeight = p.heightUnit == "%" and toFrame * 100 / math.max(1, parent:GetHeight()) or toFrame,
 		xs = xs, ys = ys,
-		before = snapshot(id),
+		before = snapshots(ids),
 	}
 	self.frame:SetScript("OnUpdate", updateDrag)
 end
@@ -279,11 +391,39 @@ function EditMode:EndDrag()
 	drag = nil
 	self.frame:SetScript("OnUpdate", nil)
 	self:ShowGuides(nil, nil)
-	local after = snapshot(d.id)
-	if after and differs(d.before, after) then
+	if changedSince(d.before) then
 		pushUndo(d.before)
-		-- Sizes in % of this panel and text/tiling: redraw everything once
+		-- Sizes in % of these panels and text/tiling: redraw everything once
 		core.Layouts:RefreshAll()
+	end
+	self:RefreshInfo()
+end
+
+-- Aligns the selection on the main panel: LEFT, HCENTER, RIGHT, TOP, VCENTER, BOTTOM
+function EditMode:Align(how)
+	local ref = core.Layouts.frames[self.selected]
+	if not ref then return end
+	local rl, rb, rr, rt = rect(ref)
+	local ids = movingIds()
+	pushUndo(snapshots(ids))
+	for _, id in ipairs(ids) do
+		local frame = core.Layouts.frames[id]
+		if id ~= self.selected and frame then
+			local l, b, r, t = rect(frame)
+			local dx, dy = 0, 0
+			if how == "LEFT" then dx = rl - l
+			elseif how == "RIGHT" then dx = rr - r
+			elseif how == "HCENTER" then dx = (rl + rr) / 2 - (l + r) / 2
+			elseif how == "TOP" then dy = rt - t
+			elseif how == "BOTTOM" then dy = rb - b
+			elseif how == "VCENTER" then dy = (rb + rt) / 2 - (b + t) / 2
+			end
+			local p = panelOf(id)
+			local k = toParent(id)
+			p.anchor.x = round(p.anchor.x + dx * k)
+			p.anchor.y = round(p.anchor.y + dy * k)
+			core.Layouts:PanelChanged(id, "geometry")
+		end
 	end
 	self:RefreshInfo()
 end
@@ -294,14 +434,16 @@ end
 local ARROWS = { UP = { 0, 1 }, DOWN = { 0, -1 }, LEFT = { -1, 0 }, RIGHT = { 1, 0 } }
 
 function EditMode:Nudge(key)
-	local id = self.selected
-	local p = panelOf(id)
-	if not p then return end
+	local ids = movingIds()
+	if #ids == 0 then return end
 	local step = IsShiftKeyDown() and S().bigStep or 1
-	pushUndo(snapshot(id))
-	p.anchor.x = p.anchor.x + ARROWS[key][1] * step
-	p.anchor.y = p.anchor.y + ARROWS[key][2] * step
-	core.Layouts:PanelChanged(id, "geometry")
+	pushUndo(snapshots(ids))
+	for _, id in ipairs(ids) do
+		local p = panelOf(id)
+		p.anchor.x = p.anchor.x + ARROWS[key][1] * step
+		p.anchor.y = p.anchor.y + ARROWS[key][2] * step
+		core.Layouts:PanelChanged(id, "geometry")
+	end
 	self:RefreshInfo()
 end
 
@@ -376,7 +518,13 @@ local function createMover()
 	end
 	m:RegisterForClicks("RightButtonUp")
 	m:SetScript("OnMouseDown", function(self, button)
-		if button == "LeftButton" then EditMode:StartDrag(self.id, "move") end
+		if button ~= "LeftButton" then return end
+		-- Ctrl+click adds to / removes from the selection
+		if IsControlKeyDown() then
+			EditMode:Toggle(self.id)
+		else
+			EditMode:StartDrag(self.id, "move")
+		end
 	end)
 	m:SetScript("OnMouseUp", function(_, button)
 		if button == "LeftButton" then EditMode:EndDrag() end
@@ -388,10 +536,10 @@ local function createMover()
 		Options:EditPanel(id)
 	end)
 	m:SetScript("OnEnter", function(self)
-		if EditMode.selected ~= self.id then self.fill:SetVertexColor(unpack(accentAlpha(0.22))) end
+		if not EditMode.selection[self.id] then self.fill:SetVertexColor(unpack(accentAlpha(0.22))) end
 	end)
 	m:SetScript("OnLeave", function(self)
-		if EditMode.selected ~= self.id then self.fill:SetVertexColor(unpack(accentAlpha(0.12))) end
+		if not EditMode.selection[self.id] then self.fill:SetVertexColor(unpack(accentAlpha(0.12))) end
 	end)
 	return m
 end
@@ -430,19 +578,12 @@ function EditMode:Build()
 		m:Show()
 		movers[entry.id] = m
 	end
-	self:Select(self.selected)
-end
-
-function EditMode:Select(id)
-	if id and not movers[id] then id = nil end
-	self.selected = id
-	for moverId, m in pairs(movers) do
-		local on = moverId == id
-		m.fill:SetVertexColor(unpack(accentAlpha(on and 0.28 or 0.12)))
-		T:SetBorderColor(m.edges, on and C.accent or accentAlpha(0.5))
-		for _, h in ipairs(m.handles) do h.dot:SetShown(on) end
+	-- Keeps the selection of the panels that still exist
+	for id in pairs(self.selection) do
+		if not movers[id] then self.selection[id] = nil end
 	end
-	self:RefreshInfo()
+	if self.selected and not movers[self.selected] then self.selected = next(self.selection) end
+	self:Paint()
 end
 
 ---------------------------------------------------------------------------
@@ -496,7 +637,13 @@ function EditMode:RefreshInfo()
 	local bar = self.frame and self.frame.bar
 	if not bar then return end
 	local p = panelOf(self.selected)
-	if p then
+	local count = #selectedIds()
+	bar.align:SetShown(count > 1)
+	if count > 1 then
+		bar.info:SetText(L["EDIT_MULTI"]:format(count, p and p.name or ""))
+		bar.info:SetTextColor(unpack(C.text))
+		bar.editButton:Hide()
+	elseif p then
 		local function unit(value, u) return u == "%" and (round(value) .. "%") or tostring(round(value)) end
 		bar.info:SetText(L["EDIT_INFO"]:format(p.name, round(p.anchor.x), round(p.anchor.y),
 			unit(p.width, p.widthUnit), unit(p.height, p.heightUnit)))
@@ -585,6 +732,23 @@ local function createToolbar(f)
 		Options:EditPanel(id)
 	end)
 	bar.editButton:SetPoint("BOTTOMRIGHT", -12, 8)
+
+	-- Alignment on the main panel, shown with several panels selected
+	bar.align = CreateFrame("Frame", nil, bar)
+	bar.align:SetSize(470, 26)
+	bar.align:SetPoint("BOTTOMRIGHT", -12, 8)
+	local previous
+	for i = 6, 1, -1 do
+		local how = ({ "LEFT", "HCENTER", "RIGHT", "TOP", "VCENTER", "BOTTOM" })[i]
+		local b = W.Button(bar.align, L["ALIGN_" .. how], 70, "default", function() EditMode:Align(how) end)
+		b:SetHeight(24)
+		if previous then b:SetPoint("RIGHT", previous, "LEFT", -4, 0) else b:SetPoint("RIGHT") end
+		previous = b
+	end
+	local alignLabel = T:Text(bar.align, T.fonts.normal, C.textDim, "RIGHT")
+	alignLabel:SetPoint("RIGHT", previous, "LEFT", -8, 0)
+	alignLabel:SetText(L["ALIGN"])
+	bar.align:Hide()
 	bar.info:SetPoint("RIGHT", bar.editButton, "LEFT", -10, 0)
 	f.bar = bar
 end
@@ -652,6 +816,8 @@ function EditMode:Start(panelId)
 	wipe(undoStack)
 	self.frame.bar.layout:SetText(layout.name)
 	self.frame:Show()
+	-- Panels hidden by their display conditions are shown while editing
+	core.Visibility:SetForceShow(true)
 	self:DrawGrid()
 	self:Build()
 	self:Select(panelId)
@@ -662,6 +828,7 @@ function EditMode:Stop()
 	self:EndDrag()
 	self.active = false
 	self.frame:Hide()
+	core.Visibility:SetForceShow(false)
 	for _, m in pairs(movers) do m:Hide() end
 	if self.reopen then
 		self.reopen = false

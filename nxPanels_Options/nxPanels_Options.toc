@@ -26,9 +26,12 @@ UI\Theme.lua
 UI\Widgets.lua
 UI\Dropdown.lua
 UI\Window.lua
+UI\Browser.lua
+UI\Picker.lua
 Pages\Layouts.lua
 Pages\Panels.lua
 Pages\Library.lua
+Pages\Gallery.lua
 Pages\Share.lua
 Pages\Profiles.lua
 Pages\Settings.lua

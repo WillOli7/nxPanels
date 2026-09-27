@@ -13,7 +13,7 @@ Statuts : 💡 idée · 🔍 à étudier · 📐 spécifié · 🚧 en cours · 
 | P2 | Correctif v0.4.1 (bugs bloquants du code actuel) | 📐 | `L` nil, `IsAddOnLoaded`, `SetColorTexture`, compteur `checkFrames`, chemins cassés… |
 | P3 | Compatibilité **WoW Forever** (Interface 16001, `_Camelot.toc`) | 🔍 | Client « Mainline » allégé : pas de `GetSpecialization`, `BackdropTemplate` possiblement absent. |
 | P4 | Réécriture v1.0 (sortie de l'héritage eePanels) | 🔍 | Voir « Architecture v1.0 ». |
-| P5 | Nouvelle interface de configuration (inspiration EllesmereUI) | 💡 | Mode édition visuel + fenêtre de config moderne. |
+| P5 | Nouvelle interface de configuration (inspiration EllesmereUI) | 🚧 | Mode édition visuel + fenêtre de config moderne. |
 
 ---
 
@@ -117,32 +117,32 @@ Principe : les librairies ne sont plus copiées dans le dépôt ; elles sont ré
 ## Nouvelles options (backlog)
 
 ### Affichage & comportement
-- 💡 **Conditions d'affichage sans script** : combat / hors combat, groupe / raid, type d'instance, monture, cible existante, combat de mascottes, conditions de macro (`[combat] show; hide`).
-- 💡 **Animations** : fondu d'apparition/disparition, opacité au survol, opacité différente en combat.
+- 🚧 **Conditions d'affichage sans script** : combat / hors combat, groupe / raid, type d'instance, monture, cible existante, combat de mascottes, conditions de macro (`[combat] show; hide`).
+- 🚧 **Animations** : fondu d'apparition/disparition, opacité au survol, opacité différente en combat.
 - 💡 Changement automatique de layout par spécialisation, personnage ou résolution d'écran.
 
 ### Rendu artistique
-- 💡 **Couleurs dynamiques** : classe, faction, réaction de la cible (fond et bordure).
+- 🚧 **Couleurs dynamiques** : classe, faction, réaction de la cible (fond et bordure).
 - 💡 **Masques** (`MaskTexture`) : coins arrondis, cercles, formes personnalisées.
 - 💡 **Plusieurs calques de texture** par panneau.
-- 💡 Support direct des **atlas Blizzard** (`C_Texture.GetAtlasInfo`).
+- 🚧 Support direct des **atlas Blizzard** (`C_Texture.GetAtlasInfo`).
 - 💡 **Ombres / halos**, bordure intérieure + extérieure, bordures 1 px au pixel près (`PixelUtil`).
 - 💡 Dégradés à 4 coins / multi-étapes ; dégradés de bordure.
 - 💡 Désaturation, couleur de sommet (vertex color).
 
 ### Texte
 - 💡 Contour et ombre du texte (options de police).
-- 💡 **Variables sans Lua** : `{player}`, `{zone}`, `{time}`, `{fps}`, `{latency}`…
+- 🚧 **Variables sans Lua** : `{player}`, `{zone}`, `{time}`, `{fps}`, `{latency}`…
 
 ### Création & édition
-- 💡 **Mode édition visuel** : grille, aimantation (bords, centre, autres panneaux), guides d'alignement, flèches du clavier, sélection multiple, annuler/rétablir.
-- 💡 **Navigateur de textures en vignettes** (au lieu d'une liste déroulante).
-- 💡 **Sélecteur de frame au survol** (façon `/fstack`) pour ancrer sur EllesmereUI, ElvUI, frames du mode édition…
-- 💡 Éditeur de scripts : coloration syntaxique, affichage de la ligne en erreur, bibliothèque d'extraits.
+- 🚧 **Mode édition visuel** : grille, aimantation (bords, centre, autres panneaux), guides d'alignement, flèches du clavier, sélection multiple, annuler/rétablir.
+- 🚧 **Navigateur de textures en vignettes** (au lieu d'une liste déroulante).
+- 🚧 **Sélecteur de frame au survol** (façon `/fstack`) pour ancrer sur EllesmereUI, ElvUI, frames du mode édition…
+- 🚧 Éditeur de scripts : affichage de la ligne en erreur (fait). Reste : coloration syntaxique, bibliothèque d'extraits.
 
 ### Partage
 - 💡 **Chaînes d'export compressées** (LibDeflate, préfixe versionné), compatibles avec les anciens exports kgPanels.
-- 💡 **Galerie de modèles** prêts à l'emploi.
+- 🚧 **Galerie de modèles** prêts à l'emploi.
 - 💡 Avertissement de sécurité à l'import quand le layout contient des scripts.
 
 ### Intégration

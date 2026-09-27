@@ -382,6 +382,12 @@ if scenario == "migrate" or scenario == "forever" or scenario == "zhcn" then
 	ns.Layouts:PanelChanged(chatId, "look")
 	check(chat.text.textValue == "plain" and textTicker.cancelled, "no variables: timer stopped")
 
+	-- A recycled frame does not keep what the scripts stored on it
+	local recycled = ns.Panel:Acquire("PX")
+	recycled.done = true
+	ns.Panel:Release(recycled)
+	check(recycled.done == nil and recycled.bg and recycled.sizer and recycled.border, "script values cleared when a frame is recycled")
+
 	-- Script check, panel export, media packs
 	local scriptErr = ns.Scripts:Check("LOAD", "local x =")
 	check(scriptErr and scriptErr:find("LOAD:1") and not ns.Scripts:Check("EVENT", "print(event, arg1)"), "script syntax check with line number")
@@ -483,10 +489,25 @@ elseif scenario == "options" then
 	choose(findRow(general, L["ANCHORED_TO"]), "panel:" .. barId)
 	check(chatPanel.anchor.relativeTo == "panel:" .. barId and chat.shown and chat.points[1][2] == ns.Layouts.frames[barId], "anchored back to a panel")
 
-	check(choose(findRow(editor.tabs.background.form, L["TEXTURE"]), "Solid") and chat.bg.texture == "Interface\\Buttons\\WHITE8X8", "background texture")
+	-- Texture rows open the browser
+	local function browse(r, value)
+		r.button.scripts.OnClick(r.button)
+		local shown = O.Browser.frame.shown
+		O.Browser:Choose(value)
+		return shown
+	end
+	check(browse(findRow(editor.tabs.background.form, L["TEXTURE"]), "Solid") and chat.bg.texture == "Interface\\Buttons\\WHITE8X8", "background texture from the browser")
+	local bgRow = findRow(editor.tabs.background.form, L["TEXTURE"])
+	bgRow.button.scripts.OnClick(bgRow.button)
+	O.Browser.frame.tabs:Select("atlas")
+	check(O.Browser.frame.count.textValue == L["ATLAS_COUNT"]:format(1), "atlas tab: only the atlases of this client")
+	O.Browser:Choose("atlas:test-atlas")
+	check(chatPanel.background.texture == "atlas:test-atlas" and chat.bg.texture == 12345, "Blizzard atlas chosen")
+	check(bgRow.button.text.textValue == L["ATLAS_ITEM"]:format("test-atlas"), "atlas name shown")
+	browse(bgRow, "Solid")
 	choose(findRow(editor.tabs.background.form, L["STYLE"]), "GRADIENT")
 	check(chat.bg.gradient ~= nil and findRow(editor.tabs.background.form, L["COLOR_END"]).shown, "gradient shows its second color")
-	check(choose(findRow(editor.tabs.border.form, L["TEXTURE"]), false) and chatPanel.border.texture == false and not chat.border.textures.TOP.shown, "no border (false)")
+	check(browse(findRow(editor.tabs.border.form, L["TEXTURE"]), false) and chatPanel.border.texture == false and not chat.border.textures.TOP.shown, "no border (false)")
 	local fontRow = findRow(editor.tabs.text.form, L["FONT"])
 	check(choose(fontRow, nil) and chatPanel.text.font == nil and chat.text.font[1] == STANDARD_TEXT_FONT, "language default font")
 	typeIn(editor.tabs.text.form.rows[1].area.edit, "Hello ||cffff0000red||r")
@@ -497,15 +518,85 @@ elseif scenario == "options" then
 	local code = scripts.rows[2].area.edit
 	typeIn(code, "self.testLoaded = (self.testLoaded or 0) + 1")
 	check(chatPanel.scripts.LOAD == nil and P.drafts[chatId .. "LOAD"], "script draft not saved yet")
-	click(scripts.rows[3].buttons[2])
+	click(scripts.rows[3].buttons[3])
 	check(chatPanel.scripts.LOAD and chat.testLoaded == 1 and not P.drafts[chatId .. "LOAD"], "script saved and run")
+	editor.bar:Select("scripts")
+	typeIn(code, "local x =")
+	click(scripts.rows[3].buttons[2])
+	check(scripts.rows[4].shown and scripts.rows[4].text.textValue:find("LOAD:1"), "syntax check shows the line")
+	click(scripts.rows[3].buttons[1])
+	editor.bar:Select("general")
 
-	-- Panels and folders
+	-- Display tab
+	local display = editor.tabs.display.form
+	choose(findRow(display, L["COND_COMBAT"]), "IN")
+	check(chatPanel.display.combat == "IN" and not chat.shown, "display condition applied at once")
+	choose(findRow(display, L["COND_COMBAT"]), "ANY")
+	check(chat.shown, "shown again")
+	setSlider(findRow(display, L["ALPHA_BASE"]), 0.5)
+	check(chatPanel.display.combatAlpha == 0.5 and chatPanel.display.hoverAlpha == 0.5 and chat.alpha == 0.5, "opacity: combat and mouse-over follow")
+	setSlider(findRow(display, L["ALPHA_BASE"]), 1)
+	check(chat.alpha == 1 and not chat.nxManaged, "back to defaults")
+
+	-- Automatic color, text variables
+	choose(findRow(editor.tabs.background.form, L["STYLE"]), "SOLID")
+	choose(findRow(editor.tabs.background.form, L["COLOR_MODE"]), "CLASS")
+	check(chatPanel.background.colorMode == "CLASS" and chat.bg.vertexColor[1] == 0.25, "class color chosen")
+	choose(findRow(editor.tabs.background.form, L["COLOR_MODE"]), "CUSTOM")
+	chatPanel.text.value = "Zone:"
+	choose(findRow(editor.tabs.text.form, L["INSERT_VARIABLE"]), "zone")
+	check(chatPanel.text.value == "Zone: {zone}" and chat.text.textValue == "Zone: Valdrakken", "variable inserted")
+
+	-- Frame picker
+	local target = CreateFrame("Frame", "PickMeFrame", UIParent)
+	target.w, target.h = 300, 60
+	target.rect = { 800, 500, 300, 60 }
+	M.cursor = { 900, 520 }
+	local pickRow = findRow(general, L["PICK_ON_SCREEN"])
+	click(pickRow.buttons[1])
+	check(O.Picker.frame.shown and not Options.frame.shown and O.Picker.list[1] and O.Picker.list[1].name == "PickMeFrame", "picker finds the frame under the mouse")
+	O.Picker.frame.scripts.OnMouseDown(O.Picker.frame, "LeftButton")
+	check(chatPanel.anchor.relativeTo == "PickMeFrame" and Options.frame.shown, "anchored to the picked frame")
+	chatPanel.anchor.relativeTo = "panel:" .. barId
+	ns.Layouts:PanelChanged(chatId, "anchors")
+
+	-- Export of one panel, pasted back: added to the active layout
+	P:Export({ chatId }, "Chat BG")
+	local one = O.SharePage.exportText
+	check(O.SharePage.page.exportInfo.textValue:find("Chat BG"), "panel export")
+	O.SharePage:ShowImport()
+	O.SharePage.page.importArea.edit:SetText(one)
+	check(O.SharePage.decoded.kind == "panels" and not O.SharePage.page.nameBox.shown, "pasted panels: no layout name asked")
+	O.SharePage:Import(false)
+	local pastedId = ns.Database:FindPanel(main, "Chat BG (2)")
+	check(pastedId and ns.Layouts.frames[pastedId] and ns.Database:GetLayout(ns.Layouts.activeId) == main, "panel added to the active layout")
+	ns.Database:DeletePanel(mainId, pastedId)
+	ns.Layouts:PanelChanged(pastedId, "removed")
+
+	-- Gallery
+	local before = count(main.panels)
+	O.SharePage:AddTemplate(O.Templates[1], false)
+	local barTplId, barTpl = ns.Database:FindPanel(main, L["TPL_INFO_BAR"])
+	local lineId, line = ns.Database:FindPanel(main, L["TPL_INFO_BAR_LINE"])
+	check(count(main.panels) == before + 2 and line and line.parent == "panel:" .. barTplId and line.background.colorMode == "CLASS", "template added, its panels linked")
+	check(ns.Layouts.frames[barTplId].text.textValue:find("Valdrakken"), "template text variables")
+	local glowLayout = O.SharePage:AddTemplate(O.Templates[4], true)
+	local glowId = next(ns.Database:GetLayout(glowLayout).panels)
+	check(ns.Layouts.activeId == glowLayout and not ns.Layouts.frames[glowId].shown, "combat glow template hidden out of combat")
+	ns.Layouts:Activate(mainId)
+	for _, id in ipairs({ barTplId, lineId }) do
+		ns.Database:DeletePanel(mainId, id)
+		ns.Layouts:PanelChanged(id, "removed")
+	end
+
+	-- Panels and folders (frames were recycled by the layout switches above)
+	chat = ns.Layouts.frames[chatId]
+	local loadedBefore = chat.testLoaded
 	P:NewPanel(nil)
 	M.lastPopup.data.onAccept("Test panel")
 	local testId, test = ns.Database:FindPanel(main, "Test panel")
 	check(test and ns.Layouts.frames[testId] and ns.Layouts.frames[testId].shown and P.selected == testId, "panel created, drawn and selected")
-	check(chat.testLoaded == 1, "other panels keep running when a panel is added")
+	check(loadedBefore and chat.testLoaded == loadedBefore, "other panels keep running when a panel is added")
 	P:Duplicate(testId)
 	local dupId = ns.Database:FindPanel(main, "Test panel (2)")
 	check(dupId and ns.Layouts.frames[dupId] and P.selected == dupId, "panel duplicated")
@@ -647,6 +738,33 @@ elseif scenario == "options" then
 	check(test.width == 230 and test.anchor.x == 15, "resized by the right edge, centered panel follows")
 	ns.Layouts:ApplyActive()
 	check(EM.movers[testId] and EM.movers[testId].target == ns.Layouts.frames[testId], "movers rebuilt with the layout")
+	-- Several panels: Ctrl+click, alignment, moved together
+	testFrame = ns.Layouts.frames[testId]
+	local chatFrame = ns.Layouts.frames[chatId]
+	test.anchor.x, test.anchor.y = 0, 0
+	testFrame.rect = { 860, 490, 200, 100 }
+	chatFrame.rect = { 100, 60, 321, 150 }
+	EM:Select(testId)
+	M.ctrl = true
+	EM.movers[chatId].scripts.OnMouseDown(EM.movers[chatId], "LeftButton")
+	M.ctrl = false
+	check(EM.selection[testId] and EM.selection[chatId] and EM.selected == chatId and EM.frame.bar.align.shown, "Ctrl+click adds to the selection")
+	EM:Align("LEFT")
+	check(test.anchor.x == -760, "aligned on the main panel")
+	EM:Undo()
+	check(test.anchor.x == 0, "alignment undone")
+	local chatX = chatPanel.anchor.x
+	M.cursor = { 900, 520 }
+	EM.movers[testId].scripts.OnMouseDown(EM.movers[testId], "LeftButton")
+	M.cursor = { 930, 520 }
+	M.shift = true
+	EM.frame.scripts.OnUpdate(EM.frame, 0.01)
+	M.shift = false
+	EM.movers[testId].scripts.OnMouseUp(EM.movers[testId], "LeftButton")
+	check(test.anchor.x == 30 and chatPanel.anchor.x == chatX + 30, "the selection moves together")
+	EM:Undo()
+	check(test.anchor.x == 0 and chatPanel.anchor.x == chatX, "group move undone")
+	EM:Select(testId)
 	EM.frame.scripts.OnKeyDown(EM.frame, "ESCAPE")
 	check(EM.active and EM.selected == nil, "Escape deselects")
 	EM.frame.scripts.OnKeyDown(EM.frame, "ESCAPE")
@@ -717,7 +835,7 @@ elseif scenario == "real" then
 	for _, entry in ipairs(ns.Database:SortedLayouts()) do
 		ns.Layouts:Activate(entry.id)
 		for panelId in pairs(entry.layout.panels) do
-			for _, tab in ipairs({ "general", "background", "border", "text", "scripts" }) do
+			for _, tab in ipairs({ "general", "background", "border", "text", "display", "scripts" }) do
 				P.tab = tab
 				local ok, err = pcall(P.Select, P, panelId)
 				opened = opened + 1

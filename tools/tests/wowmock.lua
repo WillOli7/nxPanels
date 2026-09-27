@@ -230,8 +230,16 @@ M.frames = {}
 function CreateFrame(kind, name, parent)
 	local f = newRegion(kind, parent)
 	M.frames[#M.frames + 1] = f
-	if name then _G[name] = f end
+	if name then _G[name] = f f.name = name end
 	return f
+end
+function Region:GetName() return self.name end
+-- Iterates the frames like the game (nil: first one)
+function EnumerateFrames(previous)
+	if not previous then return M.frames[1] end
+	for i, frame in ipairs(M.frames) do
+		if frame == previous then return M.frames[i + 1] end
+	end
 end
 UIParent = newRegion("Frame")
 UIParent.w, UIParent.h = 1920, 1080
@@ -281,7 +289,10 @@ function GetNetStats() return 0, 0, 20, 42 end
 function GetMoney() return 1234567 end
 C_ClassColor = { GetClassColor = function() return { r = 0.25, g = 0.78, b = 0.92 } end }
 -- Atlases known by the mock client
-M.atlases = { ["test-atlas"] = { file = 12345, leftTexCoord = 0.5, rightTexCoord = 1, topTexCoord = 0, bottomTexCoord = 0.25, width = 64, height = 32 } }
+M.atlases = {
+	["test-atlas"] = { file = 12345, leftTexCoord = 0.5, rightTexCoord = 1, topTexCoord = 0, bottomTexCoord = 0.25, width = 64, height = 32 },
+	["QuestBG-Parchment"] = { file = 67890, leftTexCoord = 0, rightTexCoord = 1, topTexCoord = 0, bottomTexCoord = 1 },
+}
 C_Texture = { GetAtlasInfo = function(name) return M.atlases[name] end }
 
 -- Fires an event on every frame registered for it

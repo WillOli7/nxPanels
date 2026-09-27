@@ -17,11 +17,19 @@ local POINTS = { "TOPLEFT", "TOP", "TOPRIGHT", "LEFT", "CENTER", "RIGHT", "BOTTO
 local STRATA = { "BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG", "FULLSCREEN", "FULLSCREEN_DIALOG", "TOOLTIP" }
 local HOOKS = { "LOAD", "EVENT", "UPDATE", "SHOW", "HIDE", "ENTER", "LEAVE", "CLICK", "RESIZE", "DROP" }
 local SECTIONS = { "TOP", "BOT", "LEFT", "RIGHT", "TOPLEFTCORNER", "TOPRIGHTCORNER", "BOTLEFTCORNER", "BOTRIGHTCORNER" }
+local COLOR_MODES = { "CUSTOM", "CLASS", "FACTION", "REACTION" }
+
+-- Name shown for a texture key missing from the lists (a Blizzard atlas)
+local function textureName(value)
+	local atlas = type(value) == "string" and value:match("^atlas:(.+)$")
+	return atlas and L["ATLAS_ITEM"]:format(atlas) or tostring(value)
+end
 
 Panels.collapsed = {}   -- [folder] = true
 Panels.tab = "general"
 Panels.hook = "LOAD"
 Panels.drafts = {}      -- [panelId .. hook] = unsaved script text
+Panels.checks = {}      -- [panelId .. hook] = { err = syntax error or nil }
 Panels.filter = ""
 
 ---------------------------------------------------------------------------
@@ -200,18 +208,38 @@ function Panels:DeleteFolder(name)
 	end)
 end
 
+-- Export of some panels, to paste into another layout
+function Panels:Export(ids, label)
+	local layoutId = Options:ActiveLayout()
+	if layoutId and #ids > 0 then O.SharePage:ShowExportPanels(layoutId, ids, label) end
+end
+
+function Panels:FolderPanels(name)
+	local _, layout = Options:ActiveLayout()
+	local ids = {}
+	for id, panel in pairs(layout and layout.panels or {}) do
+		if panel.folder == name then ids[#ids + 1] = id end
+	end
+	table.sort(ids)
+	return ids
+end
+
 local function panelMenu(owner, id)
 	O.Dropdown:Open(owner, {
 		{ value = "edit", text = L["EDIT"] },
 		{ value = "rename", text = L["RENAME"] },
 		{ value = "duplicate", text = L["DUPLICATE"] },
 		{ value = "move", text = L["MOVE_TO_FOLDER"] },
+		{ value = "export", text = L["EXPORT_PANEL"] },
 		{ value = "delete", text = L["DELETE"] },
 	}, nil, function(action)
 		if action == "edit" then Panels:Select(id)
 		elseif action == "rename" then Panels:Rename(id)
 		elseif action == "duplicate" then Panels:Duplicate(id)
 		elseif action == "move" then Panels:MoveToFolder(id, owner)
+		elseif action == "export" then
+			local _, layout = Options:ActiveLayout()
+			Panels:Export({ id }, layout.panels[id].name)
 		elseif action == "delete" then Panels:Delete(id)
 		end
 	end)
@@ -221,10 +249,12 @@ local function folderMenu(owner, name)
 	O.Dropdown:Open(owner, {
 		{ value = "new", text = L["NEW_PANEL_HERE"] },
 		{ value = "rename", text = L["RENAME"] },
+		{ value = "export", text = L["EXPORT_FOLDER"] },
 		{ value = "delete", text = L["DELETE"] },
 	}, nil, function(action)
 		if action == "new" then Panels:NewPanel(name)
 		elseif action == "rename" then Panels:RenameFolder(name)
+		elseif action == "export" then Panels:Export(Panels:FolderPanels(name), name)
 		elseif action == "delete" then Panels:DeleteFolder(name)
 		end
 	end)
@@ -406,6 +436,19 @@ local function buildGeneral(form)
 		function(v) P().anchor.y = v changed("geometry") end, { free = true })
 	W.DropdownRow(form, L["PARENT"], frameItems, function() return frameRef(P().parent) end,
 		setFrameRef(function(v) P().parent = v end), { width = 220 })
+	-- Points a frame on the screen instead of typing its name
+	local function pick(apply)
+		local id = Panels.selected
+		O.Picker:Start(function(ref)
+			if ref == "panel:" .. id or Panels.selected ~= id then return end
+			apply(ref)
+			changed("anchors")
+		end)
+	end
+	W.ButtonsRow(form, {
+		{ text = L["PICK_ANCHOR"], width = 150, onClick = function() pick(function(ref) P().anchor.relativeTo = ref end) end },
+		{ text = L["PICK_PARENT"], width = 150, onClick = function() pick(function(ref) P().parent = ref end) end },
+	}, L["PICK_ON_SCREEN"])
 	local status = W.TextRow(form, "", 44)
 	status.text:SetTextColor(unpack(C.danger))
 	status.isShown = function()
@@ -435,9 +478,12 @@ local function buildBackground(form)
 	form:Section(L["SECTION_TEXTURE"])
 	W.DropdownRow(form, L["TEXTURE"], function() return Options:MediaItems("background") end,
 		function() return bg().texture end, function(v) bg().texture = v changed("look") end,
-		{ preview = "texture", width = 240 })
+		{ preview = "texture", width = 240, format = textureName,
+		  browse = function(current, choose) O.Browser:Open("background", current, choose) end })
 	W.DropdownRow(form, L["STYLE"], Options:Choices({ "SOLID", "GRADIENT", "NONE" }, "STYLE_"),
 		function() return bg().style end, function(v) bg().style = v changed("look") end)
+	W.DropdownRow(form, L["COLOR_MODE"], Options:Choices(COLOR_MODES, "COLORMODE_"),
+		function() return bg().colorMode end, function(v) bg().colorMode = v changed("look") end)
 	local get, set = colorGetSet(bg, "color")
 	W.ColorRow(form, L["COLOR"], get, set, true)
 	local isGradient = function() return bg().style == "GRADIENT" end
@@ -478,7 +524,10 @@ local function buildBorder(form)
 	form:Section(L["SECTION_BORDER"])
 	W.DropdownRow(form, L["TEXTURE"], function() return Options:MediaItems("border") end,
 		function() return border().texture end, function(v) border().texture = v changed("look") end,
-		{ preview = "border", width = 240 })
+		{ preview = "border", width = 240,
+		  browse = function(current, choose) O.Browser:Open("border", current, choose) end })
+	W.DropdownRow(form, L["COLOR_MODE"], Options:Choices(COLOR_MODES, "COLORMODE_"),
+		function() return border().colorMode end, function(v) border().colorMode = v changed("look") end)
 	local get, set = colorGetSet(border, "color")
 	W.ColorRow(form, L["COLOR"], get, set, true)
 	W.SliderRow(form, L["BORDER_SIZE"], 1, 64, 1, function() return border().size end,
@@ -499,6 +548,16 @@ local function buildText(form)
 	W.TextAreaRow(form, nil, function() return text().value end,
 		function(v) text().value = v changed("look") end, { height = 80, live = true })
 	W.TextRow(form, L["TEXT_HELP"], 40)
+	local vars = {}
+	for i, name in ipairs(core.TextVars.NAMES) do
+		vars[i] = { value = name, text = ("{%s}  %s"):format(name, L["VAR_" .. name:upper()]) }
+	end
+	W.DropdownRow(form, L["INSERT_VARIABLE"], vars, function() return nil end, function(name)
+		clearFocus()
+		local value = text().value
+		text().value = value .. ((value == "" or value:find("%s$")) and "" or " ") .. "{" .. name .. "}"
+		changed("look")
+	end, { width = 240 })
 
 	form:Section(L["SECTION_FONT"])
 	W.DropdownRow(form, L["FONT"], function() return Options:MediaItems("font") end,
@@ -558,21 +617,50 @@ local function buildScripts(form)
 		Panels.drafts[draftKey()] = text ~= savedScript() and text or nil
 	end)
 
+	-- Result of the last check, cleared when the code changes
+	local function check(text)
+		Panels.checks[draftKey()] = { err = core.Scripts:Check(Panels.hook, text) }
+	end
+	code.area.edit:HookScript("OnTextChanged", function(_, userInput)
+		if userInput then Panels.checks[draftKey()] = nil end
+	end)
 	W.ButtonsRow(form, {
 		{ text = L["REVERT"], onClick = function()
 			Panels.drafts[draftKey()] = nil
+			Panels.checks[draftKey()] = nil
 			clearFocus()
 			code.area:SetText(savedScript())
+			Panels:RefreshEditor()
+		end },
+		{ text = L["CHECK_SCRIPT"], width = 130, onClick = function()
+			check(code.area:GetText() or "")
 			Panels:RefreshEditor()
 		end },
 		{ text = L["SAVE_RUN"], style = "primary", width = 160, onClick = function()
 			local text = code.area:GetText() or ""
 			Panels.drafts[draftKey()] = nil
+			check(text)
+			core.Scripts.lastErrors[Panels.selected .. Panels.hook] = nil
 			P().scripts[Panels.hook] = text:find("%S") and text or nil
 			clearFocus()
 			changed("scripts")
 		end },
 	})
+	-- Syntax check result, or the last error while running
+	local status = W.TextRow(form, "", 44)
+	local function statusText()
+		local result = Panels.checks[draftKey()]
+		if result then
+			if result.err then return "|cffff6060" .. L["SCRIPT_SYNTAX_ERROR"]:format(result.err) .. "|r" end
+			local running = core.Scripts.lastErrors[Panels.selected .. Panels.hook]
+			if running then return "|cffff6060" .. L["SCRIPT_LAST_ERROR"]:format(running) .. "|r" end
+			return "|cff59e68c" .. L["SCRIPT_OK"] .. "|r"
+		end
+		local running = core.Scripts.lastErrors[Panels.selected .. Panels.hook]
+		return running and ("|cffff6060" .. L["SCRIPT_LAST_ERROR"]:format(running) .. "|r") or nil
+	end
+	status.isShown = function() return statusText() ~= nil end
+	function status:Refresh() self:SetText(statusText() or "") end
 	W.TextRow(form, L["SCRIPTS_HELP"], 124)
 
 	form:Section(L["SECTION_SCRIPT_OPTIONS"])
@@ -587,11 +675,50 @@ local function buildScripts(form)
 	W.TextRow(form, L["SCRIPT_DEPENDENCY_DESC"], 40)
 end
 
+local function buildDisplay(form)
+	local function d() return P().display end
+	local function choice(label, key, values, prefix)
+		W.DropdownRow(form, label, Options:Choices(values, prefix), function() return d()[key] end,
+			function(v) d()[key] = v changed("display") end, { width = 220 })
+	end
+	form:Section(L["SECTION_CONDITIONS"])
+	choice(L["COND_COMBAT"], "combat", { "ANY", "IN", "OUT" }, "COND_COMBAT_")
+	choice(L["COND_GROUP"], "group", { "ANY", "SOLO", "GROUP", "PARTY", "RAID" }, "COND_GROUP_")
+	choice(L["COND_INSTANCE"], "instance", { "ANY", "WORLD", "INSTANCE", "DUNGEON", "RAID", "PVP" }, "COND_INSTANCE_")
+	choice(L["COND_MOUNTED"], "mounted", { "ANY", "YES", "NO" }, "COND_MOUNTED_")
+	choice(L["COND_TARGET"], "target", { "ANY", "YES", "NO" }, "COND_TARGET_")
+	W.ToggleRow(form, L["COND_PET_BATTLE"], function() return d().hidePetBattle end,
+		function(v) d().hidePetBattle = v changed("display") end)
+	W.InputRow(form, L["COND_MACRO"], function() return d().macro end, function(text)
+		d().macro = strtrim(text or "")
+		changed("display")
+	end, { width = 260 })
+	W.TextRow(form, L["COND_MACRO_HELP"], 56)
+
+	form:Section(L["SECTION_OPACITY"])
+	W.SliderRow(form, L["ALPHA_BASE"], 0, 1, 0.05, function() return d().alpha end, function(v)
+		local display = d()
+		-- The combat and mouse-over opacities follow while they are the same
+		if display.combatAlpha == display.alpha then display.combatAlpha = v end
+		if display.hoverAlpha == display.alpha then display.hoverAlpha = v end
+		display.alpha = v
+		changed("display")
+	end)
+	W.SliderRow(form, L["ALPHA_COMBAT"], 0, 1, 0.05, function() return d().combatAlpha end,
+		function(v) d().combatAlpha = v changed("display") end)
+	W.SliderRow(form, L["ALPHA_HOVER"], 0, 1, 0.05, function() return d().hoverAlpha end,
+		function(v) d().hoverAlpha = v changed("display") end)
+	W.SliderRow(form, L["FADE"], 0, 3, 0.05, function() return d().fade end,
+		function(v) d().fade = math.max(0, v) changed("display") end)
+	W.TextRow(form, L["DISPLAY_HELP"], 56)
+end
+
 local TABS = {
 	{ key = "general", text = L["TAB_GENERAL"], build = buildGeneral },
 	{ key = "background", text = L["TAB_BACKGROUND"], build = buildBackground },
 	{ key = "border", text = L["TAB_BORDER"], build = buildBorder },
 	{ key = "text", text = L["TAB_TEXT"], build = buildText },
+	{ key = "display", text = L["TAB_DISPLAY"], build = buildDisplay },
 	{ key = "scripts", text = L["TAB_SCRIPTS"], build = buildScripts },
 }
 

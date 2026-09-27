@@ -5,6 +5,7 @@ local Panel = {}
 ns.Panel = Panel
 
 local pool = {}
+local ownKeys = setmetatable({}, { __mode = "k" })   -- [frame] = keys set by nxPanels
 
 ---------------------------------------------------------------------------
 -- Texture coordinates: rotation (cached per degree) and flips
@@ -63,6 +64,11 @@ function Panel:Acquire(panelId)
 		frame.sizer = CreateFrame("Frame", nil, frame)
 		frame.sizer:SetAllPoints(frame)
 		frame.sizer:SetScript("OnSizeChanged", onSizeChanged)
+		-- Keys of a new frame: everything else was added by the panel scripts
+		local keys = {}
+		for key in pairs(frame) do keys[key] = true end
+		keys.panelId, keys.tileSize, keys.textTemplate, keys.nxManaged = true, true, true, true
+		ownKeys[frame] = keys
 	end
 	frame.panelId = panelId
 	-- Stable global name, so other addons and scripts can anchor to a panel
@@ -82,6 +88,14 @@ function Panel:Release(frame)
 	end
 	frame.panelId = nil
 	frame.tileSize = nil
+	-- Values stored by the scripts (self.done = true...) must not follow the
+	-- frame to another panel
+	local keys = ownKeys[frame]
+	if keys then
+		for key in pairs(frame) do
+			if not keys[key] then frame[key] = nil end
+		end
+	end
 	pool[#pool + 1] = frame
 end
 

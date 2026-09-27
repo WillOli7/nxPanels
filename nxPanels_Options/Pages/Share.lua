@@ -10,6 +10,16 @@ O.SharePage = Share
 
 -- Opens the export tab on a layout
 function Share:ShowExport(layoutId)
+	self.exportPanels = nil
+	self.exportId = layoutId
+	self.tab = "export"
+	Options:Show("share")
+	if self.page then self.page.tabs:Select("export") end
+end
+
+-- Opens the export tab on some panels of a layout (a panel, a folder)
+function Share:ShowExportPanels(layoutId, ids, label)
+	self.exportPanels = { layoutId = layoutId, ids = ids, label = label }
 	self.exportId = layoutId
 	self.tab = "export"
 	Options:Show("share")
@@ -36,9 +46,19 @@ function Share:Decode()
 	end
 	self.decoded = decoded
 	page.placeholder:SetShown(text == "")
+	local partial = decoded and decoded.kind == "panels"
+	page.nameLabel:SetShown(not partial)
+	page.nameBox:SetShown(not partial)
+	page.activate:SetShown(not partial)
+	page.activateLabel:SetShown(not partial)
 	if decoded then
 		page.info:SetTextColor(unpack(C.text))
-		page.info:SetText(L["IMPORT_INFO"]:format(decoded.format, decoded.count))
+		if partial then
+			local _, layout = Options:ActiveLayout()
+			page.info:SetText(L["IMPORT_INFO_PANELS"]:format(decoded.count, layout and layout.name or L["IMPORTED_LAYOUT"]))
+		else
+			page.info:SetText(L["IMPORT_INFO"]:format(decoded.format, decoded.count))
+		end
 		page.nameBox.edit:SetText(decoded.name or L["IMPORTED_LAYOUT"])
 		if #decoded.scripted > 0 then
 			page.warning:SetText(L["IMPORT_SCRIPTS"]:format(#decoded.scripted, table.concat(decoded.scripted, ", ")))
@@ -65,6 +85,23 @@ function Share:Import(withScripts)
 	if not decoded then return end
 	local page = self.page
 	local function run()
+		local activeId, active = Options:ActiveLayout()
+		if decoded.kind == "panels" and decoded.addTo and activeId then
+			local ids = decoded.addTo(activeId)
+			for _, panelId in ipairs(ids) do
+				if not withScripts then
+					wipe(active.panels[panelId].scripts)
+					active.panels[panelId].scriptDependency = nil
+				end
+				core.Layouts:PanelChanged(panelId, "added")
+			end
+			core:Print(L["IMPORT_PANELS_DONE"], #ids, active.name)
+			page.importArea:SetText("")
+			self.lastText = nil
+			self:Decode()
+			Options:Refresh()
+			return
+		end
 		local id = core.Share:Import(decoded, page.nameBox.edit:GetText())
 		local layout = id and core.Database:GetLayout(id)
 		if not layout then return end
@@ -115,18 +152,18 @@ local function buildImport(parent, width)
 	page.warning:SetPoint("RIGHT", -16, 0)
 	page.warning:SetWordWrap(true)
 
-	local nameLabel = T:Text(card, T.fonts.normal, C.text)
-	nameLabel:SetPoint("BOTTOMLEFT", 16, 18)
-	nameLabel:SetText(L["IMPORT_NAME"])
+	page.nameLabel = T:Text(card, T.fonts.normal, C.text)
+	page.nameLabel:SetPoint("BOTTOMLEFT", 16, 18)
+	page.nameLabel:SetText(L["IMPORT_NAME"])
 	page.nameBox = W.EditBox(card, 240, 26)
-	page.nameBox:SetPoint("LEFT", nameLabel, "RIGHT", 10, 0)
+	page.nameBox:SetPoint("LEFT", page.nameLabel, "RIGHT", 10, 0)
 
-	local activate = W.Switch(card, function(on) Share.activate = on end)
-	activate:SetChecked(Share.activate)
-	activate:SetPoint("BOTTOMRIGHT", -16, 21)
-	local activateLabel = T:Text(card, T.fonts.normal, C.text, "RIGHT")
-	activateLabel:SetPoint("RIGHT", activate, "LEFT", -8, 0)
-	activateLabel:SetText(L["IMPORT_ACTIVATE"])
+	page.activate = W.Switch(card, function(on) Share.activate = on end)
+	page.activate:SetChecked(Share.activate)
+	page.activate:SetPoint("BOTTOMRIGHT", -16, 21)
+	page.activateLabel = T:Text(card, T.fonts.normal, C.text, "RIGHT")
+	page.activateLabel:SetPoint("RIGHT", page.activate, "LEFT", -8, 0)
+	page.activateLabel:SetText(L["IMPORT_ACTIVATE"])
 
 	page.importButton = W.Button(f, L["IMPORT"], 150, "primary", function() Share:Import(true) end)
 	page.importButton:SetPoint("TOPRIGHT", card, "BOTTOMRIGHT", 0, -12)
@@ -155,6 +192,13 @@ function Share:RefreshExport()
 		self.exportId = id
 	end
 	page.exportLayout:Refresh()
+	local panels = self.exportPanels
+	if panels then
+		self.exportText = core.Share:ExportPanels(panels.layoutId, panels.ids) or ""
+		page.exportArea:SetText(self.exportText)
+		page.exportInfo:SetText(L["EXPORT_PANELS_INFO"]:format(panels.label, #panels.ids, #self.exportText))
+		return
+	end
 	self.exportText = id and core.Share:Export(id) or ""
 	page.exportArea:SetText(self.exportText)
 	page.exportInfo:SetText(id and L["EXPORT_INFO"]:format(#self.exportText) or L["NO_LAYOUTS"])
@@ -175,6 +219,7 @@ local function buildExport(parent, width)
 		end
 		return items
 	end, function() return Share.exportId end, function(id)
+		Share.exportPanels = nil
 		Share.exportId = id
 		Share:RefreshExport()
 	end)
@@ -202,6 +247,54 @@ local function buildExport(parent, width)
 end
 
 ---------------------------------------------------------------------------
+-- Gallery of templates
+---------------------------------------------------------------------------
+-- Adds a template to the active layout, or to a new layout
+function Share:AddTemplate(template, newLayout)
+	local payload = O.TemplatePayload(template)
+	local layoutId = not newLayout and Options:ActiveLayout()
+	if not layoutId then
+		layoutId = core.Database:CreateLayout(payload.layout.name)
+		core.Layouts:Activate(layoutId)
+	end
+	local ids = core.Share.AddPanels(payload, layoutId)
+	for _, panelId in ipairs(ids) do core.Layouts:PanelChanged(panelId, "added") end
+	core:Print(L["IMPORT_PANELS_DONE"], #ids, core.Database:GetLayout(layoutId).name)
+	Options:Refresh()
+	return layoutId, ids
+end
+
+local function buildGallery(parent, width)
+	local f = CreateFrame("Frame", nil, parent)
+	f:SetAllPoints(parent)
+	local scroll = W.Scroll(f)
+	scroll:SetPoint("TOPLEFT")
+	scroll:SetPoint("BOTTOMRIGHT")
+	local ROW = 74
+	for i, template in ipairs(O.Templates) do
+		local card = CreateFrame("Frame", nil, scroll.content)
+		card:SetSize(width - 12, ROW - 8)
+		card:SetPoint("TOPLEFT", 0, -(i - 1) * ROW)
+		T:Fill(card, C.card)
+		T:Border(card, C.line)
+		local title = T:Text(card, T.fonts.header, C.text)
+		title:SetPoint("TOPLEFT", 16, -12)
+		title:SetText(L["TPL_" .. template.key])
+		local add = W.Button(card, L["TPL_ADD"], 150, "primary", function() Share:AddTemplate(template, false) end)
+		add:SetPoint("RIGHT", -12, 0)
+		local new = W.Button(card, L["TPL_NEW_LAYOUT"], 150, "default", function() Share:AddTemplate(template, true) end)
+		new:SetPoint("RIGHT", add, "LEFT", -8, 0)
+		local desc = T:Text(card, T.fonts.small, C.textDim)
+		desc:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
+		desc:SetPoint("RIGHT", new, "LEFT", -12, 0)
+		desc:SetWordWrap(true)
+		desc:SetText(L["TPL_" .. template.key .. "_DESC"])
+	end
+	scroll:SetContentHeight(#O.Templates * ROW)
+	return f
+end
+
+---------------------------------------------------------------------------
 -- Page
 ---------------------------------------------------------------------------
 Options:RegisterPage({
@@ -216,13 +309,16 @@ Options:RegisterPage({
 		body:SetPoint("BOTTOMRIGHT")
 		page.import = buildImport(body, width)
 		page.export = buildExport(body, width)
+		page.gallery = buildGallery(body, width)
 		page.tabs = W.Tabs(page, {
 			{ key = "import", text = L["IMPORT"] },
 			{ key = "export", text = L["EXPORT"] },
+			{ key = "gallery", text = L["GALLERY"] },
 		}, function(key)
 			Share.tab = key
 			page.import:SetShown(key == "import")
 			page.export:SetShown(key == "export")
+			page.gallery:SetShown(key == "gallery")
 			if key == "export" then Share:RefreshExport() end
 		end)
 		page.tabs:SetPoint("TOPLEFT")

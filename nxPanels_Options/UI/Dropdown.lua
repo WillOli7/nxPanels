@@ -178,10 +178,16 @@ function W.DropdownButton(parent, width, items, get, set, opts)
 		return type(items) == "function" and items() or items
 	end
 	button:SetScript("OnClick", function()
-		Dropdown:Open(button, list(), get(), function(value)
+		local function choose(value)
 			set(value)
 			button:Refresh()
-		end, opts)
+		end
+		-- opts.browse(current, choose): another chooser (texture browser)
+		if opts.browse then
+			opts.browse(get(), choose)
+		else
+			Dropdown:Open(button, list(), get(), choose, opts)
+		end
 	end)
 
 	function button:Refresh()
@@ -192,7 +198,11 @@ function W.DropdownButton(parent, width, items, get, set, opts)
 				break
 			end
 		end
-		self.text:SetText(text or (current ~= nil and tostring(current)) or "")
+		-- Values missing from the list: opts.format, or the value itself
+		if not text and current ~= nil then
+			text = opts.format and opts.format(current) or tostring(current)
+		end
+		self.text:SetText(text or "")
 		if opts.preview == "font" and font then
 			self.text:SetFont(font, 13, "")
 		else
