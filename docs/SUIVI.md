@@ -14,7 +14,7 @@ Dernière mise à jour : 2026-09-27
 |---|---|
 | Version | `1.0.0-alpha.2` (tous les TOC alignés) |
 | Branche de travail | `feature/options-window`, poussée sur GitHub |
-| Pull request | `feature/options-window` → `main` sur https://github.com/WillOli7/nxPanels (à relire et fusionner par le mainteneur) |
+| Pull request | https://github.com/WillOli7/nxPanels/pull/1 (`feature/options-window` → `main`), tests GitHub verts, à relire et fusionner par le mainteneur |
 | `main` | Moteur alpha.1 + import ; ne contient pas encore la fenêtre de configuration |
 | Tests hors jeu | Tous verts : `bash tools/tests/run-all.sh <luajit>` (migrate, original, empty, forever, zhcn, options ×4 langues) + `real` avec les vraies données |
 | Installé en local | Oui, Retail (`_retail_`) et Forever (`_classic_beta_`) via `bash tools/deploy.sh all` |
