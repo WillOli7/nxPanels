@@ -11,10 +11,10 @@ Textes prêts à coller : `CURSEFORGE.md` (page CurseForge, en anglais + résum�
 |---|---|---|---|
 | 1 | Relire les fichiers de ce dossier, le README, le workflow `release.yml` | mainteneur | non |
 | 2 | Commit + push sur `feature/options-window` (la PR #1 s'enrichit) | Claude, après accord | GitHub (branche) |
-| 3 | Construction de test : Actions → Release → « Run workflow » sur la branche → télécharger le zip | mainteneur ou Claude | non (aucun envoi) |
-| 4 | Test de mise à jour sur l'installation locale (section 3, phases A et B) | mainteneur | non |
+| 3 | Fusionner la PR #1 dans `main` (GitHub ne lance un workflow à la main que s'il existe sur `main`) | mainteneur | GitHub |
+| 4 | Construction de test (Actions → Release → « Run workflow » sur `main`, aucun envoi), puis test de mise à jour local (section 3, phases A et B) | Claude + mainteneur | non |
 | 5 | Captures d'écran (section 6) et logo (section 7) | mainteneur | non |
-| 6 | Fusionner la PR #1 dans `main` | mainteneur | GitHub |
+| 6 | Ajouter logo et captures dans `docs/media/` (le README les affiche) | Claude, après accord | GitHub |
 | 7 | Renommer le projet CurseForge, coller la description, message au modérateur (sections 4 et 5) | mainteneur | CurseForge |
 | 8 | Description, topics et image sociale du dépôt GitHub (section 8) | Claude, après accord | GitHub |
 | 9 | Tag `1.0.0-alpha.2` sur `main` → release GitHub (pré-version) ; fichier CurseForge **alpha** seulement si le secret `CF_API_KEY` existe | Claude, après accord | GitHub (+ CurseForge) |
@@ -40,7 +40,7 @@ Points d'attention :
 ## 3. Protocole de test avant la mise en ligne
 
 ### Phase A — contenu du paquet (sans rien publier)
-1. Pousser la branche (étape 2), puis GitHub → Actions → **Release** → « Run workflow » (branche `feature/options-window`). Ce mode lance les tests puis le packager avec `-d` : **aucun envoi**, le zip est joint au run (« nxPanels-package »).
+1. Après la fusion dans `main`, GitHub → Actions → **Release** → « Run workflow » (branche `main`). Ce mode lance les tests puis le packager avec `-d` : **aucun envoi**, le zip est joint au run (« nxPanels-package »).
 2. Vérifier le zip : exactement 5 dossiers à la racine (`nxPanels`, `nxPanels_Options`, `nxPanels_Import`, `kgPanels_Reloaded`, `kgPanelsConfig_Reloaded`) ; pas de `tools`, `docs`, `CLAUDE.md`, `.local` ; TOC en `1.0.0-alpha.2` ; `kgPanels_Reloaded.toc` avec `## SavedVariables: kgPanelsDB` et `## LoadOnDemand: 1`.
 
 ### Phase B — mise à jour simulée sur Retail (ce que fait l'appli)

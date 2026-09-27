@@ -120,9 +120,9 @@ Reste à tester : layout par spécialisation sur Forever (talents principaux / s
 
 ## 7. Suite prévue
 
-1. Relire les fichiers préparés le 2026-09-28 (non commités à la fin de la session si le mainteneur ne l'a pas validé) : `README.md`, `.pkgmeta` (ignore `CLAUDE.md`, changelog manuel), `.github/workflows/release.yml`, `docs/publication/`, correctif `handinstall` de `nxPanels_Import/Import.lua`.
-2. Suivre l'ordre des opérations de `docs/publication/PUBLICATION.md` section 1 : push → construction de test → test de mise à jour local (phases A, B) → captures + logo → fusion de la PR #1 → renommage CurseForge + message au modérateur → métadonnées GitHub → tag `1.0.0-alpha.2` → test avec l'appli CurseForge (phase C).
-   - Le README référence `docs/media/logo-512.png` et 4 captures : à fournir avant de fusionner dans `main`.
+1. Fait le 2026-09-28 : préparation de la publication validée par le mainteneur, commitée et poussée sur `feature/options-window` (PR #1, tests GitHub verts).
+2. Suivre l'ordre des opérations de `docs/publication/PUBLICATION.md` section 1 : fusion de la PR #1 → construction de test (`release.yml` à la main, possible seulement une fois sur `main`) + test de mise à jour local (phases A, B, sur le PC de jeu) → captures + logo → renommage CurseForge + message au modérateur → métadonnées GitHub → tag `1.0.0-alpha.2` → test avec l'appli CurseForge (phase C).
+   - Le README référence `docs/media/logo-512.png` et 4 captures : tant qu'ils manquent, la page GitHub affiche des images cassées.
    - Logo : brief en section 7 de `PUBLICATION.md` ; intégration (TGA 64×64, `## IconTexture`, minicarte) à faire quand l'image existe.
 3. Faire relire les traductions zhCN / zhTW par un joueur natif.
 4. Backlog restant (`docs/ROADMAP.md`) : masques (coins arrondis), plusieurs calques, ombres, coloration du code des scripts, layout par résolution d'écran.
