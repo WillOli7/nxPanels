@@ -60,7 +60,7 @@ Jeu fermé.
    - après déconnexion : contenu de `kgPanels_Reloaded.lua` inchangé (je peux le comparer avec `.local/`).
 6. Remettre la sauvegarde si besoin (ou `bash tools/deploy.sh all`).
 
-Je peux préparer un script pour les étapes 1, 2, 4 et 6 (copies et suppressions dans le dossier du jeu) : à valider avant de le lancer.
+Script (jeu fermé) : `bash tools/update-test.sh prepare` (étapes 1-2), `update <zip>` (étape 4), `check` (données `kgPanelsDB` comparées à `.local/`), `restore` (étape 6).
 
 ### Phase C — vraie mise à jour par l'appli CurseForge (après l'étape 9)
 1. Refaire les étapes B1-B2, puis dans l'appli CurseForge : installer « kgPanels_Reloaded » v0.4.0 (projet 1444518) pour qu'elle soit suivie par l'appli.

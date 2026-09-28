@@ -4,7 +4,7 @@ All notable changes to nxPanels. Versions follow [Semantic Versioning](https://s
 
 ## [Unreleased]
 
-## 1.0.0-alpha.2 — in progress
+## 1.0.0-alpha.2 — 2026-09-29
 - Legacy import moved to the separate `nxPanels_Import` module; the core has no dependency on older addons.
 - Old scripts are rewritten on import (`kgPanels` becomes `nxPanels`, same functions).
 - Layout export / import (`!NXP1!` strings); old export strings are read by the import module.
@@ -31,6 +31,7 @@ All notable changes to nxPanels. Versions follow [Semantic Versioning](https://s
 - Text: every icon of the game (browser), currencies and items with {currency:<id>} and {item:<id>}, "Insert a currency" menu.
 - Fixed: list rows kept the font of the font list (capitals, missing accents), icons were stretched.
 - Import: a reload is also offered when the old kgPanels Reloaded was still running next to nxPanels (installed by hand), so its panels are not shown twice.
+- New icon (add-on list, add-on compartment, minimap button).
 
 ## 1.0.0-alpha.1 — 2026-09-27
 - First version of nxPanels, a full rewrite: panels, backgrounds, borders, text, scripts.
