@@ -133,10 +133,11 @@ Reste à tester : layout par spécialisation sur Forever (talents principaux / s
 - Construction de test sur GitHub : lancée par le mainteneur (le lancement par Claude est bloqué par la protection automatique de Claude Code).
 - ✅ 2026-09-29 : licence passée en « Tous droits réservés » (PR #7), phase B réussie, projet CurseForge renommé, `CF_API_KEY` ajouté.
 - ✅ 2026-09-29 : tag `1.0.0-alpha.2` → run 36495882706 : fichier envoyé sur CurseForge (alpha) et release GitHub (pré-version) créée.
-- Reste : phase C (mise à jour réelle par l'appli CurseForge, `PUBLICATION.md` section 3), description / topics / image sociale du dépôt GitHub (section 8), capture du message d'import pour CurseForge, puis première version « release » (1.0.0).
+- ✅ 2026-09-29 : fichier approuvé par CurseForge ; phase C réussie (mise à jour par l'appli CurseForge depuis la v0.4.0 : 5 dossiers, import OK en jeu, `kgPanelsDB` inchangé). Dossiers de l'appli gardés en place (suivi par l'appli), données nxPanels d'avant le test remises.
+- Reste : description / topics / image sociale du dépôt GitHub (section 8), capture du message d'import pour CurseForge, puis première version « release » (1.0.0).
 
 1. Fait le 2026-09-28 : préparation de la publication validée par le mainteneur, commitée et poussée sur `feature/options-window` (PR #1, tests GitHub verts).
-2. Suivre l'ordre des opérations de `docs/publication/PUBLICATION.md` section 1 : ~~fusion de la PR #1~~ ✅ → ~~construction de test (phase A)~~ ✅ → ~~phase B~~ ✅ → ~~captures~~ ✅ + ~~logo~~ ✅ → ~~renommage CurseForge~~ ✅ (message au modérateur si le projet repasse en revue) → métadonnées GitHub → ~~tag `1.0.0-alpha.2`~~ ✅ → test avec l'appli CurseForge (phase C).
+2. Suivre l'ordre des opérations de `docs/publication/PUBLICATION.md` section 1 : ~~fusion de la PR #1~~ ✅ → ~~construction de test (phase A)~~ ✅ → ~~phase B~~ ✅ → ~~captures~~ ✅ + ~~logo~~ ✅ → ~~renommage CurseForge~~ ✅ (message au modérateur si le projet repasse en revue) → métadonnées GitHub → ~~tag `1.0.0-alpha.2`~~ ✅ → ~~phase C~~ ✅ → passage du fichier en Release (choix du mainteneur).
    - ~~Captures du README~~ ✅ (3 images, PR feature/screenshots).
    - Image sociale GitHub (Settings → Social preview) : `docs/media/social-preview.png`, à envoyer à la main. Bannière CurseForge : `docs/media/banner-curseforge.png`.
 3. Faire relire les traductions zhCN / zhTW par un joueur natif.
