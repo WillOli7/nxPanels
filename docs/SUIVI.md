@@ -128,7 +128,7 @@ Reste à tester : layout par spécialisation sur Forever (talents principaux / s
 - À faire sur le PC : phase B (test de mise à jour depuis la v0.4.0, zip du run 36355822045 disponible jusqu'au 26/12, ou nouvelle construction de test depuis `main` pour inclure l'icône) et scénario `real` avant publication.
 - Tests en jeu en attente : première installation sur le Mac (Retail, sans données kgPanels) et vérification de la nouvelle icône.
 - ✅ 2026-09-29 : `deploy.sh all` fait, nouvelle icône vérifiée en jeu sur Retail et Forever, aucune erreur. Tests hors jeu + `real` verts.
-- ✅ 2026-09-29 : 3 captures du README (`screenshot-window`, `-browser`, `-editmode` dans `docs/media/`), recadrées depuis les captures du mainteneur (noms floutés). Pas de capture « interface complète » (choix du mainteneur). Captures 5 à 9 de `PUBLICATION.md` section 6 : plus tard, pour CurseForge.
+- ✅ 2026-09-29 : 3 captures du README (`screenshot-window`, `-browser`, `-editmode` dans `docs/media/`), recadrées depuis les captures du mainteneur (noms floutés). Pas de capture « interface complète » (choix du mainteneur). Pour CurseForge (onglet Images) : `screenshot-display`, `-text`, `-templates` ; zhCN et Forever abandonnées. Reste éventuellement la capture du message d'import pendant la phase B.
 - Construction de test sur GitHub : à lancer par le mainteneur (Actions → Release → Run workflow), le lancement par Claude est bloqué par la protection automatique de Claude Code.
 
 1. Fait le 2026-09-28 : préparation de la publication validée par le mainteneur, commitée et poussée sur `feature/options-window` (PR #1, tests GitHub verts).

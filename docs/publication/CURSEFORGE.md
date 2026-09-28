@@ -1,7 +1,10 @@
 <!--
 CurseForge page of nxPanels (project 1444518). Paste everything below the line into
 Description (editor set to Markdown). Images: upload them in the Images tab of the
-project, then replace each IMAGE_URL_* with the link CurseForge gives.
+project, then replace each IMAGE_URL_* with the link CurseForge gives:
+BANNER = docs/media/banner-curseforge.png, BROWSER = screenshot-browser.jpg,
+EDITMODE = screenshot-editmode.jpg. The other screenshots (window, display, text,
+templates) go in the Images tab only.
 Summary field (max 250 characters):
 Artistic panels for your interface: backgrounds, borders, text and scripts, placed anywhere. Edit mode, display conditions, templates. Retail and WoW Forever. Continuation of kgPanels Reloaded: your layouts are imported automatically.
 -->
@@ -44,9 +47,9 @@ Artistic panels for your interface: backgrounds, borders, text and scripts, plac
 ### Light
 The display engine is small and always loaded. The window and the import module are separate addons, loaded only when needed.
 
-![An interface built with nxPanels](IMAGE_URL_INTERFACE)
+![The panel editor and the texture browser with Blizzard images](IMAGE_URL_BROWSER)
 
-![The configuration window](IMAGE_URL_WINDOW)
+![The edit mode, with grid and alignment guides](IMAGE_URL_EDITMODE)
 
 ## Clients and languages
 

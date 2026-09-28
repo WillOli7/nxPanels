@@ -124,11 +124,11 @@ Format : PNG ou JPG, **1920×1080** (interface à 100 %), sans nom de personnage
 | 2 | `screenshot-window.jpg` | **Fenêtre de configuration**, page Layouts | ✅ 2026-09-29 |
 | 3 | `screenshot-browser.jpg` | **Éditeur (onglet Fond) + navigateur de textures** | ✅ 2026-09-29, image principale du README |
 | 4 | `screenshot-editmode.jpg` | **Mode édition** | ✅ 2026-09-29, noms du personnage floutés |
-| 5 | `screenshot-display.jpg` | Onglet **Affichage** | Conditions (combat, groupe…) et opacités |
-| 6 | `screenshot-text.jpg` | Onglet **Texte** | Variables `{zone}` `{time}` et icônes, avec le rendu en jeu à côté |
-| 7 | `screenshot-templates.jpg` | Menu **Nouveau panneau** | Liste des modèles |
-| 8 | `screenshot-zhcn.jpg` | Fenêtre en **chinois simplifié** | Client zhCN si possible, sinon ignorer (pour la page chinoise) |
-| 9 | `screenshot-forever.jpg` | Un layout sur **WoW Forever** | Montre la compatibilité |
+| 5 | `screenshot-display.jpg` | Onglet **Affichage** | ✅ 2026-09-29 |
+| 6 | `screenshot-text.jpg` | Onglet **Texte** | ✅ 2026-09-29, avec le rendu en jeu (FPS, monnaies) à côté |
+| 7 | `screenshot-templates.jpg` | Menu **Nouveau panneau** | ✅ 2026-09-29 |
+| 8 | ~~`screenshot-zhcn.jpg`~~ | ~~Fenêtre en chinois simplifié~~ | ❌ Abandonnée (choix du mainteneur) |
+| 9 | ~~`screenshot-forever.jpg`~~ | ~~Layout sur WoW Forever~~ | ❌ Abandonnée (choix du mainteneur) |
 | 10 | `screenshot-migration.jpg` | Message d'import dans le chat | « 3 layout(s)… importés depuis kgPanels_Reloaded » (phase B du test) |
 
 Optionnel : un GIF court (5-10 s, < 10 Mo) du mode édition avec l'aimantation.
