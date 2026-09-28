@@ -12,15 +12,15 @@ Dernière mise à jour : 2026-09-29
 
 | Élément | État |
 |---|---|
-| Version | `1.0.0` (tous les TOC alignés), publiée le 2026-09-29. Avant : `1.0.0-alpha.2` (fichier alpha CurseForge, à archiver) |
+| Version | **`1.0.0` publiée en release le 2026-09-29** (tous les TOC alignés). Avant : `1.0.0-alpha.2` (fichier alpha CurseForge, à archiver ; pré-version sur GitHub) |
 | Branche de travail | aucune : tout est sur `main` |
-| Pull request | PR #1 à #9 **fusionnées** dans `main` (#6 captures + script de test, #7 licence, #8 page CurseForge courte, #9 ID du projet CurseForge dans le workflow) |
-| `main` | 1.0.0 : moteur, fenêtre de configuration, mode édition, import, workflow de release |
+| Pull request | PR #1 à #14 fusionnées dans `main` ; aucune PR ouverte |
+| `main` | = tag `1.0.0` + mises à jour du suivi |
 | Logo | ✅ 2026-09-28 (PR #4) : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7. Icône vérifiée en jeu (Retail et Forever) le 2026-09-29. Reste : image sociale à envoyer à la main (Settings → Social preview) |
 | Installé sur Mac | Retail (`/Applications/World of Warcraft/_retail_`, compte DARKICE7, aucune donnée kgPanels : test de première installation) via `WOW_DIR="/Applications/World of Warcraft" bash tools/deploy.sh retail`. Forever pas encore lancé sur ce Mac. Test en jeu à faire |
 | Tests hors jeu | Tous verts : `bash tools/tests/run-all.sh <luajit>` (migrate, original, handinstall, empty, forever, zhcn, options ×4 langues) + `real` avec les vraies données |
 | Installé en local | Oui, Retail (`_retail_`) et Forever (`_classic_beta_`) via `bash tools/deploy.sh all` |
-| CurseForge | Projet `1444518` **renommé nxPanels** (slug `nxpanels`, logo, description, licence « All Rights Reserved », distribution tierce refusée) le 2026-09-29. Secret GitHub `CF_API_KEY` en place. **`1.0.0-alpha.2` publié le 2026-09-29** (fichier alpha, 12.0.0 à 12.1.0 + Forever 1.60.1), en attente de validation CurseForge |
+| CurseForge | Projet `1444518` **renommé nxPanels** (slug `nxpanels`, logo, description courte, licence « All Rights Reserved », distribution tierce refusée). Secret GitHub `CF_API_KEY` en place, envoi automatique au tag. Fichiers : `1.0.0-alpha.2` (alpha, approuvé) et **`1.0.0` (release, envoyé le 2026-09-29, run du tag `1.0.0`)** |
 | Publication | Dossier prêt : `docs/publication/PUBLICATION.md` (étapes, test de mise à jour, message au modérateur, captures, brief du logo, GitHub) et `docs/publication/CURSEFORGE.md` (page CurseForge EN + FR / zhCN / zhTW). Workflow `.github/workflows/release.yml` (tag → release GitHub, CurseForge si secret `CF_API_KEY` ; lancement manuel = construction de test sans envoi) |
 | Phase B | ✅ 2026-09-29 avec le zip du run sur `a805446` (`tools/update-test.sh`) : v0.4.0 affichée, puis mise à jour → 3 layouts / 33 panneaux importés, panneaux identiques, `/nxp status` sans erreur, anciens addons désactivés, `/reload` et autre personnage OK, `kgPanelsDB` inchangé. Installation remise en état (`restore`) |
 | Paquet (phase A) | ✅ 2026-09-28 : construction de test OK (run 36355822045). 5 dossiers, pont intact, TOC en 1.0.0-alpha.2, rien de `tools` / `docs` / `CLAUDE.md`. Versions détectées par le packager : 12.0.0 à 12.1.0 + Forever 1.60.1. Le zip se retélécharge depuis le run GitHub (artefact « nxPanels-package », 90 jours) |
@@ -41,7 +41,7 @@ Outils locaux (hors PATH de Bash) :
 - LuaJIT : `C:\Users\Muse\AppData\Local\Programs\LuaJIT\bin\luajit.exe`
 - GitHub CLI : `"/c/Program Files/GitHub CLI/gh.exe"` (connecté en `WillOli7`)
 
-## 3. Fonctionnalités livrées (alpha.2)
+## 3. Fonctionnalités livrées (1.0.0)
 
 Fenêtre de configuration (`/nxp`) :
 - **Layouts** : créer, activer, renommer, dupliquer, exporter, supprimer.
@@ -124,24 +124,17 @@ Reste à tester : layout par spécialisation sur Forever (talents principaux / s
 
 ## 7. Suite prévue
 
-**Reprise sur le PC de jeu (après la session Mac du 2026-09-28)** :
-- `git switch main && git pull` : récupère les PR #2 à #4 (workflow de release, feuille de route, logo et icône). Puis `bash tools/deploy.sh all` (nouvelle icône : redémarrer le jeu, changement de TOC).
-- À faire sur le PC : phase B (test de mise à jour depuis la v0.4.0, zip du run 36355822045 disponible jusqu'au 26/12, ou nouvelle construction de test depuis `main` pour inclure l'icône) et scénario `real` avant publication.
-- Tests en jeu en attente : première installation sur le Mac (Retail, sans données kgPanels) et vérification de la nouvelle icône.
-- ✅ 2026-09-29 : `deploy.sh all` fait, nouvelle icône vérifiée en jeu sur Retail et Forever, aucune erreur. Tests hors jeu + `real` verts.
-- ✅ 2026-09-29 : 3 captures du README (`screenshot-window`, `-browser`, `-editmode` dans `docs/media/`), recadrées depuis les captures du mainteneur (noms floutés). Pas de capture « interface complète » (choix du mainteneur). Pour CurseForge (onglet Images) : `screenshot-display`, `-text`, `-templates` ; zhCN et Forever abandonnées. Reste éventuellement la capture du message d'import pendant la phase B.
-- Construction de test sur GitHub : lancée par le mainteneur (le lancement par Claude est bloqué par la protection automatique de Claude Code).
-- ✅ 2026-09-29 : licence passée en « Tous droits réservés » (PR #7), phase B réussie, projet CurseForge renommé, `CF_API_KEY` ajouté.
-- ✅ 2026-09-29 : tag `1.0.0-alpha.2` → run 36495882706 : fichier envoyé sur CurseForge (alpha) et release GitHub (pré-version) créée.
-- ✅ 2026-09-29 : fichier approuvé par CurseForge ; phase C réussie (mise à jour par l'appli CurseForge depuis la v0.4.0 : 5 dossiers, import OK en jeu, `kgPanelsDB` inchangé). Dossiers de l'appli gardés en place (suivi par l'appli), données nxPanels d'avant le test remises.
-- Reste : description / topics / image sociale du dépôt GitHub (section 8), capture du message d'import pour CurseForge, puis première version « release » (1.0.0).
+**Publication faite le 2026-09-29** : phases A, B et C réussies, `1.0.0-alpha.2` puis **`1.0.0` en release** (tous les joueurs de kgPanels Reloaded reçoivent la mise à jour par l'appli CurseForge).
 
-1. Fait le 2026-09-28 : préparation de la publication validée par le mainteneur, commitée et poussée sur `feature/options-window` (PR #1, tests GitHub verts).
-2. Suivre l'ordre des opérations de `docs/publication/PUBLICATION.md` section 1 : ~~fusion de la PR #1~~ ✅ → ~~construction de test (phase A)~~ ✅ → ~~phase B~~ ✅ → ~~captures~~ ✅ + ~~logo~~ ✅ → ~~renommage CurseForge~~ ✅ (message au modérateur si le projet repasse en revue) → métadonnées GitHub → ~~tag `1.0.0-alpha.2`~~ ✅ → ~~phase C~~ ✅ → passage du fichier en Release (choix du mainteneur).
-   - ~~Captures du README~~ ✅ (3 images, PR feature/screenshots).
-   - Image sociale GitHub (Settings → Social preview) : `docs/media/social-preview.png`, à envoyer à la main. Bannière CurseForge : `docs/media/banner-curseforge.png`.
-3. Faire relire les traductions zhCN / zhTW par un joueur natif.
-4. Backlog restant (`docs/ROADMAP.md`) : masques (coins arrondis), plusieurs calques, ombres, coloration du code des scripts, layout par résolution d'écran.
+À faire :
+1. CurseForge (mainteneur) : vérifier que `1.0.0` passe « Approved », archiver `1.0.0-alpha.2`, retirer la ligne « 🚧 Alpha » de la description en ligne (le fichier `CURSEFORGE.md` est déjà à jour).
+2. Surveiller les premiers retours (commentaires CurseForge, issues GitHub) : c'est la première fois que la migration tourne sur des données d'autres joueurs.
+3. GitHub : image sociale à envoyer à la main (Settings → Social preview, `docs/media/social-preview.png`).
+4. Anciens critères v1.0 restants : relecture des traductions zhCN / zhTW par un joueur natif ; layout par groupe de talents à tester en jeu sur Forever.
+5. Tests en jeu en attente : première installation sur le Mac (Retail, sans données kgPanels).
+6. Backlog (`docs/ROADMAP.md`) : masques (coins arrondis), plusieurs calques, ombres, coloration du code des scripts, layout par résolution d'écran.
+
+Installation locale du PC de jeu : Retail = dossiers installés par l'appli CurseForge (`1.0.0-alpha.2`, l'appli propose `1.0.0`) avec les données nxPanels d'avant les tests ; Forever = copie de travail (`deploy.sh`). Copies des données des tests : `SavedVariables/nxPanels.lua.phaseB` / `.phaseC`, sauvegardes complètes dans `Interface/AddOns-backup-kgPanels/phaseB-*`. Pour une version suivante : même procédure (tests, construction de test, `tools/update-test.sh` si la migration change, tag `x.y.z`).
 
 ## 8. Reprendre le travail
 
