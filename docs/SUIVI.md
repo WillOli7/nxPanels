@@ -14,14 +14,15 @@ Dernière mise à jour : 2026-09-29
 |---|---|
 | Version | `1.0.0-alpha.2` (tous les TOC alignés) |
 | Branche de travail | aucune : tout est sur `main` |
-| Pull request | PR #1, #2 (workflow de release), #3 (feuille de route) et #4 (logo) **fusionnées** dans `main` le 2026-09-28 |
+| Pull request | PR #1 à #9 **fusionnées** dans `main` (#6 captures + script de test, #7 licence, #8 page CurseForge courte, #9 ID du projet CurseForge dans le workflow) |
 | `main` | alpha.2 complète : moteur, fenêtre de configuration, mode édition, import, workflow de release |
-| Logo | ✅ 2026-09-28 (PR #4) : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7. Reste : image sociale à envoyer à la main (Settings → Social preview), vérifier l'icône en jeu (liste des addons, minicarte, compartiment) |
+| Logo | ✅ 2026-09-28 (PR #4) : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7. Icône vérifiée en jeu (Retail et Forever) le 2026-09-29. Reste : image sociale à envoyer à la main (Settings → Social preview) |
 | Installé sur Mac | Retail (`/Applications/World of Warcraft/_retail_`, compte DARKICE7, aucune donnée kgPanels : test de première installation) via `WOW_DIR="/Applications/World of Warcraft" bash tools/deploy.sh retail`. Forever pas encore lancé sur ce Mac. Test en jeu à faire |
 | Tests hors jeu | Tous verts : `bash tools/tests/run-all.sh <luajit>` (migrate, original, handinstall, empty, forever, zhcn, options ×4 langues) + `real` avec les vraies données |
 | Installé en local | Oui, Retail (`_retail_`) et Forever (`_classic_beta_`) via `bash tools/deploy.sh all` |
-| CurseForge | **Rien publié.** Projet existant à renommer : ID `1444518` (kgPanels_Reloaded, 1 095 téléchargements, licence « All Rights Reserved », v0.4.0 marquée 12.0.0 / 12.0.1). Slug `nxpanels` libre au 28/09 |
+| CurseForge | Projet `1444518` **renommé nxPanels** (slug `nxpanels`, logo, description, licence « All Rights Reserved », distribution tierce refusée) le 2026-09-29. Secret GitHub `CF_API_KEY` en place. Aucun fichier nxPanels publié avant le tag |
 | Publication | Dossier prêt : `docs/publication/PUBLICATION.md` (étapes, test de mise à jour, message au modérateur, captures, brief du logo, GitHub) et `docs/publication/CURSEFORGE.md` (page CurseForge EN + FR / zhCN / zhTW). Workflow `.github/workflows/release.yml` (tag → release GitHub, CurseForge si secret `CF_API_KEY` ; lancement manuel = construction de test sans envoi) |
+| Phase B | ✅ 2026-09-29 avec le zip du run sur `a805446` (`tools/update-test.sh`) : v0.4.0 affichée, puis mise à jour → 3 layouts / 33 panneaux importés, panneaux identiques, `/nxp status` sans erreur, anciens addons désactivés, `/reload` et autre personnage OK, `kgPanelsDB` inchangé. Installation remise en état (`restore`) |
 | Paquet (phase A) | ✅ 2026-09-28 : construction de test OK (run 36355822045). 5 dossiers, pont intact, TOC en 1.0.0-alpha.2, rien de `tools` / `docs` / `CLAUDE.md`. Versions détectées par le packager : 12.0.0 à 12.1.0 + Forever 1.60.1. Le zip se retélécharge depuis le run GitHub (artefact « nxPanels-package », 90 jours) |
 
 ## 2. Contenu du dépôt
@@ -129,10 +130,11 @@ Reste à tester : layout par spécialisation sur Forever (talents principaux / s
 - Tests en jeu en attente : première installation sur le Mac (Retail, sans données kgPanels) et vérification de la nouvelle icône.
 - ✅ 2026-09-29 : `deploy.sh all` fait, nouvelle icône vérifiée en jeu sur Retail et Forever, aucune erreur. Tests hors jeu + `real` verts.
 - ✅ 2026-09-29 : 3 captures du README (`screenshot-window`, `-browser`, `-editmode` dans `docs/media/`), recadrées depuis les captures du mainteneur (noms floutés). Pas de capture « interface complète » (choix du mainteneur). Pour CurseForge (onglet Images) : `screenshot-display`, `-text`, `-templates` ; zhCN et Forever abandonnées. Reste éventuellement la capture du message d'import pendant la phase B.
-- Construction de test sur GitHub : à lancer par le mainteneur (Actions → Release → Run workflow), le lancement par Claude est bloqué par la protection automatique de Claude Code.
+- Construction de test sur GitHub : lancée par le mainteneur (le lancement par Claude est bloqué par la protection automatique de Claude Code).
+- ✅ 2026-09-29 : licence passée en « Tous droits réservés » (PR #7), phase B réussie, projet CurseForge renommé, `CF_API_KEY` ajouté.
 
 1. Fait le 2026-09-28 : préparation de la publication validée par le mainteneur, commitée et poussée sur `feature/options-window` (PR #1, tests GitHub verts).
-2. Suivre l'ordre des opérations de `docs/publication/PUBLICATION.md` section 1 : ~~fusion de la PR #1~~ ✅ → ~~construction de test (phase A)~~ ✅ → test de mise à jour local (phase B, sur le PC de jeu, avec le zip du run) → ~~captures~~ ✅ + ~~logo~~ ✅ → renommage CurseForge + message au modérateur → métadonnées GitHub → tag `1.0.0-alpha.2` → test avec l'appli CurseForge (phase C).
+2. Suivre l'ordre des opérations de `docs/publication/PUBLICATION.md` section 1 : ~~fusion de la PR #1~~ ✅ → ~~construction de test (phase A)~~ ✅ → ~~phase B~~ ✅ → ~~captures~~ ✅ + ~~logo~~ ✅ → ~~renommage CurseForge~~ ✅ (message au modérateur si le projet repasse en revue) → métadonnées GitHub → tag `1.0.0-alpha.2` → test avec l'appli CurseForge (phase C).
    - ~~Captures du README~~ ✅ (3 images, PR feature/screenshots).
    - Image sociale GitHub (Settings → Social preview) : `docs/media/social-preview.png`, à envoyer à la main. Bannière CurseForge : `docs/media/banner-curseforge.png`.
 3. Faire relire les traductions zhCN / zhTW par un joueur natif.

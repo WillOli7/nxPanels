@@ -1,7 +1,7 @@
 <!--
 CurseForge page of nxPanels (project 1444518). Paste everything below the line into
 Description (editor set to Markdown). Images: upload them in the Images tab of the
-project, then replace each IMAGE_URL_* with the link CurseForge gives:
+project if the GitHub links below do not show:
 BANNER = docs/media/banner-curseforge.png, BROWSER = screenshot-browser.jpg,
 EDITMODE = screenshot-editmode.jpg. The other screenshots (window, display, text,
 templates) go in the Images tab only.
@@ -10,7 +10,7 @@ Artistic panels for your interface: backgrounds, borders, text and scripts, plac
 -->
 ---
 
-![nxPanels](IMAGE_URL_BANNER)
+![nxPanels](https://raw.githubusercontent.com/WillOli7/nxPanels/main/docs/media/banner-curseforge.png)
 
 **nxPanels** adds artistic panels to your interface: backgrounds, borders, text and scripts, placed anywhere and attached to any frame.
 
@@ -27,9 +27,9 @@ Artistic panels for your interface: backgrounds, borders, text and scripts, plac
 - **Share** a layout, a folder or a panel with a text string.
 - Scripts for advanced users.
 
-![The panel editor and the texture browser](IMAGE_URL_BROWSER)
+![The panel editor and the texture browser](https://raw.githubusercontent.com/WillOli7/nxPanels/main/docs/media/screenshot-browser.jpg)
 
-![The edit mode](IMAGE_URL_EDITMODE)
+![The edit mode](https://raw.githubusercontent.com/WillOli7/nxPanels/main/docs/media/screenshot-editmode.jpg)
 
 ## Clients and languages
 **Retail 12.x** and **WoW Forever**. English, Français, 简体中文, 繁體中文. Text always uses the font of your client language.
