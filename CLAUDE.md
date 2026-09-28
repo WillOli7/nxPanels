@@ -1,6 +1,6 @@
 # nxPanels — project guide
 
-Artistic panels addon for World of Warcraft (Retail 12.x and WoW Forever), a full rewrite released under GPL-3.0-or-later. The maintainer writes in French: answer in French.
+Artistic panels addon for World of Warcraft (Retail 12.x and WoW Forever), a full rewrite, all rights reserved (see `LICENSE`; the embedded libraries keep their own licenses). The maintainer writes in French: answer in French.
 
 ## Layout of the repository
 | Folder | Role |

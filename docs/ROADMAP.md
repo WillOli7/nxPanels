@@ -42,13 +42,13 @@ Constats sur l'ancien code (kgPanels Reloaded) :
 
 La v1.0 devient un addon à part entière, sans lien de code avec eePanels / kgPanels.
 
-**Nom : nxPanels** (« next »), licence **GPL-3.0-or-later**.
+**Nom : nxPanels** (« next »), licence **Tous droits réservés** (GPL-3.0-or-later jusqu'au 2026-09-28).
 
 | Sujet | Décision | Statut |
 |---|---|---|
 | Nom | **nxPanels** (slug CurseForge `nxpanels` libre au 2026-09-28) | ✅ |
 | Base de sauvegarde | Nouvelle base avec son propre nom + import des anciennes données kgPanels / kgPanels_Reloaded | ✅ |
-| Licence | GPL-3.0-or-later | ✅ |
+| Licence | Tous droits réservés (décidé le 2026-09-29, avant : GPL-3.0-or-later) | ✅ |
 | Crédits | Une ligne de remerciement envers kgPanels (kagaro) et eePanels (section « Origins » du README) | ✅ |
 
 Point technique : un addon ne peut lire que son propre fichier de sauvegarde (fichier nommé d'après son dossier).

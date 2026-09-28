@@ -288,7 +288,7 @@ L["SNAP_PANELS_DESC"] = "Aligns with the edges and centers of the other panels a
 L["SNAP_DISTANCE"] = "Snap distance"
 L["BIG_STEP"] = "Step of Shift + arrows"
 L["EDIT_MODE_HELP_SHORT"] = "Move and resize with the mouse"
-L["ABOUT"] = "nxPanels %s, %s client, language %s.\nText font: %s\n\nFree and open source (GPL-3.0). Commands: /nxp help"
+L["ABOUT"] = "nxPanels %s, %s client, language %s.\nText font: %s\n\nFree of charge. Commands: /nxp help"
 
 L["GRID"] = "Grid"
 L["SNAP"] = "Snap"

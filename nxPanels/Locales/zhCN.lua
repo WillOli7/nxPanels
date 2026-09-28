@@ -289,7 +289,7 @@ L["SNAP_PANELS_DESC"] = "与其他面板及屏幕的边缘和中心对齐。"
 L["SNAP_DISTANCE"] = "吸附距离"
 L["BIG_STEP"] = "Shift + 方向键的步长"
 L["EDIT_MODE_HELP_SHORT"] = "用鼠标移动和调整大小"
-L["ABOUT"] = "nxPanels %s，%s 客户端，语言 %s。\n文字字体：%s\n\n免费开源（GPL-3.0）。命令：/nxp help"
+L["ABOUT"] = "nxPanels %s，%s 客户端，语言 %s。\n文字字体：%s\n\n免费。命令：/nxp help"
 
 L["GRID"] = "网格"
 L["SNAP"] = "吸附"

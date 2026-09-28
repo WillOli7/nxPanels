@@ -4,5 +4,5 @@
 ## Notes-frFR: Dossier vide : la configuration fait désormais partie de nxPanels. Vous pouvez supprimer ce dossier.
 ## Author: Adna
 ## Version: 1.0.0-alpha.2
-## X-License: GPL-3.0-or-later
+## X-License: All Rights Reserved
 ## LoadOnDemand: 1

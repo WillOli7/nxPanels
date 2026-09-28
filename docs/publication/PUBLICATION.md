@@ -81,7 +81,7 @@ Dans la console auteur (authors.curseforge.com → Projects → kgPanels_Reloade
 | Résumé | … | voir l'en-tête de `CURSEFORGE.md` (moins de 250 caractères) |
 | Catégorie principale | Artwork | **Artwork** |
 | Autres catégories | HUDs | **HUDs** (éventuellement « Miscellaneous ») |
-| Licence | All Rights Reserved | **GNU General Public License version 3 (GPLv3)** ; le « or later » est précisé dans le fichier `LICENSE` du paquet |
+| Licence | All Rights Reserved | **All Rights Reserved** (inchangée ; détails dans le fichier `LICENSE` du paquet) |
 | Source | GitHub (ancien dépôt) | `https://github.com/WillOli7/nxPanels` |
 | Issues | — | `https://github.com/WillOli7/nxPanels/issues` |
 | Avatar | ancien | logo 400×400 minimum (section 7) |
@@ -91,7 +91,7 @@ Versions de jeu : elles viennent de chaque fichier envoyé (le packager les lit 
 
 Envoi automatique des fichiers : console auteur → **API tokens** → créer un jeton, puis GitHub → dépôt → Settings → Secrets and variables → Actions → nouveau secret **`CF_API_KEY`**. Sans ce secret, un tag ne crée que la release GitHub.
 
-Modération : un changement de nom et de licence d'un projet déjà approuvé peut repasser en revue. Envoyer le message ci-dessous par le canal indiqué dans la console (commentaire de revue si le projet passe « Under review ») ou, sinon, par un ticket au support CurseForge (section auteurs). Faire le renommage **avant** l'envoi du premier fichier nxPanels, pour que le modérateur voie le projet cohérent.
+Modération : un changement de nom d'un projet déjà approuvé peut repasser en revue. Envoyer le message ci-dessous par le canal indiqué dans la console (commentaire de revue si le projet passe « Under review ») ou, sinon, par un ticket au support CurseForge (section auteurs). Faire le renommage **avant** l'envoi du premier fichier nxPanels, pour que le modérateur voie le projet cohérent.
 
 ## 5. Message au modérateur (anglais)
 
@@ -99,7 +99,7 @@ Modération : un changement de nom et de licence d'un projet déjà approuvé pe
 >
 > I am the author of **kgPanels_Reloaded** (project ID **1444518**). I have renamed it to **nxPanels** and I would like to ask for your review of the change. It is the same project and the same author, continuing under a new name.
 >
-> **Why a new name.** kgPanels_Reloaded was an update of the old kgPanels addon. nxPanels is a **complete rewrite**: new engine, new saved data format, new configuration window and edit mode, full support for Simplified and Traditional Chinese clients, and support for both Retail 12.x and WoW Forever. It does not reuse any code of kgPanels or eePanels, so it deserves its own name, and it is now free software under **GPL-3.0-or-later** (the previous "All Rights Reserved" label no longer applies to this code).
+> **Why a new name.** kgPanels_Reloaded was an update of the old kgPanels addon. nxPanels is a **complete rewrite**: new engine, new saved data format, new configuration window and edit mode, full support for Simplified and Traditional Chinese clients, and support for both Retail 12.x and WoW Forever. It does not reuse any code of kgPanels or eePanels, so it deserves its own name. The license stays "All Rights Reserved", and the addon stays free.
 >
 > **Credit.** The description and the README credit **kgPanels by kagaro** and its predecessor **eePanels**, which inspired this project.
 >

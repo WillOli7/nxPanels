@@ -6,7 +6,7 @@
 ## Notes-zhTW: nxPanels 的設定視窗，開啟時才載入。
 ## Author: Adna
 ## Version: 1.0.0-alpha.2
-## X-License: GPL-3.0-or-later
+## X-License: All Rights Reserved
 ## RequiredDeps: nxPanels
 ## LoadOnDemand: 1
 ## IconTexture: Interface\AddOns\nxPanels\Media\icon

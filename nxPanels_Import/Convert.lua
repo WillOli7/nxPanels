@@ -1,5 +1,5 @@
 -- nxPanels Import - Copyright (C) 2026 Adna
--- Licensed under the GNU General Public License v3.0 or later. See LICENSE.
+-- All rights reserved. See LICENSE.
 
 -- Conversion of the kgPanels data format (panels keyed by name, translated
 -- keys, numbers stored as strings) into the nxPanels schema.
