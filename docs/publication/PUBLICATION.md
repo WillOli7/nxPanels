@@ -2,7 +2,7 @@
 
 Dossier de travail de la sortie publique. Rien n'est publié sans l'accord du mainteneur à chaque étape.
 
-> ✅ **Publication terminée le 2026-09-29** : étapes 1 à 11 faites (`1.0.0-alpha.2`, puis `1.0.0` en release), sauf l'image sociale GitHub (étape 8). Ce dossier sert de référence pour les versions suivantes.
+> ✅ **Publication terminée le 2026-09-29** : étapes 1 à 11 faites (`1.0.0-alpha.2`, puis `1.0.0` en release), image sociale GitHub comprise. Ce dossier sert de référence pour les versions suivantes.
 Textes prêts à coller : `CURSEFORGE.md` (page CurseForge, en anglais + résumés FR / zhCN / zhTW).
 
 ---

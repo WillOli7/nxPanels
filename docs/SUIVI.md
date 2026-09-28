@@ -12,7 +12,7 @@ Dernière mise à jour : 2026-09-29
 
 | Élément | État |
 |---|---|
-| Version | **`1.0.0` publiée en release le 2026-09-29** (tous les TOC alignés). Avant : `1.0.0-alpha.2` (fichier alpha CurseForge, à archiver ; pré-version sur GitHub) |
+| Version | **`1.0.0` publiée en release le 2026-09-29** (tous les TOC alignés). Avant : `1.0.0-alpha.2` (archivé sur CurseForge ; pré-version sur GitHub) |
 | Branche de travail | aucune : tout est sur `main` |
 | Pull request | PR #1 à #14 fusionnées dans `main` ; aucune PR ouverte |
 | `main` | = tag `1.0.0` + mises à jour du suivi |
@@ -20,7 +20,7 @@ Dernière mise à jour : 2026-09-29
 | Installé sur Mac | Retail (`/Applications/World of Warcraft/_retail_`, compte DARKICE7, aucune donnée kgPanels : test de première installation) via `WOW_DIR="/Applications/World of Warcraft" bash tools/deploy.sh retail`. Forever pas encore lancé sur ce Mac. Test en jeu à faire |
 | Tests hors jeu | Tous verts : `bash tools/tests/run-all.sh <luajit>` (migrate, original, handinstall, empty, forever, zhcn, options ×4 langues) + `real` avec les vraies données |
 | Installé en local | Oui, Retail (`_retail_`) et Forever (`_classic_beta_`) via `bash tools/deploy.sh all` |
-| CurseForge | Projet `1444518` **renommé nxPanels** (slug `nxpanels`, logo, description courte, licence « All Rights Reserved », distribution tierce refusée). Secret GitHub `CF_API_KEY` en place, envoi automatique au tag. Fichiers : `1.0.0-alpha.2` (alpha, approuvé) et **`1.0.0` (release, envoyé le 2026-09-29, run du tag `1.0.0`)** |
+| CurseForge | Projet `1444518` **renommé nxPanels** (slug `nxpanels`, logo, description courte, licence « All Rights Reserved », distribution tierce refusée). Secret GitHub `CF_API_KEY` en place, envoi automatique au tag. Fichiers : **`1.0.0` (release, approuvé le 2026-09-29)** ; `1.0.0-alpha.2` archivé |
 | Publication | Dossier prêt : `docs/publication/PUBLICATION.md` (étapes, test de mise à jour, message au modérateur, captures, brief du logo, GitHub) et `docs/publication/CURSEFORGE.md` (page CurseForge EN + FR / zhCN / zhTW). Workflow `.github/workflows/release.yml` (tag → release GitHub, CurseForge si secret `CF_API_KEY` ; lancement manuel = construction de test sans envoi) |
 | Phase B | ✅ 2026-09-29 avec le zip du run sur `a805446` (`tools/update-test.sh`) : v0.4.0 affichée, puis mise à jour → 3 layouts / 33 panneaux importés, panneaux identiques, `/nxp status` sans erreur, anciens addons désactivés, `/reload` et autre personnage OK, `kgPanelsDB` inchangé. Installation remise en état (`restore`) |
 | Paquet (phase A) | ✅ 2026-09-28 : construction de test OK (run 36355822045). 5 dossiers, pont intact, TOC en 1.0.0-alpha.2, rien de `tools` / `docs` / `CLAUDE.md`. Versions détectées par le packager : 12.0.0 à 12.1.0 + Forever 1.60.1. Le zip se retélécharge depuis le run GitHub (artefact « nxPanels-package », 90 jours) |
@@ -127,9 +127,9 @@ Reste à tester : layout par spécialisation sur Forever (talents principaux / s
 **Publication faite le 2026-09-29** : phases A, B et C réussies, `1.0.0-alpha.2` puis **`1.0.0` en release** (tous les joueurs de kgPanels Reloaded reçoivent la mise à jour par l'appli CurseForge).
 
 À faire :
-1. CurseForge (mainteneur) : vérifier que `1.0.0` passe « Approved », archiver `1.0.0-alpha.2`, retirer la ligne « 🚧 Alpha » de la description en ligne (le fichier `CURSEFORGE.md` est déjà à jour).
+1. ~~CurseForge : `1.0.0` approuvé, `1.0.0-alpha.2` archivé, description sans « Alpha »~~ ✅ 2026-09-29.
 2. Surveiller les premiers retours (commentaires CurseForge, issues GitHub) : c'est la première fois que la migration tourne sur des données d'autres joueurs.
-3. GitHub : image sociale à envoyer à la main (Settings → Social preview, `docs/media/social-preview.png`).
+3. ~~GitHub : image sociale, lien CurseForge et topics~~ ✅ 2026-09-29.
 4. Anciens critères v1.0 restants : relecture des traductions zhCN / zhTW par un joueur natif ; layout par groupe de talents à tester en jeu sur Forever.
 5. Tests en jeu en attente : première installation sur le Mac (Retail, sans données kgPanels).
 6. Backlog (`docs/ROADMAP.md`) : masques (coins arrondis), plusieurs calques, ombres, coloration du code des scripts, layout par résolution d'écran.
