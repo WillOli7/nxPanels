@@ -13,10 +13,10 @@ Dernière mise à jour : 2026-09-28
 | Élément | État |
 |---|---|
 | Version | `1.0.0-alpha.2` (tous les TOC alignés) |
-| Branche de travail | `feature/logo` (depuis `main`), poussée sur GitHub |
-| Pull request | PR #1, #2 (workflow de release) et #3 (feuille de route) **fusionnées** dans `main` le 2026-09-28. PR `feature/logo` ouverte (logo, bannières, icône en jeu) |
+| Branche de travail | aucune : tout est sur `main` |
+| Pull request | PR #1, #2 (workflow de release), #3 (feuille de route) et #4 (logo) **fusionnées** dans `main` le 2026-09-28 |
 | `main` | alpha.2 complète : moteur, fenêtre de configuration, mode édition, import, workflow de release |
-| Logo | ✅ 2026-09-28 : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7 |
+| Logo | ✅ 2026-09-28 (PR #4) : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7. Reste : image sociale à envoyer à la main (Settings → Social preview), vérifier l'icône en jeu (liste des addons, minicarte, compartiment) |
 | Installé sur Mac | Retail (`/Applications/World of Warcraft/_retail_`, compte DARKICE7, aucune donnée kgPanels : test de première installation) via `WOW_DIR="/Applications/World of Warcraft" bash tools/deploy.sh retail`. Forever pas encore lancé sur ce Mac. Test en jeu à faire |
 | Tests hors jeu | Tous verts : `bash tools/tests/run-all.sh <luajit>` (migrate, original, handinstall, empty, forever, zhcn, options ×4 langues) + `real` avec les vraies données |
 | Installé en local | Oui, Retail (`_retail_`) et Forever (`_classic_beta_`) via `bash tools/deploy.sh all` |
@@ -122,6 +122,12 @@ Invariants à garder :
 Reste à tester : layout par spécialisation sur Forever (talents principaux / secondaires) quand le personnage aura les talents.
 
 ## 7. Suite prévue
+
+**Reprise sur le PC de jeu (après la session Mac du 2026-09-28)** :
+- `git switch main && git pull` : récupère les PR #2 à #4 (workflow de release, feuille de route, logo et icône). Puis `bash tools/deploy.sh all` (nouvelle icône : redémarrer le jeu, changement de TOC).
+- À faire sur le PC : phase B (test de mise à jour depuis la v0.4.0, zip du run 36355822045 disponible jusqu'au 26/12, ou nouvelle construction de test depuis `main` pour inclure l'icône) et scénario `real` avant publication.
+- Tests en jeu en attente : première installation sur le Mac (Retail, sans données kgPanels) et vérification de la nouvelle icône.
+- Il manque encore les 4 captures du README (`docs/media/screenshot-*.jpg`, section 6 de `PUBLICATION.md`).
 
 1. Fait le 2026-09-28 : préparation de la publication validée par le mainteneur, commitée et poussée sur `feature/options-window` (PR #1, tests GitHub verts).
 2. Suivre l'ordre des opérations de `docs/publication/PUBLICATION.md` section 1 : ~~fusion de la PR #1~~ ✅ → ~~construction de test (phase A)~~ ✅ → test de mise à jour local (phase B, sur le PC de jeu, avec le zip du run) → captures + ~~logo~~ ✅ → renommage CurseForge + message au modérateur → métadonnées GitHub → tag `1.0.0-alpha.2` → test avec l'appli CurseForge (phase C).
