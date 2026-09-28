@@ -272,7 +272,7 @@ function IsMounted() return M.state.mounted end
 function UnitExists(unit) return unit == "target" and M.state.target ~= nil end
 function UnitCanAttack() return M.state.target == "hostile" end
 function UnitIsFriend() return M.state.target == "friendly" end
-function MouseIsOver(frame) return M.state.hover[frame] or false end
+function Region:IsMouseOver() return M.state.hover[self] or false end
 -- "[combat] show; hide" style, enough for the tests
 function SecureCmdOptionParse(text)
 	for clause in text:gmatch("[^;]+") do
