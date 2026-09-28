@@ -12,10 +12,10 @@ Dernière mise à jour : 2026-09-29
 
 | Élément | État |
 |---|---|
-| Version | `1.0.0-alpha.2` (tous les TOC alignés) |
+| Version | `1.0.0` (tous les TOC alignés), publiée le 2026-09-29. Avant : `1.0.0-alpha.2` (fichier alpha CurseForge, à archiver) |
 | Branche de travail | aucune : tout est sur `main` |
 | Pull request | PR #1 à #9 **fusionnées** dans `main` (#6 captures + script de test, #7 licence, #8 page CurseForge courte, #9 ID du projet CurseForge dans le workflow) |
-| `main` | alpha.2 complète : moteur, fenêtre de configuration, mode édition, import, workflow de release |
+| `main` | 1.0.0 : moteur, fenêtre de configuration, mode édition, import, workflow de release |
 | Logo | ✅ 2026-09-28 (PR #4) : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7. Icône vérifiée en jeu (Retail et Forever) le 2026-09-29. Reste : image sociale à envoyer à la main (Settings → Social preview) |
 | Installé sur Mac | Retail (`/Applications/World of Warcraft/_retail_`, compte DARKICE7, aucune donnée kgPanels : test de première installation) via `WOW_DIR="/Applications/World of Warcraft" bash tools/deploy.sh retail`. Forever pas encore lancé sur ce Mac. Test en jeu à faire |
 | Tests hors jeu | Tous verts : `bash tools/tests/run-all.sh <luajit>` (migrate, original, handinstall, empty, forever, zhcn, options ×4 langues) + `real` avec les vraies données |
