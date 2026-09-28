@@ -135,6 +135,12 @@ Optionnel : un GIF court (5-10 s, < 10 Mo) du mode édition avec l'aimantation.
 
 ## 7. Logo — brief pour ChatGPT
 
+> ✅ **Fait le 2026-09-28.** Deux versions :
+> - **Stylisée** (ChatGPT, or brillant et losanges) pour les grandes tailles : `docs/media/logo-1024.png`, `logo-512.png` (transparents), `social-preview.png` (1280×640) et `banner-curseforge.png` (1200×400, à envoyer dans l'onglet Images de CurseForge pour `IMAGE_URL_BANNER`).
+> - **Simplifiée** (dessin vectoriel `docs/media/icon.svg`, couleurs unies, lisible en 16 px) pour le jeu : `nxPanels/Media/icon.tga` (64×64, 32 bits avec alpha), utilisée par les 3 TOC nxPanels et le bouton de minicarte.
+> - Le carré « nx » de la fenêtre de configuration reste en texte : il suit la couleur d'accent choisie par le joueur.
+> - Régénérer le TGA après une retouche du SVG : `rsvg-convert -w 64 -h 64 docs/media/icon.svg -o /tmp/icon.png && magick /tmp/icon.png -compress none -type TrueColorAlpha nxPanels/Media/icon.tga` (Homebrew : `librsvg`, `imagemagick`).
+
 **Idée.** Des *panneaux* superposés : deux ou trois rectangles aux coins légèrement arrondis, décalés comme des cadres posés sur un plan de travail, dont un seul est cerclé d'une **bordure or**. Évoque « des cadres qui habillent une interface », sans texte dans l'icône. Variante possible : un « n » stylisé formé par deux panneaux.
 
 **Couleurs (style Atelier de la fenêtre).**

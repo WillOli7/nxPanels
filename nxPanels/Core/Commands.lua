@@ -5,7 +5,7 @@ local L = ns.L
 local Commands = {}
 ns.Commands = Commands
 
-local ICON = "Interface\\Icons\\INV_Inscription_Tradeskill01"
+local ICON = "Interface\\AddOns\\nxPanels\\Media\\icon"
 
 local function clientName()
 	if ns.isForever then return L["CLIENT_FOREVER"] end

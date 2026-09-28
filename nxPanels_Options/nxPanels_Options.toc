@@ -9,7 +9,7 @@
 ## X-License: GPL-3.0-or-later
 ## RequiredDeps: nxPanels
 ## LoadOnDemand: 1
-## IconTexture: Interface\Icons\INV_Inscription_Tradeskill01
+## IconTexture: Interface\AddOns\nxPanels\Media\icon
 ## Category: User Interface
 ## Category-deDE: Benutzerinterface
 ## Category-esES: Interfaz de usuario

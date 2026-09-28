@@ -13,9 +13,11 @@ Dernière mise à jour : 2026-09-28
 | Élément | État |
 |---|---|
 | Version | `1.0.0-alpha.2` (tous les TOC alignés) |
-| Branche de travail | `feature/publication` (depuis `main`), poussée sur GitHub |
-| Pull request | PR #1 **fusionnée** dans `main` le 2026-09-28 (commit 625f793). Petite PR `feature/publication` ouverte pour le correctif du workflow de release |
+| Branche de travail | `feature/logo` (depuis `main`), poussée sur GitHub |
+| Pull request | PR #1, #2 (workflow de release) et #3 (feuille de route) **fusionnées** dans `main` le 2026-09-28. PR `feature/logo` ouverte (logo, bannières, icône en jeu) |
 | `main` | alpha.2 complète : moteur, fenêtre de configuration, mode édition, import, workflow de release |
+| Logo | ✅ 2026-09-28 : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7 |
+| Installé sur Mac | Retail (`/Applications/World of Warcraft/_retail_`, compte DARKICE7, aucune donnée kgPanels : test de première installation) via `WOW_DIR="/Applications/World of Warcraft" bash tools/deploy.sh retail`. Forever pas encore lancé sur ce Mac. Test en jeu à faire |
 | Tests hors jeu | Tous verts : `bash tools/tests/run-all.sh <luajit>` (migrate, original, handinstall, empty, forever, zhcn, options ×4 langues) + `real` avec les vraies données |
 | Installé en local | Oui, Retail (`_retail_`) et Forever (`_classic_beta_`) via `bash tools/deploy.sh all` |
 | CurseForge | **Rien publié.** Projet existant à renommer : ID `1444518` (kgPanels_Reloaded, 1 095 téléchargements, licence « All Rights Reserved », v0.4.0 marquée 12.0.0 / 12.0.1). Slug `nxpanels` libre au 28/09 |
@@ -122,9 +124,9 @@ Reste à tester : layout par spécialisation sur Forever (talents principaux / s
 ## 7. Suite prévue
 
 1. Fait le 2026-09-28 : préparation de la publication validée par le mainteneur, commitée et poussée sur `feature/options-window` (PR #1, tests GitHub verts).
-2. Suivre l'ordre des opérations de `docs/publication/PUBLICATION.md` section 1 : ~~fusion de la PR #1~~ ✅ → ~~construction de test (phase A)~~ ✅ → test de mise à jour local (phase B, sur le PC de jeu, avec le zip du run) → captures + logo → renommage CurseForge + message au modérateur → métadonnées GitHub → tag `1.0.0-alpha.2` → test avec l'appli CurseForge (phase C).
-   - Le README référence `docs/media/logo-512.png` et 4 captures : tant qu'ils manquent, la page GitHub affiche des images cassées.
-   - Logo : brief en section 7 de `PUBLICATION.md` ; intégration (TGA 64×64, `## IconTexture`, minicarte) à faire quand l'image existe.
+2. Suivre l'ordre des opérations de `docs/publication/PUBLICATION.md` section 1 : ~~fusion de la PR #1~~ ✅ → ~~construction de test (phase A)~~ ✅ → test de mise à jour local (phase B, sur le PC de jeu, avec le zip du run) → captures + ~~logo~~ ✅ → renommage CurseForge + message au modérateur → métadonnées GitHub → tag `1.0.0-alpha.2` → test avec l'appli CurseForge (phase C).
+   - Le README référence 4 captures dans `docs/media/` : tant qu'elles manquent, la page GitHub affiche des images cassées.
+   - Image sociale GitHub (Settings → Social preview) : `docs/media/social-preview.png`, à envoyer à la main. Bannière CurseForge : `docs/media/banner-curseforge.png`.
 3. Faire relire les traductions zhCN / zhTW par un joueur natif.
 4. Backlog restant (`docs/ROADMAP.md`) : masques (coins arrondis), plusieurs calques, ombres, coloration du code des scripts, layout par résolution d'écran.
 
@@ -133,4 +135,4 @@ Reste à tester : layout par spécialisation sur Forever (talents principaux / s
 Dans une nouvelle conversation, commencer par :
 > Lis `CLAUDE.md`, `docs/SUIVI.md`, `docs/ROADMAP.md` et `docs/publication/PUBLICATION.md` du dépôt nxPanels (`D:\_CLAUDE\WoW - nxPanels`), puis vérifie l'état avec `git status` et `git log --oneline -10`.
 
-Reprise sur un autre ordinateur (Mac) : tout le travail est sur GitHub (`git pull`, branche `feature/publication`). Ne sont **pas** dans le dépôt : `.local/kgPanels_Reloaded.lua` (vraies données, scénario `real` impossible ailleurs que sur le PC de jeu), l'installation du jeu (`tools/deploy.sh`, test de mise à jour phase B) et les chemins d'outils du PC. Sur Mac : `brew install luajit`, puis `bash tools/tests/run-all.sh luajit`.
+Reprise sur un autre ordinateur (Mac) : tout le travail est sur GitHub (`git pull`), dépôt cloné dans `~/Desktop/nxPanels`. Ne sont **pas** dans le dépôt : `.local/kgPanels_Reloaded.lua` (vraies données, scénario `real` impossible ailleurs que sur le PC de jeu), l'installation du jeu (`tools/deploy.sh`, test de mise à jour phase B) et les chemins d'outils du PC. Sur Mac (Homebrew installé, avec `luajit`, `librsvg`, `imagemagick`) : `bash tools/tests/run-all.sh luajit`. Le dossier `img/` (brouillons du logo) est ignoré par git.
