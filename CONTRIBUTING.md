@@ -1,6 +1,6 @@
 # Contributing to nxPanels
 
-Thanks for helping! nxPanels is free software (GPL-3.0-or-later).
+Thanks for helping! nxPanels is free to use, but its code is not open source (see [LICENSE](LICENSE)). By sending a contribution (code, translation, image), you agree that it may be distributed with nxPanels under its license.
 
 ## Report a bug
 Open an issue with the "Bug report" template. Please include the error text from BugSack / BugGrabber and the output of `/nxp status`.

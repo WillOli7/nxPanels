@@ -288,7 +288,7 @@ L["SNAP_PANELS_DESC"] = "Aligne sur les bords et les centres des autres panneaux
 L["SNAP_DISTANCE"] = "Distance d'aimantation"
 L["BIG_STEP"] = "Pas de Maj + flèches"
 L["EDIT_MODE_HELP_SHORT"] = "Déplacer et redimensionner à la souris"
-L["ABOUT"] = "nxPanels %s, client %s, langue %s.\nPolice du texte : %s\n\nLibre et gratuit (GPL-3.0). Commandes : /nxp help"
+L["ABOUT"] = "nxPanels %s, client %s, langue %s.\nPolice du texte : %s\n\nGratuit. Commandes : /nxp help"
 
 L["GRID"] = "Grille"
 L["SNAP"] = "Aimant"

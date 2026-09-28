@@ -1,5 +1,5 @@
 -- nxPanels - Copyright (C) 2026 Adna
--- Licensed under the GNU General Public License v3.0 or later. See LICENSE.
+-- All rights reserved. See LICENSE.
 
 local ADDON, ns = ...
 

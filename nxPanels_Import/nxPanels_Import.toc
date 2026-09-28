@@ -6,7 +6,7 @@
 ## Notes-zhTW: 將你的 kgPanels 與 kgPanels Reloaded 版面匯入 nxPanels。匯入完成後可以停用。
 ## Author: Adna
 ## Version: 1.0.0-alpha.2
-## X-License: GPL-3.0-or-later
+## X-License: All Rights Reserved
 ## RequiredDeps: nxPanels
 ## OptionalDeps: kgPanels
 ## IconTexture: Interface\AddOns\nxPanels\Media\icon

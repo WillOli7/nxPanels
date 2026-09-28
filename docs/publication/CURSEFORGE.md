@@ -95,7 +95,7 @@ The folders `kgPanels_Reloaded` and `kgPanelsConfig_Reloaded` of the package are
 
 nxPanels exists thanks to **kgPanels** by **kagaro**, successor of **eePanels**. It is a complete rewrite that does not reuse their code, but it keeps their spirit. Thank you to their authors and to everyone who kept them alive.
 
-Free software under the **GNU GPL v3 or later**. Free, and it will stay free. Source code, bugs and translations: [github.com/WillOli7/nxPanels](https://github.com/WillOli7/nxPanels).
+Free, and it will stay free. Source code (all rights reserved), bugs and translations: [github.com/WillOli7/nxPanels](https://github.com/WillOli7/nxPanels).
 
 ---
 

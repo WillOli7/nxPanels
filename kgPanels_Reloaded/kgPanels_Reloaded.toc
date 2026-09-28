@@ -4,7 +4,7 @@
 ## Notes-frFR: Garde vos données kgPanels Reloaded lisibles pour que nxPanels les importe. Chargé par nxPanels si besoin.
 ## Author: Adna
 ## Version: 1.0.0-alpha.2
-## X-License: GPL-3.0-or-later
+## X-License: All Rights Reserved
 ## LoadOnDemand: 1
 ## SavedVariables: kgPanelsDB
 

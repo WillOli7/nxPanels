@@ -15,7 +15,7 @@
   <img src="https://img.shields.io/badge/Retail-12.x-1f6feb" alt="Retail 12.x">
   <img src="https://img.shields.io/badge/WoW%20Forever-1.60-8250df" alt="WoW Forever">
   <a href="https://github.com/WillOli7/nxPanels/actions/workflows/tests.yml"><img src="https://github.com/WillOli7/nxPanels/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/WillOli7/nxPanels?color=3fb950" alt="License GPL-3.0"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-all%20rights%20reserved-lightgrey" alt="License: all rights reserved"></a>
 </p>
 
 > 🚧 **Alpha.** Everything described here works in game on Retail and WoW Forever; the alpha is there to collect feedback before the first stable version. Please [report any problem](https://github.com/WillOli7/nxPanels/issues).
@@ -147,4 +147,4 @@ nxPanels is a complete rewrite and does not reuse their code, but it keeps their
 
 ## License
 
-nxPanels is free software under the [GNU GPL v3 or later](LICENSE). It is and will stay free, in game and outside.
+nxPanels is free to download and use, and it will stay free. The code is public so that you can read it and report problems, but it is not open source: copying, modifying or re-uploading it requires my permission. Details in [LICENSE](LICENSE); the embedded libraries keep their own licenses.

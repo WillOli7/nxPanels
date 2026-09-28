@@ -67,7 +67,7 @@ Langues : enUS, frFR, zhCN, zhTW (mêmes clés partout, vérifié par les tests)
 
 | Décision | Raison |
 |---|---|
-| Nom **nxPanels**, licence **GPL-3.0-or-later**, crédit « Origins » à kgPanels / eePanels dans le README | Choix du mainteneur |
+| Nom **nxPanels**, licence **Tous droits réservés** (depuis le 2026-09-29, comme EllesmereUI ; les versions déjà publiées restent en GPL, les librairies gardent leur licence), crédit « Origins » à kgPanels / eePanels dans le README | Choix du mainteneur |
 | Aucune mention de kgPanels dans `nxPanels/` et `nxPanels_Options/` | Tout l'héritage vit dans `nxPanels_Import` |
 | **Layout par spécialisation** au lieu de profils par spécialisation ; LibDualSpec retirée | Choix du mainteneur : les spés choisissent un layout, les profils servent par classe / faction |
 | Anciennes librairies de config (AceGUI, AceConfig, AceDBOptions) retirées | Remplacées par la fenêtre maison |
