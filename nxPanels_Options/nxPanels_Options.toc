@@ -5,7 +5,7 @@
 ## Notes-zhCN: nxPanels 的设置窗口，打开时才加载。
 ## Notes-zhTW: nxPanels 的設定視窗，開啟時才載入。
 ## Author: Adna
-## Version: 1.0.0-alpha.2
+## Version: 1.0.0
 ## X-License: All Rights Reserved
 ## RequiredDeps: nxPanels
 ## LoadOnDemand: 1

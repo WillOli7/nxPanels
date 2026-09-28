@@ -18,7 +18,6 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-all%20rights%20reserved-lightgrey" alt="License: all rights reserved"></a>
 </p>
 
-> 🚧 **Alpha.** Everything described here works in game on Retail and WoW Forever; the alpha is there to collect feedback before the first stable version. Please [report any problem](https://github.com/WillOli7/nxPanels/issues).
 
 ## Features
 

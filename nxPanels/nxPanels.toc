@@ -5,7 +5,7 @@
 ## Notes-zhCN: 为你的界面添加艺术面板：背景、边框、文字与脚本。
 ## Notes-zhTW: 為你的介面加入藝術面板：背景、邊框、文字與腳本。
 ## Author: Adna
-## Version: 1.0.0-alpha.2
+## Version: 1.0.0
 ## X-License: All Rights Reserved
 ## X-Curse-Project-ID: 1444518
 ## SavedVariables: nxPanelsDB

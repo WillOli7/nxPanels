@@ -30,4 +30,4 @@ Artistic panels addon for World of Warcraft (Retail 12.x and WoW Forever), a ful
 - Local game install for the maintainer's tests: `bash tools/deploy.sh all` (game closed; a restart is needed for TOC changes).
 - Branches: `main` stable, `feature/<name>` then pull request. Commit messages in English.
 - Nothing is published to CurseForge until it works in game on Retail and Forever.
-- v1.0 is validated when: code fully rewritten, Chinese clients fully supported, WoW Forever fully compatible.
+- 1.0.0 released on 2026-09-29 (maintainer's choice). Still to do from the original v1.0 criteria: native review of the Chinese translations, layout per talent group tested in game on WoW Forever.

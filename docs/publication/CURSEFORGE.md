@@ -16,7 +16,7 @@ Artistic panels for your interface: backgrounds, borders, text and scripts, plac
 
 > **Coming from kgPanels Reloaded?** Same project, new name. **Nothing to do:** your layouts are imported on the first start, and your old data is never modified.
 
-> 🚧 **Alpha.** Please report problems in the comments or on [GitHub](https://github.com/WillOli7/nxPanels/issues).
+> Problem or question? Comments or [GitHub](https://github.com/WillOli7/nxPanels/issues).
 
 ## Features
 - **Configuration window** (`/nxp`) and **edit mode** (`/nxp edit`): move and resize with the mouse, snapping, alignment guides, undo.

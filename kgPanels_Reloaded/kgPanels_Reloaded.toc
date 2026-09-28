@@ -3,7 +3,7 @@
 ## Notes: Keeps your kgPanels Reloaded data readable so nxPanels can import it. Loaded by nxPanels when needed.
 ## Notes-frFR: Garde vos données kgPanels Reloaded lisibles pour que nxPanels les importe. Chargé par nxPanels si besoin.
 ## Author: Adna
-## Version: 1.0.0-alpha.2
+## Version: 1.0.0
 ## X-License: All Rights Reserved
 ## LoadOnDemand: 1
 ## SavedVariables: kgPanelsDB

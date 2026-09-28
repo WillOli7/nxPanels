@@ -14,9 +14,9 @@ Statuts : 💡 idée · 🔍 à étudier · 📐 spécifié · 🚧 en cours · 
 | P1 | **Support complet du client chinois (zhCN, et zhTW)** | 🚧 | Polices, clés neutres et traductions faits (scénario de test `zhcn`). Reste : relecture par un joueur natif. Voir section dédiée. |
 | P2 | Correctif v0.4.1 (bugs bloquants du code actuel) | ❌ | Abandonné : remplacé par la réécriture nxPanels. |
 | P3 | Compatibilité **WoW Forever** (Interface 16001) | 🚧 | Testé en jeu (démarrage, import, atlas, conditions). Reste : layout par groupe de talents. |
-| P4 | Réécriture v1.0 (sortie de l'héritage eePanels) | 🚧 | nxPanels `1.0.0-alpha.2` sur `main`. Voir « Architecture v1.0 ». |
+| P4 | Réécriture v1.0 (sortie de l'héritage eePanels) | 🚧 | nxPanels `1.0.0` publiée le 2026-09-29. Voir « Architecture v1.0 ». |
 | P5 | Nouvelle interface de configuration (inspiration EllesmereUI) | ✅ | Fenêtre `nxPanels_Options` + mode édition, testés en jeu sur Retail. |
-| P6 | **Publication** (remplace kgPanels Reloaded sur CurseForge) | 🚧 | Phase A faite. Reste : phase B, captures + logo, renommage CurseForge, tag `1.0.0-alpha.2`, phase C. |
+| P6 | **Publication** (remplace kgPanels Reloaded sur CurseForge) | ✅ | `1.0.0` en release le 2026-09-29 (phases A, B, C réussies). |
 
 ---
 
@@ -67,7 +67,7 @@ Point technique : un addon ne peut lire que son propre fichier de sauvegarde (fi
 | 2a | Moteur nxPanels : données, migration, rendu, bordures, ancrages, scripts, commandes, minicarte, tests hors jeu | ✅ sur `main`, testé en jeu |
 | 2b | Fenêtre de configuration (`nxPanels_Options`) + mode édition | ✅ sur `main` (PR #1), testée en jeu sur Retail |
 | 2c | Nouvelles options (visibilité, animations, masques…) | 🚧 visibilité, opacité, couleurs dynamiques, variables faites ; masques et calques à venir |
-| 3 | Publication `1.0.0-alpha.2`, puis première version « release » | 🚧 |
+| 3 | Publication `1.0.0` (après `1.0.0-alpha.2`) | ✅ |
 
 ---
 
