@@ -4,7 +4,7 @@ Document de reprise : l'état exact du projet, pour continuer dans une nouvelle 
 À lire avec `CLAUDE.md` (règles du projet) et `docs/ROADMAP.md` (idées et backlog).
 **Mettre ce fichier à jour à la fin de chaque session de travail.**
 
-Dernière mise à jour : 2026-09-28
+Dernière mise à jour : 2026-09-29
 
 ---
 
@@ -127,11 +127,13 @@ Reste à tester : layout par spécialisation sur Forever (talents principaux / s
 - `git switch main && git pull` : récupère les PR #2 à #4 (workflow de release, feuille de route, logo et icône). Puis `bash tools/deploy.sh all` (nouvelle icône : redémarrer le jeu, changement de TOC).
 - À faire sur le PC : phase B (test de mise à jour depuis la v0.4.0, zip du run 36355822045 disponible jusqu'au 26/12, ou nouvelle construction de test depuis `main` pour inclure l'icône) et scénario `real` avant publication.
 - Tests en jeu en attente : première installation sur le Mac (Retail, sans données kgPanels) et vérification de la nouvelle icône.
-- Il manque encore les 4 captures du README (`docs/media/screenshot-*.jpg`, section 6 de `PUBLICATION.md`).
+- ✅ 2026-09-29 : `deploy.sh all` fait, nouvelle icône vérifiée en jeu sur Retail et Forever, aucune erreur. Tests hors jeu + `real` verts.
+- ✅ 2026-09-29 : 3 captures du README (`screenshot-window`, `-browser`, `-editmode` dans `docs/media/`), recadrées depuis les captures du mainteneur (noms floutés). Pas de capture « interface complète » (choix du mainteneur). Captures 5 à 9 de `PUBLICATION.md` section 6 : plus tard, pour CurseForge.
+- Construction de test sur GitHub : à lancer par le mainteneur (Actions → Release → Run workflow), le lancement par Claude est bloqué par la protection automatique de Claude Code.
 
 1. Fait le 2026-09-28 : préparation de la publication validée par le mainteneur, commitée et poussée sur `feature/options-window` (PR #1, tests GitHub verts).
-2. Suivre l'ordre des opérations de `docs/publication/PUBLICATION.md` section 1 : ~~fusion de la PR #1~~ ✅ → ~~construction de test (phase A)~~ ✅ → test de mise à jour local (phase B, sur le PC de jeu, avec le zip du run) → captures + ~~logo~~ ✅ → renommage CurseForge + message au modérateur → métadonnées GitHub → tag `1.0.0-alpha.2` → test avec l'appli CurseForge (phase C).
-   - Le README référence 4 captures dans `docs/media/` : tant qu'elles manquent, la page GitHub affiche des images cassées.
+2. Suivre l'ordre des opérations de `docs/publication/PUBLICATION.md` section 1 : ~~fusion de la PR #1~~ ✅ → ~~construction de test (phase A)~~ ✅ → test de mise à jour local (phase B, sur le PC de jeu, avec le zip du run) → ~~captures~~ ✅ + ~~logo~~ ✅ → renommage CurseForge + message au modérateur → métadonnées GitHub → tag `1.0.0-alpha.2` → test avec l'appli CurseForge (phase C).
+   - ~~Captures du README~~ ✅ (3 images, PR feature/screenshots).
    - Image sociale GitHub (Settings → Social preview) : `docs/media/social-preview.png`, à envoyer à la main. Bannière CurseForge : `docs/media/banner-curseforge.png`.
 3. Faire relire les traductions zhCN / zhTW par un joueur natif.
 4. Backlog restant (`docs/ROADMAP.md`) : masques (coins arrondis), plusieurs calques, ombres, coloration du code des scripts, layout par résolution d'écran.

@@ -120,10 +120,10 @@ Format : PNG ou JPG, **1920×1080** (interface à 100 %), sans nom de personnage
 
 | # | Fichier | Écran | Détails |
 |---|---|---|---|
-| 1 | `screenshot-interface.jpg` | **Interface complète** construite avec nxPanels | Ton layout Adna_New en jeu, hors combat, un bel endroit ; image d'en-tête de la page |
-| 2 | `screenshot-window.jpg` | **Fenêtre de configuration**, page Panneaux | Liste par dossiers à gauche, éditeur ouvert sur l'onglet Fond |
-| 3 | `screenshot-browser.jpg` | **Navigateur de textures** | Vignettes, avec les images Blizzard (atlas) visibles |
-| 4 | `screenshot-editmode.jpg` | **Mode édition** | Un panneau en déplacement, guides d'alignement affichés, 2 panneaux sélectionnés |
+| 1 | ~~`screenshot-interface.jpg`~~ | ~~Interface complète~~ | ❌ Abandonnée (choix du mainteneur) ; le README n'en a plus besoin |
+| 2 | `screenshot-window.jpg` | **Fenêtre de configuration**, page Layouts | ✅ 2026-09-29 |
+| 3 | `screenshot-browser.jpg` | **Éditeur (onglet Fond) + navigateur de textures** | ✅ 2026-09-29, image principale du README |
+| 4 | `screenshot-editmode.jpg` | **Mode édition** | ✅ 2026-09-29, noms du personnage floutés |
 | 5 | `screenshot-display.jpg` | Onglet **Affichage** | Conditions (combat, groupe…) et opacités |
 | 6 | `screenshot-text.jpg` | Onglet **Texte** | Variables `{zone}` `{time}` et icônes, avec le rendu en jeu à côté |
 | 7 | `screenshot-templates.jpg` | Menu **Nouveau panneau** | Liste des modèles |
