@@ -61,7 +61,7 @@ end
 -- Mouse-over opacity wins over the combat opacity, which wins over the base one
 local function targetAlpha(frame, d)
 	local alpha = inCombat and d.combatAlpha or d.alpha
-	if d.hoverAlpha ~= alpha and frame:IsVisible() and MouseIsOver(frame) then
+	if d.hoverAlpha ~= alpha and frame:IsVisible() and frame:IsMouseOver() then
 		return d.hoverAlpha
 	end
 	return alpha

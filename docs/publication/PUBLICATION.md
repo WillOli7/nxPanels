@@ -60,7 +60,7 @@ Jeu fermé.
    - après déconnexion : contenu de `kgPanels_Reloaded.lua` inchangé (je peux le comparer avec `.local/`).
 6. Remettre la sauvegarde si besoin (ou `bash tools/deploy.sh all`).
 
-Je peux préparer un script pour les étapes 1, 2, 4 et 6 (copies et suppressions dans le dossier du jeu) : à valider avant de le lancer.
+Script (jeu fermé) : `bash tools/update-test.sh prepare` (étapes 1-2), `update <zip>` (étape 4), `check` (données `kgPanelsDB` comparées à `.local/`), `restore` (étape 6).
 
 ### Phase C — vraie mise à jour par l'appli CurseForge (après l'étape 9)
 1. Refaire les étapes B1-B2, puis dans l'appli CurseForge : installer « kgPanels_Reloaded » v0.4.0 (projet 1444518) pour qu'elle soit suivie par l'appli.
@@ -120,15 +120,15 @@ Format : PNG ou JPG, **1920×1080** (interface à 100 %), sans nom de personnage
 
 | # | Fichier | Écran | Détails |
 |---|---|---|---|
-| 1 | `screenshot-interface.jpg` | **Interface complète** construite avec nxPanels | Ton layout Adna_New en jeu, hors combat, un bel endroit ; image d'en-tête de la page |
-| 2 | `screenshot-window.jpg` | **Fenêtre de configuration**, page Panneaux | Liste par dossiers à gauche, éditeur ouvert sur l'onglet Fond |
-| 3 | `screenshot-browser.jpg` | **Navigateur de textures** | Vignettes, avec les images Blizzard (atlas) visibles |
-| 4 | `screenshot-editmode.jpg` | **Mode édition** | Un panneau en déplacement, guides d'alignement affichés, 2 panneaux sélectionnés |
-| 5 | `screenshot-display.jpg` | Onglet **Affichage** | Conditions (combat, groupe…) et opacités |
-| 6 | `screenshot-text.jpg` | Onglet **Texte** | Variables `{zone}` `{time}` et icônes, avec le rendu en jeu à côté |
-| 7 | `screenshot-templates.jpg` | Menu **Nouveau panneau** | Liste des modèles |
-| 8 | `screenshot-zhcn.jpg` | Fenêtre en **chinois simplifié** | Client zhCN si possible, sinon ignorer (pour la page chinoise) |
-| 9 | `screenshot-forever.jpg` | Un layout sur **WoW Forever** | Montre la compatibilité |
+| 1 | ~~`screenshot-interface.jpg`~~ | ~~Interface complète~~ | ❌ Abandonnée (choix du mainteneur) ; le README n'en a plus besoin |
+| 2 | `screenshot-window.jpg` | **Fenêtre de configuration**, page Layouts | ✅ 2026-09-29 |
+| 3 | `screenshot-browser.jpg` | **Éditeur (onglet Fond) + navigateur de textures** | ✅ 2026-09-29, image principale du README |
+| 4 | `screenshot-editmode.jpg` | **Mode édition** | ✅ 2026-09-29, noms du personnage floutés |
+| 5 | `screenshot-display.jpg` | Onglet **Affichage** | ✅ 2026-09-29 |
+| 6 | `screenshot-text.jpg` | Onglet **Texte** | ✅ 2026-09-29, avec le rendu en jeu (FPS, monnaies) à côté |
+| 7 | `screenshot-templates.jpg` | Menu **Nouveau panneau** | ✅ 2026-09-29 |
+| 8 | ~~`screenshot-zhcn.jpg`~~ | ~~Fenêtre en chinois simplifié~~ | ❌ Abandonnée (choix du mainteneur) |
+| 9 | ~~`screenshot-forever.jpg`~~ | ~~Layout sur WoW Forever~~ | ❌ Abandonnée (choix du mainteneur) |
 | 10 | `screenshot-migration.jpg` | Message d'import dans le chat | « 3 layout(s)… importés depuis kgPanels_Reloaded » (phase B du test) |
 
 Optionnel : un GIF court (5-10 s, < 10 Mo) du mode édition avec l'aimantation.

@@ -50,10 +50,11 @@
 
 ## Screenshots
 
+![The panel editor and the texture browser with Blizzard images](docs/media/screenshot-browser.jpg)
+
 | | |
 |---|---|
-| ![An interface built with nxPanels](docs/media/screenshot-interface.jpg) | ![The configuration window](docs/media/screenshot-window.jpg) |
-| ![The texture browser](docs/media/screenshot-browser.jpg) | ![The edit mode](docs/media/screenshot-editmode.jpg) |
+| ![The configuration window](docs/media/screenshot-window.jpg) | ![The edit mode, with grid and alignment guides](docs/media/screenshot-editmode.jpg) |
 
 ## Supported clients
 
