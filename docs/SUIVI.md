@@ -12,15 +12,15 @@ Dernière mise à jour : 2026-10-23
 
 | Élément | État |
 |---|---|
-| Version | **`1.1.1` en préparation** (branche `release/1.1.1` : compatibilité Retail 12.1.5, interface 120105, rien d'autre). Avant : **`1.1.0` publiée en release le 2026-10-23** (PR #18, tag `1.1.0`, envoyée sur CurseForge pour Retail 12.0.0–12.1.0, TBC Anniversary 2.5.5 / 2.5.6 et Forever 1.60.1). Avant : `1.0.0` (2026-09-29) |
-| Branche de travail | `release/1.1.1` (TOC 120105 + version, README, CHANGELOG) |
-| Pull request | PR #1 à #18 fusionnées dans `main` (+ la PR de ce suivi) ; aucune autre ouverte |
-| `main` | = tag `1.1.0` + mises à jour du suivi |
+| Version | **`1.1.1` publiée en release le 2026-10-23** (PR #20, tag `1.1.1`, compatibilité Retail 12.1.5 seulement : interface 120105, pas de fenêtre des nouveautés ; envoyée sur CurseForge pour Retail 12.0.0–12.1.5, TBC Anniversary 2.5.5 / 2.5.6 et Forever 1.60.1). Avant : `1.1.0` (2026-10-23, PR #18), `1.0.0` (2026-09-29) |
+| Branche de travail | aucune : tout est sur `main` |
+| Pull request | PR #1 à #20 fusionnées dans `main` (+ la PR de ce suivi) ; aucune autre ouverte |
+| `main` | = tag `1.1.1` + mises à jour du suivi |
 | Logo | ✅ 2026-09-28 (PR #4) : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7. Icône vérifiée en jeu (Retail et Forever) le 2026-09-29. Reste : image sociale à envoyer à la main (Settings → Social preview) |
 | Installé sur Mac | Retail (`/Applications/World of Warcraft/_retail_`, compte DARKICE7, aucune donnée kgPanels : test de première installation) via `WOW_DIR="/Applications/World of Warcraft" bash tools/deploy.sh retail`. Forever pas encore lancé sur ce Mac. Test en jeu à faire |
 | Tests hors jeu | Tous verts : `bash tools/tests/run-all.sh <luajit>` (migrate, original, handinstall, empty, nolibs, notloaded, forever, tbc, zhcn, options ×11 langues) + `real` avec les vraies données |
 | Installé en local | Oui, Retail (`_retail_`), Forever (`_classic_beta_`, bêta fermée jusqu'au 5 novembre) et TBC Anniversary (`_anniversary_`) via `bash tools/deploy.sh all`. Fichiers de test de la bibliothèque dans `Interface\AddOns\nxTestMedia\` (Retail, Anniversary) |
-| CurseForge | Projet `1444518` **renommé nxPanels** (slug `nxpanels`, logo, description courte, licence « All Rights Reserved », distribution tierce refusée). Secret GitHub `CF_API_KEY` en place, envoi automatique au tag. Fichiers : **`1.1.0` (release, 2026-10-23)**, `1.0.0` (release, 2026-09-29) ; `1.0.0-alpha.2` archivé. Description et résumé mis à jour pour la 1.1.0 le 2026-10-23 (source : `docs/publication/CURSEFORGE.md`) |
+| CurseForge | Projet `1444518` **renommé nxPanels** (slug `nxpanels`, logo, description courte, licence « All Rights Reserved », distribution tierce refusée). Secret GitHub `CF_API_KEY` en place, envoi automatique au tag. Fichiers : **`nxPanels-1.1.1` (release, 2026-10-23, 12.1.5 inclus)**, `nxPanels-1.1.0` (release, 2026-10-23), `1.0.0` (release, 2026-09-29) ; `1.0.0-alpha.2` archivé. Description et résumé mis à jour pour la 1.1.0 le 2026-10-23 (source : `docs/publication/CURSEFORGE.md`) |
 | Publication | Dossier prêt : `docs/publication/PUBLICATION.md` (étapes, test de mise à jour, message au modérateur, captures, brief du logo, GitHub) et `docs/publication/CURSEFORGE.md` (page CurseForge EN + FR / zhCN / zhTW). Workflow `.github/workflows/release.yml` (tag → release GitHub, CurseForge si secret `CF_API_KEY` ; lancement manuel = construction de test sans envoi) |
 | Phase B | ✅ 2026-09-29 avec le zip du run sur `a805446` (`tools/update-test.sh`) : v0.4.0 affichée, puis mise à jour → 3 layouts / 33 panneaux importés, panneaux identiques, `/nxp status` sans erreur, anciens addons désactivés, `/reload` et autre personnage OK, `kgPanelsDB` inchangé. Installation remise en état (`restore`) |
 | Paquet (phase A) | ✅ 2026-09-28 : construction de test OK (run 36355822045). 5 dossiers, pont intact, TOC en 1.0.0-alpha.2, rien de `tools` / `docs` / `CLAUDE.md`. Versions détectées par le packager : 12.0.0 à 12.1.0 + Forever 1.60.1. Le zip se retélécharge depuis le run GitHub (artefact « nxPanels-package », 90 jours) |
@@ -164,16 +164,16 @@ Fenêtre des nouveautés (`Core/News.lua`, cadre partagé avec la bienvenue dans
 Publication (2026-10-23) :
 1. ~~Version 1.1.0~~ ✅ TOC, CHANGELOG, PR #18, tag `1.1.0`, release GitHub, fichier CurseForge.
 2. ~~Tests de migration~~ ✅ `migrate`, `original`, `real` verts. Test de mise à jour (`tools/update-test.sh`) non refait.
-3. Forever : **exception décidée par le mainteneur le 2026-10-23** à la règle « rien sur CurseForge sans test en jeu sur Retail et Forever » : la 1.1.0 est publiée après les tests Retail et TBC Anniversary seulement (bêta de Forever fermée). **Tests en jeu sur Forever à faire dès la réouverture (5 novembre)** ; correctif 1.1.1 si besoin.
+3. Forever : **exception décidée par le mainteneur le 2026-10-23** à la règle « rien sur CurseForge sans test en jeu sur Retail et Forever » : la 1.1.0 est publiée après les tests Retail et TBC Anniversary seulement (bêta de Forever fermée). **Tests en jeu sur Forever à faire dès la réouverture (5 novembre)** ; correctif 1.1.2 si besoin.
 4. ~~Réponses~~ ✅ CurseForge (Shailay, moosetraxftw, Cnas) et GitHub (#16, #17, Aur0r4). **Fermer #16 et #17 à la main quand Aur0r4 confirme** (la PR ne les ferme pas). Suggestions d'interface d'Aur0r4 (déplacement au pixel, barre de défilement déplaçable, saisie du nom de frame) : attendre son ticket, puis `docs/ROADMAP.md`.
 5. ~~Description CurseForge~~ ✅ résumé et description à jour (TBC Anniversary, 10 langues, bibliothèque).
 
 Reste à faire :
-0. **1.1.1** : PR `release/1.1.1`, fusion, tag `1.1.1` (envoi CurseForge automatique), vérifier que le fichier CurseForge liste bien 12.1.5. Tests hors jeu verts le 2026-10-23 (tous les scénarios + `real`). Pas de fenêtre des nouveautés pour cette version (pas d'entrée dans `News.NOTES`).
+0. ~~1.1.1~~ ✅ PR #20 fusionnée, tag `1.1.1` (tag simple, `1.1.0` était annoté), workflow vert, `nxPanels-1.1.1.zip` envoyé sur CurseForge avec 12.1.5. Reste : vérifier son approbation dans l'onglet Files.
 1. Forever : tests en jeu le 5 novembre (point 3).
 2. Import réel depuis TBC Anniversary : créer quelques panneaux avec kgPanels sur ce client, puis importer (le fichier peut aussi servir au scénario `real`).
 3. Surveiller les commentaires CurseForge (32 le 2026-10-23, un nouveau après les réponses) et les issues GitHub.
-4. Supprimer la branche distante `release/1.1.0` (fusionnée).
+4. Supprimer les branches distantes `release/1.1.0` et `release/1.1.1` (fusionnées).
 
 ## 8. Reprendre le travail
 

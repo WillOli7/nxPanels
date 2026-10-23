@@ -40,7 +40,8 @@ jobs:
         if: github.event_name == 'push'
         uses: BigWigsMods/packager@v2
         with:
-          args: -p 1444518
+          # File label on CurseForge: nxPanels-1.1.1 (the packager default is the bare version)
+          args: -p 1444518 -n ":{package-name}-{project-version}{classic}{nolib}"
 
       - name: Keep the zip
         uses: actions/upload-artifact@v4
