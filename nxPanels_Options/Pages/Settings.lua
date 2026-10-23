@@ -77,9 +77,11 @@ local function build(page, width)
 		local font = tostring(core.Media:DefaultFont())
 		return font:match("([^\\/]+)$") or font
 	end)
-	W.InfoRow(form, L["ABOUT_COMMANDS"], function() return "/nxp help" end)
-	W.InfoRow(form, L["ABOUT_SUPPORT"], function() return SUPPORT_URL end)
-	W.InfoRow(form, L["ABOUT_DETAILS"], function() return DETAILS_URL end)
+	-- Help: whole width, addresses the player can copy
+	form:Section(L["SECTION_HELP"])
+	W.InfoRow(form, L["ABOUT_COMMANDS"], function() return "/nxp help" end, true)
+	W.LinkRow(form, L["ABOUT_SUPPORT"], SUPPORT_URL, L["COPY_HINT"])
+	W.LinkRow(form, L["ABOUT_DETAILS"], DETAILS_URL, L["COPY_HINT"])
 end
 
 Options:RegisterPage({

@@ -319,6 +319,8 @@ L["ABOUT_FONT"] = "Fonte do texto"
 L["ABOUT_COMMANDS"] = "Comandos"
 L["ABOUT_SUPPORT"] = "Relatar um problema"
 L["ABOUT_DETAILS"] = "Relatório detalhado"
+L["SECTION_HELP"] = "Ajuda"
+L["COPY_HINT"] = "Clique no endereço e pressione Ctrl+C para copiá-lo no navegador."
 
 L["GRID"] = "Grade"
 L["SNAP"] = "Encaixe"

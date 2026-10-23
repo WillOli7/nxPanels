@@ -319,6 +319,8 @@ L["ABOUT_FONT"] = "텍스트 글꼴"
 L["ABOUT_COMMANDS"] = "명령어"
 L["ABOUT_SUPPORT"] = "문제 신고"
 L["ABOUT_DETAILS"] = "자세한 보고"
+L["SECTION_HELP"] = "도움말"
+L["COPY_HINT"] = "주소를 클릭한 다음 Ctrl+C로 복사해 브라우저에 붙여넣으세요."
 
 L["GRID"] = "격자"
 L["SNAP"] = "맞춤"

@@ -318,6 +318,8 @@ L["ABOUT_FONT"] = "Police du texte"
 L["ABOUT_COMMANDS"] = "Commandes"
 L["ABOUT_SUPPORT"] = "Signaler un problème"
 L["ABOUT_DETAILS"] = "Rapport détaillé"
+L["SECTION_HELP"] = "Aide"
+L["COPY_HINT"] = "Cliquez sur l'adresse, puis Ctrl+C pour la copier dans votre navigateur."
 
 L["GRID"] = "Grille"
 L["SNAP"] = "Aimant"

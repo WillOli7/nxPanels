@@ -648,10 +648,19 @@ elseif scenario == "options" then
 	end
 	-- Settings, About: one row per information, the font without its folder
 	Options:Show("settings")
-	local about = {}
+	local about, links = {}, {}
 	for _, f in ipairs(M.frames) do
 		if f.label and f.value and f.label.textValue then about[f.label.textValue] = f.value.textValue end
+		if f.label and f.box and f.label.textValue then links[f.label.textValue] = f.box.edit end
 	end
+	-- Addresses: copyable, read-only
+	local support = links[L["ABOUT_SUPPORT"]]
+	check(support and support:GetText():find("curseforge", 1, true) and links[L["ABOUT_DETAILS"]]:GetText():find("issues", 1, true), "help: addresses in copyable fields")
+	local address = support:GetText()
+	support:SetText("typed")
+	support.scripts.OnTextChanged(support, true)
+	check(support:GetText() == address, "help: address cannot be changed")
+	about[L["ABOUT_SUPPORT"]], about[L["ABOUT_DETAILS"]] = address, links[L["ABOUT_DETAILS"]]:GetText()
 	check(about[L["ABOUT_VERSION"]] == ns.version and about[L["ABOUT_CLIENT"]] == L["CLIENT_RETAIL"] .. " 12.1.0.69933"
 		and about[L["ABOUT_LANGUAGE"]] == M.locale and about[L["ABOUT_COMMANDS"]] == "/nxp help", "about: version, client, language, commands")
 	check(about[L["ABOUT_FONT"]] and not about[L["ABOUT_FONT"]]:find("\\", 1, true) and about[L["ABOUT_SUPPORT"]]:find("curseforge", 1, true) and about[L["ABOUT_DETAILS"]]:find("issues", 1, true), "about: font file name, where to report a problem")

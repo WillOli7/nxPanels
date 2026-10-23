@@ -319,6 +319,8 @@ L["ABOUT_FONT"] = "文字字体"
 L["ABOUT_COMMANDS"] = "命令"
 L["ABOUT_SUPPORT"] = "报告问题"
 L["ABOUT_DETAILS"] = "详细报告"
+L["SECTION_HELP"] = "帮助"
+L["COPY_HINT"] = "点击地址，然后按 Ctrl+C 复制到浏览器中。"
 
 L["GRID"] = "网格"
 L["SNAP"] = "吸附"
