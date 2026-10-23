@@ -42,3 +42,4 @@ Pages\Share.lua
 Pages\Profiles.lua
 Pages\Settings.lua
 EditMode\EditMode.lua
+Pages\News.lua

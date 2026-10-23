@@ -159,7 +159,7 @@ Retours traités, dans l'ordre chronologique (commentaires CurseForge et issues 
 
 Autres nouveautés : support **TBC Anniversary** (interfaces 20505, 20506 ; ✅ chargé en jeu), **7 langues** de plus, client et version du jeu dans le panneau latéral, fenêtre de bienvenue après l'import (une fois), icône et groupe des dossiers de pont, librairies à jour (LibSharedMedia r185, LibSerialize v1.2.3, LibDBIcon 57), avertissement des scripts sur deux lignes, `/nxp status` sans double point.
 
-Fenêtre des nouveautés (`Core/News.lua`, cadre partagé avec la bienvenue dans `Core/Splash.lua`) : une fois au premier démarrage d'une nouvelle version (`global.newsSeen`), pas pour un nouveau joueur ni juste après un import, après la fenêtre de bienvenue si elle est ouverte ; case « Ne plus afficher » (`global.showNews`), réglage et bouton « Voir les nouveautés » dans Réglages. **À chaque nouvelle version** : ajouter ses notes dans `News.NOTES` et la clé `NEWS_x_y_z` dans les 10 langues (sinon pas de fenêtre).
+Fenêtre des nouveautés (`Core/News.lua`, cadre partagé avec la bienvenue dans `Core/Splash.lua`) : une fois au premier démarrage d'une nouvelle version (`global.newsSeen`), pas pour un nouveau joueur ni juste après un import, après la fenêtre de bienvenue si elle est ouverte ; case « Ne plus afficher » (`global.showNews`), réglage dans Réglages, entrée « Nouveautés » dans le menu de gauche (après Mode édition) pour la rouvrir. **À chaque nouvelle version** : ajouter ses notes dans `News.NOTES` et la clé `NEWS_x_y_z` dans les 10 langues (sinon pas de fenêtre).
 
 Reste à faire avant la publication :
 1. ~~Numéro de version~~ : 1.1.0 (TOC, CHANGELOG). Ajuster la date du CHANGELOG le jour de la publication.

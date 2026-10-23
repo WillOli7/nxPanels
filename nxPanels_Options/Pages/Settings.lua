@@ -66,9 +66,6 @@ local function build(page, width)
 	form:Section(L["SECTION_ABOUT"])
 	W.ToggleRow(form, L["NEWS_SHOW_SETTING"], function() return core.db.global.showNews ~= false end,
 		function(on) core.db.global.showNews = on end)
-	W.ButtonsRow(form, {
-		{ text = L["NEWS_VIEW"], width = 190, onClick = function() core.News:Show() end },
-	}, nil, true)
 	local about = W.TextRow(form, "", 96)
 	function about:Refresh()
 		self:SetText(L["ABOUT"]:format(core.version, core:ClientName(), GetLocale(), core.Media:DefaultFont()))

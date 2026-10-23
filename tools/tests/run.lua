@@ -640,11 +640,20 @@ elseif scenario == "options" then
 	local ok, err = pcall(SlashCmdList.NXPANELS, "")
 	check(ok and Options.frame and Options.frame.shown, "window opened: " .. tostring(err))
 	for _, key in ipairs(Options.order) do
-		if key ~= "editmode" then
+		-- Entries that run an action instead of showing a page (edit mode, what's new)
+		if not Options.pages[key].action then
 			ok, err = pcall(Options.Show, Options, key)
 			check(ok and Options.current == key, "page " .. key .. ": " .. tostring(err))
 		end
 	end
+	-- What's new: entry of the sidebar, after the edit mode
+	local current, version = Options.current, ns.version
+	ns.version = "1.1.0"
+	check(Options.order[#Options.order] == "news" and Options.order[#Options.order - 1] == "editmode", "what's new entry after the edit mode")
+	Options:Show("news")
+	check(nxPanelsNews and nxPanelsNews:IsShown() and Options.current == current, "what's new opened from the sidebar, page kept")
+	nxPanelsNews:Hide()
+	ns.version = version
 
 	check(Options.game.textValue == L["CLIENT_RETAIL"] .. " 12.1.0.69933", "client and build of the game in the sidebar")
 
