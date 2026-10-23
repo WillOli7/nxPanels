@@ -1,6 +1,6 @@
 -- Offline tests of nxPanels, run with LuaJIT from the repository root:
 --   luajit tools/tests/run.lua <scenario>
--- Scenarios: migrate, original, handinstall, empty, forever, zhcn, options, real (NXP_REAL_SV=path/to/kgPanels_Reloaded.lua)
+-- Scenarios: migrate, original, handinstall, empty, nolibs, notloaded, forever, tbc, zhcn, options, real (NXP_REAL_SV=path/to/kgPanels_Reloaded.lua)
 
 local scenario = arg[1] or "migrate"
 local M = dofile("tools/tests/wowmock.lua")
@@ -62,6 +62,12 @@ end
 
 if scenario == "forever" then
 	M.build = { "1.60.1", "70009", "Sep 20 2026", 16001 }
+elseif scenario == "tbc" then
+	-- TBC Anniversary: classic project, 2.5.x build, no specializations nor pet battles
+	WOW_PROJECT_BURNING_CRUSADE_CLASSIC = 5
+	WOW_PROJECT_ID = 5
+	M.build = { "2.5.6", "68001", "Jul 14 2026", 20506 }
+	M.unknownEvents = { PLAYER_SPECIALIZATION_CHANGED = true, PET_BATTLE_OPENING_START = true, PET_BATTLE_CLOSE = true }
 elseif scenario == "zhcn" then
 	M.locale = "zhCN"
 	STANDARD_TEXT_FONT = "Fonts\\ARKai_T.ttf"
@@ -86,6 +92,15 @@ elseif scenario == "handinstall" then
 	M.addons = {
 		{ name = "kgPanelsConfig_Reloaded", loaded = true },
 		{ name = "kgPanels_Reloaded", loaded = true },
+		{ name = "nxPanels", loaded = true },
+	}
+elseif scenario == "notloaded" then
+	-- kgPanels copied from BCC Anniversary to WoW Forever: the client does not load it,
+	-- the bridge has no saved file yet
+	ADDON_INTERFACE_VERSION = "Out of date"
+	M.addons = {
+		{ name = "kgPanels", reason = "INTERFACE_VERSION" },
+		{ name = "kgPanels_Reloaded", lod = true },
 		{ name = "nxPanels", loaded = true },
 	}
 elseif scenario ~= "empty" then
@@ -116,11 +131,13 @@ for _, lib in ipairs({
 }) do
 	load(lib)
 end
--- LibDBIcon needs the real minimap: replaced by a stub
-local icon = LibStub:NewLibrary("LibDBIcon-1.0", 9999)
-function icon:Register(name, obj, db) self.registered = { name = name, obj = obj, db = db } end
-function icon:Show() end
-function icon:Hide() end
+-- LibDBIcon needs the real minimap: replaced by a stub (left out to test a missing library)
+if scenario ~= "nolibs" then
+	local icon = LibStub:NewLibrary("LibDBIcon-1.0", 9999)
+	function icon:Register(name, obj, db) self.registered = { name = name, obj = obj, db = db } end
+	function icon:Show() end
+	function icon:Hide() end
+end
 
 for line in io.lines(ROOT .. "nxPanels.toc") do
 	line = line:gsub("\r", "")
@@ -136,11 +153,12 @@ for line in io.lines("nxPanels_Import/nxPanels_Import.toc") do
 	if line:match("%.lua$") then assert(loadfile("nxPanels_Import/" .. line))("nxPanels_Import", I) end
 end
 M.Fire("ADDON_LOADED", "nxPanels_Import")
-M.Fire("PLAYER_LOGIN")
+local loginOK, loginError = pcall(M.Fire, "PLAYER_LOGIN")
+if not loginOK and scenario ~= "nolibs" then error(loginError, 0) end
 
 local db = nxPanelsDB
 local L = ns.L
-print(("[%s] client: retail=%s forever=%s, locale %s"):format(scenario, tostring(ns.isRetail), tostring(ns.isForever), M.locale))
+print(("[%s] client: retail=%s forever=%s tbc=%s, locale %s"):format(scenario, tostring(ns.isRetail), tostring(ns.isForever), tostring(ns.isAnniversary), M.locale))
 
 ---------------------------------------------------------------------------
 -- Checks
@@ -166,8 +184,10 @@ local function frameOf(layout, name)
 	return id and ns.Layouts.frames[id], id
 end
 
-if scenario == "migrate" or scenario == "forever" or scenario == "zhcn" then
-	check(ns.isForever == (scenario == "forever"), "client detection")
+if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenario == "zhcn" then
+	local talentGroups = scenario == "forever" or scenario == "tbc"
+	check(ns.isForever == (scenario == "forever") and ns.isAnniversary == (scenario == "tbc") and ns.isRetail == not talentGroups, "client detection")
+	check(ns.usesTalentGroups == talentGroups, "talent groups instead of specializations")
 	check(M.loadCalls[1] == "kgPanels_Reloaded", "bridge addon loaded")
 	check(count(db.global.layouts) == 2, "2 layouts imported, empty translated 'None' layout skipped")
 	local mainId, main = layoutByName("Main UI")
@@ -181,7 +201,7 @@ if scenario == "migrate" or scenario == "forever" or scenario == "zhcn" then
 	check(db.profiles.Default.layout == mainId and db.profiles.Alt.layout == secondId, "profile layouts mapped to ids")
 	check(db.profiles.Alt.enabled == false and db.profiles.Empty.layout == nil, "profile flags")
 	local specs = ns.Specs:List()
-	local specKeys = scenario == "forever" and "G1G2" or "S62S63S64"
+	local specKeys = talentGroups and "G1G2" or "S62S63S64"
 	local joined = ""
 	for _, spec in ipairs(specs) do joined = joined .. spec.key end
 	check(joined == specKeys, "specializations of the client: " .. joined)
@@ -191,8 +211,107 @@ if scenario == "migrate" or scenario == "forever" or scenario == "zhcn" then
 	check(db.global.schema == ns.SCHEMA, "schema saved")
 	check(deepEqual(kgPanelsDB, fixture()), "legacy data left untouched")
 	check(M.disabled.kgPanels_Reloaded and M.disabled.kgPanelsConfig_Reloaded, "legacy addons disabled")
+	local welcome = nxPanelsWelcome
 	check(#M.popups == 0, "no reload popup when only the bridge was used")
+	check(welcome and welcome:IsShown(), "welcome window shown")
+	check(welcome.title:GetText() == L["WELCOME_TITLE"]:format("kgPanels Reloaded"), "welcome title")
+	check(welcome.body:GetText():find(L["WELCOME_COUNT"]:format(2, 8), 1, true), "welcome counts")
+	check(db.global.migration.welcomed == true, "welcome recorded")
+	welcome.close:GetScript("OnClick")(welcome.close)
+	check(not welcome:IsShown(), "OK closes the welcome window")
+	I.Import:Finish()
+	check(not welcome:IsShown(), "welcome shown only once")
+	db.global.migration.welcomed = nil
+	I.Import:Finish()
+	check(welcome:IsShown(), "welcome for players who imported before it existed")
+	-- Fake options module: the open button shows the window, never toggles it off
+	local optionsCalls = {}
+	M.addons[#M.addons + 1] = { name = "nxPanels_Options", lod = true }
+	ns.Options = {
+		Show = function() optionsCalls[#optionsCalls + 1] = "Show" end,
+		Toggle = function() optionsCalls[#optionsCalls + 1] = "Toggle" end,
+	}
+	welcome.open:GetScript("OnClick")(welcome.open)
+	check(not welcome:IsShown() and C_AddOns.IsAddOnLoaded("nxPanels_Options") and optionsCalls[1] == "Show", "open button closes and opens nxPanels")
+	db.global.migration.welcomed = nil
+	I.Import:Finish()
+	welcome.open:GetScript("OnClick")(welcome.open)
+	check(optionsCalls[2] == "Show", "open button keeps the options window open")
+	ns.Options = nil
+	table.remove(M.addons)
+	-- Nothing imported: no count in the welcome
+	local migration = db.global.migration
+	local imported = { migration.layouts, migration.panels }
+	migration.welcomed, migration.layouts, migration.panels = nil, 0, 0
+	I.Import:Finish()
+	check(welcome:IsShown() and welcome.body:GetText() == L["WELCOME_BODY"], "no count when nothing was imported")
+	welcome.close:GetScript("OnClick")(welcome.close)
+	migration.layouts, migration.panels = imported[1], imported[2]
 	check(printed(L["MIGRATED"]:format(2, 8, "kgPanels_Reloaded"):gsub("%p", "%%%0")), "migration message")
+
+	-- A game frame wins over a panel of the same name, a panel never references itself
+	CreateFrame("Frame", "Minimap", UIParent)
+	local g = { layouts = {}, media = { background = {}, border = {} } }
+	I.Convert.Layouts({ layouts = { Map = {
+		Minimap = { parent = "Minimap", anchor = "Minimap" },
+		Ring = { parent = "Minimap", anchor = "Minimap" },
+		Label = { anchor = "Ring" },
+		Self = { anchor = "Self" },
+	} } }, g)
+	local _, mapLayout = next(g.layouts)
+	local byName = {}
+	for id, panel in pairs(mapLayout.panels) do byName[panel.name] = panel byName[panel.name].id = id end
+	check(byName.Minimap.parent == "Minimap" and byName.Minimap.anchor.relativeTo == "Minimap", "panel named like the frame it follows keeps the frame")
+	check(byName.Ring.parent == "Minimap" and byName.Ring.anchor.relativeTo == "Minimap", "game frame wins over a panel of the same name")
+	check(byName.Label.anchor.relativeTo == "panel:" .. byName.Ring.id, "reference to another panel")
+	check(byName.Self.anchor.relativeTo == "Self", "never anchored to itself")
+	local _, cyclic = ns.Anchors:Order(mapLayout.panels)
+	check(next(cyclic) == nil, "no anchoring loop")
+
+	-- Layouts imported by 1.0.0: the panel anchored to itself is repaired at startup
+	local activeLayout = ns.Database:GetLayout(ns.Layouts.activeId)
+	local mapId = ns.Database:CreatePanel(ns.Layouts.activeId, "Minimap")
+	local mapPanel = activeLayout.panels[mapId]
+	mapPanel.parent, mapPanel.anchor.relativeTo = "panel:" .. mapId, "panel:" .. mapId
+	ns.Layouts:ApplyActive()
+	check(ns.Layouts.cyclic[mapId], "1.0.0 import: anchoring loop")
+	check(I.Import:RepairSelfReferences() == 2 and mapPanel.parent == "Minimap" and mapPanel.anchor.relativeTo == "Minimap", "self references repaired")
+	check(I.Import:RepairSelfReferences() == 0, "repair done once")
+	ns.Layouts:ApplyActive()
+	check(not ns.Layouts.cyclic[mapId] and ns.Layouts.frames[mapId].points[1][2] == _G.Minimap, "repaired panel follows the minimap")
+	ns.Database:DeletePanel(ns.Layouts.activeId, mapId)
+	ns.Layouts:ApplyActive()
+	_G.Minimap = nil
+
+	-- A script hiding its panel keeps it hidden (issue #16: one icon per class)
+	local iconId = ns.Database:CreatePanel(ns.Layouts.activeId, "Class icon")
+	activeLayout.panels[iconId].scripts = {
+		LOAD = 'self:RegisterEvent("PLAYER_ENTERING_WORLD")',
+		EVENT = 'if select(2, UnitClass("player")) == "NOCLASS" then self:Show() else self:Hide() end',
+	}
+	ns.Layouts:PanelChanged(iconId, "added")
+	local icon = ns.Layouts.frames[iconId]
+	check(icon and icon.shown, "new panel shown")
+	M.Fire("PLAYER_ENTERING_WORLD")
+	check(not icon.shown, "hidden by its script")
+	for _, event in ipairs({ "MODIFIER_STATE_CHANGED", "PLAYER_TARGET_CHANGED", "GROUP_ROSTER_UPDATE", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED" }) do
+		M.Fire(event)
+	end
+	check(not icon.shown, "display events leave a panel without conditions to its script")
+	ns.Layouts:PanelChanged(iconId, "anchors")
+	ns.Layouts:RefreshAll()
+	check(not icon.shown, "placing the panels again keeps it hidden")
+	ns.Visibility:SetForceShow(true)
+	check(icon.shown, "edit mode shows it")
+	ns.Visibility:SetForceShow(false)
+	check(not icon.shown, "hidden again after the edit mode")
+	activeLayout.panels[iconId].display.combat = "IN"
+	ns.Layouts:PanelChanged(iconId, "display")
+	activeLayout.panels[iconId].display.combat = "ANY"
+	ns.Layouts:PanelChanged(iconId, "display")
+	check(icon.shown, "conditions removed: shown, then its script decides")
+	ns.Database:DeletePanel(ns.Layouts.activeId, iconId)
+	ns.Layouts:ApplyActive()
 
 	-- Active layout of the Default profile
 	check(ns.Layouts.activeId == mainId, "active layout")
@@ -253,6 +372,18 @@ if scenario == "migrate" or scenario == "forever" or scenario == "zhcn" then
 	check(#art.bg.texCoord == 8, "rotation + flip coordinates")
 	check(not art.border.textures.TOP.shown and art.border.textures.BOT.shown, "hidden border sides")
 	check(art.border.textures.TOP.texCoord and #art.border.textures.TOP.texCoord == 8, "rotated border side")
+	-- Same coordinates as Blizzard's BackdropTemplate (issue #16: borders 1 px off)
+	do
+		local b = art.border
+		local size, width, height = b.size, art:GetWidth(), art:GetHeight()
+		local scale = art:GetEffectiveScale()
+		local rx = math.max(0, width / size * scale - 2 - 0.0625)
+		local ry = math.max(0, height / size * scale - 2 - 0.0625)
+		check(deepEqual(b.textures.TOP.texCoord, { 0.2578125, rx, 0.3671875, rx, 0.2578125, 0.0625, 0.3671875, 0.0625 }), "top side like the backdrop")
+		check(deepEqual(b.textures.LEFT.texCoord, { 0.0078125, 0.0625, 0.0078125, ry, 0.1171875, 0.0625, 0.1171875, ry }), "left side like the backdrop")
+		check(deepEqual(b.textures.TOPLEFTCORNER.texCoord, { 0.5078125, 0.6171875, 0.0625, 0.9375 }), "corner like the backdrop")
+		check(deepEqual(b.textures.BOTRIGHTCORNER.texCoord, { 0.8828125, 0.9921875, 0.0625, 0.9375 }), "last corner like the backdrop")
+	end
 	local tiled = frameOf(second, "Tiled")
 	tiled.bg.w, tiled.bg.h = 192, 92
 	tiled.sizer.scripts.OnSizeChanged(tiled.sizer)
@@ -414,8 +545,8 @@ if scenario == "migrate" or scenario == "forever" or scenario == "zhcn" then
 
 	-- Layout per specialization
 	local function setSpec(n)
-		if scenario == "forever" then M.specGroup = n else M.spec = n end
-		M.Fire(scenario == "forever" and "ACTIVE_TALENT_GROUP_CHANGED" or "PLAYER_SPECIALIZATION_CHANGED", "player")
+		if talentGroups then M.specGroup = n else M.spec = n end
+		M.Fire(talentGroups and "ACTIVE_TALENT_GROUP_CHANGED" or "PLAYER_SPECIALIZATION_CHANGED", "player")
 	end
 	ns.Layouts:Activate(mainId)
 	setSpec(2)
@@ -427,6 +558,10 @@ if scenario == "migrate" or scenario == "forever" or scenario == "zhcn" then
 	check(db.profiles.Default.specLayouts[specs[2].key] == nil, "deleted layout removed from the specs")
 	setSpec(nil)
 
+	if scenario == "tbc" then
+		SlashCmdList.NXPANELS("status")
+		check(printed(L["CLIENT_ANNIVERSARY"]), "client named in /nxp status")
+	end
 	if scenario == "zhcn" then
 		check(chat.text.font[1] == "Fonts\\ARKai_T.ttf", "Chinese font used by default")
 		check(printed("已从 kgPanels_Reloaded 导入 2 个布局和 8 个面板"), "Chinese messages")
@@ -469,6 +604,8 @@ elseif scenario == "options" then
 			check(ok and Options.current == key, "page " .. key .. ": " .. tostring(err))
 		end
 	end
+
+	check(Options.game.textValue == L["CLIENT_RETAIL"] .. " 12.1.0.69933", "client and build of the game in the sidebar")
 
 	-- Panels page: list by folders
 	Options:Show("panels")
@@ -629,9 +766,26 @@ elseif scenario == "options" then
 	P:Duplicate(testId)
 	local dupId = ns.Database:FindPanel(main, "Test panel (2)")
 	check(dupId and ns.Layouts.frames[dupId] and P.selected == dupId, "panel duplicated")
+	check(deepEqual(main.panels[dupId].anchor, test.anchor) and main.panels[dupId].anchor ~= test.anchor, "duplicate keeps the exact position (own copy)")
+	-- Names shown in the panel list (the page must be shown to refresh)
+	Options:Show("panels")
+	local function listed(name)
+		for _, f in ipairs(M.frames) do
+			if f.parent == list and f.shown and f.entry and f.entry.kind == "panel" and f.label.textValue == name then return true end
+		end
+		return false
+	end
+	check(listed("Test panel (2)"), "duplicate listed")
 	P:Delete(dupId)
 	M.lastPopup.data()
 	check(not main.panels[dupId] and not ns.Layouts.frames[dupId] and P.selected == nil, "panel deleted, frame released")
+	check(not listed("Test panel (2)"), "deleted panel left the list at once")
+	P:Rename(testId)
+	M.lastPopup.data.onAccept("Renamed panel")
+	check(listed("Renamed panel") and not listed("Test panel"), "renamed panel listed once, with its new name")
+	P:Rename(testId)
+	M.lastPopup.data.onAccept("Test panel")
+	check(listed("Test panel") and not listed("Renamed panel"), "name restored")
 	P:NewFolder()
 	M.lastPopup.data.onAccept("Art")
 	P:MoveToFolder(testId, editor)
@@ -656,6 +810,93 @@ elseif scenario == "options" then
 	check(db.global.media.background["My Test"] == "Interface\\AddOns\\Test\\art.tga" and ns.Media.LSM:Fetch("background", "My Test", true), "media added with a clean path")
 	ns.Media:RemoveFromLibrary("background", "My Test")
 	check(db.global.media.background["My Test"] == nil, "media removed from the library")
+
+	-- Paths as players type them (comment on CurseForge: added textures found nowhere)
+	local norm = O.LibraryPage.NormalizePath
+	check(norm([[C:\Program Files (x86)\World of Warcraft\_retail_\Interface\AddOns\Art\bg.tga]]) == "Interface\\AddOns\\Art\\bg.tga", "full Windows path reduced to the game path")
+	check(norm("AddOns/Art/bg.tga") == "Interface\\AddOns\\Art\\bg.tga" and norm("interface\\addons\\x.tga") == "interface\\addons\\x.tga", "AddOns path completed, case kept")
+	lib.nameBox.edit:SetText("Outside")
+	lib.pathBox.edit:SetText("D:/Images/bg.tga")
+	O.LibraryPage:Add()
+	check(db.global.media.background.Outside == nil and lib.message.textValue == L["MEDIA_BAD_PATH"], "path outside the Interface folder refused")
+	-- A file the game does not know: LibSharedMedia ignores it, the library keeps it
+	M.unknownFiles = { ["Interface\\AddOns\\Art\\new.tga"] = true }
+	lib.nameBox.edit:SetText("New Art")
+	lib.pathBox.edit:SetText("Interface\\AddOns\\Art\\new.tga")
+	O.LibraryPage:Add()
+	check(lib.message.textValue == L["MEDIA_ADDED_NOT_FOUND"]:format("New Art"), "warning when the game does not find the file")
+	check(not ns.Media.LSM:Fetch("background", "New Art", true) and ns.Media:Fetch("background", "New Art") == "Interface\\AddOns\\Art\\new.tga", "drawn from the library even when LibSharedMedia ignored it")
+	-- Several files at once, pasted from the file explorer ("Copy as path")
+	local LP = O.LibraryPage
+	LP.kind = "background"
+	LP:OpenMany()
+	local many = LP.manyWindow
+	check(many.shown and many.title.textValue == L["MANY_TITLE_BACKGROUND"] and many.kindText.textValue == L["MANY_KIND_BACKGROUND"], "add-many window says it adds backgrounds")
+	M.unknownFiles = { ["Interface\\AddOns\\Art\\Fonds\\fresh.tga"] = true }
+	many.area:SetText(table.concat({
+		[["C:\Program Files (x86)\World of Warcraft\_retail_\Interface\AddOns\Art\Fonds\stone.tga"]],
+		[["C:\Program Files (x86)\World of Warcraft\_retail_\Interface\AddOns\Art\Fonds\wood.blp"]],
+		[[/Applications/World of Warcraft/_retail_/Interface/AddOns/Art/Fonds/Solid.tga]],
+		[["D:\Images\photo.tga"]],
+		[["C:\Program Files (x86)\World of Warcraft\_retail_\Interface\AddOns\Art\Fonds\stone.tga"]],
+		[[Interface\AddOns\Art\Fonds\fresh.tga]],
+		"",
+	}, "\r\n"))
+	-- Recent LibSharedMedia versions raise a Lua error for an unknown file: never sent there
+	local LSM = ns.Media.LSM
+	local register, sentUnknown = LSM.Register, false
+	LSM.Register = function(lib, kind, name, path, ...)
+		if M.unknownFiles and M.unknownFiles[path] then sentUnknown = true end
+		return register(lib, kind, name, path, ...)
+	end
+	many.addAll.scripts.OnClick(many.addAll)
+	check(not sentUnknown, "unknown file not sent to LibSharedMedia")
+	check(ns.API.RegisterMedia("background", "Pack: fresh", "Interface\\AddOns\\Art\\Fonds\\fresh.tga") == false and not sentUnknown, "API: unknown file refused without error")
+	LSM.Register = register
+	local bg = db.global.media.background
+	check(bg.stone == "Interface\\AddOns\\Art\\Fonds\\stone.tga" and bg.wood == "Interface\\AddOns\\Art\\Fonds\\wood.blp", "names from the file names, Windows paths reduced")
+	check(bg["Solid (2)"] == "Interface\\AddOns\\Art\\Fonds\\Solid.tga", "Mac path, name used by another addon gets a number")
+	check(not bg.photo and bg.fresh, "path outside the game refused, unknown file kept")
+	local text = many.result.textValue
+	check(text:find(L["MANY_ADDED"]:format(4), 1, true) and text:find(L["MANY_OUTSIDE"]:format(1, "photo.tga"), 1, true)
+		and text:find(L["MANY_EXISTING"]:format(1), 1, true) and text:find(L["MANY_NOT_FOUND"]:format(1, "fresh"), 1, true), "summary of the add")
+	check(many.area:GetText() ~= "", "pasted text kept when something went wrong")
+	many.area:SetText([[Interface\AddOns\Art\Fonds\stone.tga]])
+	many.addAll.scripts.OnClick(many.addAll)
+	check(many.result.textValue == L["MANY_ADDED"]:format(0) .. "\n" .. L["MANY_EXISTING"]:format(1), "pasting the same files again adds nothing")
+	many.area:SetText("")
+	many.addAll.scripts.OnClick(many.addAll)
+	check(many.result.textValue == L["MANY_EMPTY"], "nothing pasted")
+	for _, name in ipairs({ "stone", "wood", "Solid (2)", "fresh" }) do ns.Media:RemoveFromLibrary("background", name) end
+	M.unknownFiles = nil
+	LP.kind = "border"
+	LP:OpenMany()
+	check(many.title.textValue == L["MANY_TITLE_BORDER"] and many.kindText.textValue == L["MANY_KIND_BORDER"] and many.result.textValue == "", "add-many window for borders")
+	many:Hide()
+	LP.kind = "background"
+
+	-- Texture browser: the library in its own tab, the shared media in another
+	local function values(list)
+		local set = {}
+		for _, item in ipairs(list) do set[tostring(item.value)] = true end
+		return set
+	end
+	local own, shared, all = values(Options:MediaItems("background", "library")), values(Options:MediaItems("background", "shared")), values(Options:MediaItems("background"))
+	check(own["New Art"] and not own.Solid and not own["false"], "library tab: only the user files")
+	check(shared.Solid and shared["false"] and not shared["New Art"], "shared tab: game and addons media, and None")
+	check(all["New Art"] and all.Solid, "dropdown: everything")
+	O.Browser:Open("background", "New Art", function() end)
+	check(O.Browser.tab == "library" and O.Browser.frame.tabs.buttons[3].shown, "browser opens on the library tab of the current texture")
+	O.Browser:Open("border", "Blizzard Tooltip", function() end)
+	check(O.Browser.tab == "media" and not O.Browser.frame.tabs.buttons[3].shown, "borders: no atlas tab, shared tab")
+	local borders = db.global.media.border
+	db.global.media.border = {}
+	O.Browser.frame.tabs:Select("library")
+	check(O.Browser.frame.empty.shown and O.Browser.frame.empty.textValue == L["BROWSER_LIBRARY_EMPTY"], "empty library tab explained")
+	db.global.media.border = borders
+	O.Browser:Close()
+	ns.Media:RemoveFromLibrary("background", "New Art")
+	M.unknownFiles = nil
 
 	-- Import / export
 	O.SharePage:ShowExport(mainId)
@@ -811,8 +1052,9 @@ elseif scenario == "options" then
 	check(not EM.active and Options.current == "panels" and P.selected == testId, "right-click opens the panel settings")
 
 	-- Every language has the same texts
+	local LOCALES = { "enUS", "frFR", "zhCN", "zhTW", "deDE", "esES", "itIT", "koKR", "ptBR", "ruRU" }
 	local keys = {}
-	for _, locale in ipairs({ "enUS", "frFR", "zhCN", "zhTW" }) do
+	for _, locale in ipairs(LOCALES) do
 		local set, n = {}, 0
 		for line in io.lines("nxPanels/Locales/" .. locale .. ".lua") do
 			local key = line:match('^L%["([%w_]+)"%]')
@@ -822,7 +1064,54 @@ elseif scenario == "options" then
 		check(n == count(keys.enUS), "same number of texts in " .. locale)
 	end
 	for key in pairs(keys.enUS) do
-		check(keys.frFR[key] and keys.zhCN[key] and keys.zhTW[key], "text " .. key .. " translated")
+		for _, locale in ipairs(LOCALES) do
+			check(keys[locale][key], "text " .. key .. " translated in " .. locale)
+		end
+	end
+	-- The same %s / %d as the English text, in the same order (unless numbered: %2$s)
+	local function specifiers(locale)
+		local list = {}
+		for line in io.lines("nxPanels/Locales/" .. locale .. ".lua") do
+			local key, value = line:match('^L%["([%w_]+)"%]%s*=%s*"(.*)"%s*$')
+			if key and key ~= "TIME_FORMAT" and key ~= "DATE_FORMAT" then
+				local found, numbered = {}, false
+				for pos, kind in value:gsub("%%%%", ""):gmatch("%%(%d*%$?)([sd])") do
+					if pos ~= "" then numbered = true end
+					found[#found + 1] = kind
+				end
+				if numbered then table.sort(found) end
+				list[key] = { kinds = table.concat(found), numbered = numbered }
+			end
+		end
+		return list
+	end
+	local english = specifiers("enUS")
+	for _, locale in ipairs(LOCALES) do
+		for key, spec in pairs(specifiers(locale)) do
+			local expected = english[key] and english[key].kinds or ""
+			if spec.numbered then
+				local sorted = {}
+				for c in expected:gmatch(".") do sorted[#sorted + 1] = c end
+				table.sort(sorted)
+				expected = table.concat(sorted)
+			end
+			check(spec.kinds == expected, ("%s %s: %%%s expected, %%%s found"):format(locale, key, expected, spec.kinds))
+		end
+	end
+	-- Texts of the import module: one block per language, the same keys in each
+	local blocks, current = {}, nil
+	for line in io.lines("nxPanels_Import/Locales.lua") do
+		local locale = line:match('NewLocale%("nxPanels", "(%a+)"')
+		if locale then current = {} blocks[locale] = current end
+		local key = current and line:match('^%s*L%["([%w_]+)"%]')
+		if key then current[key] = true end
+	end
+	for _, locale in ipairs(LOCALES) do
+		local block = blocks[locale]
+		check(block and count(block) == count(blocks.enUS), "import texts in " .. locale)
+		for key in pairs(blocks.enUS) do
+			check(block and block[key], "import text " .. key .. " translated in " .. locale)
+		end
 	end
 
 elseif scenario == "original" then
@@ -830,7 +1119,9 @@ elseif scenario == "original" then
 	check(db.global.migration.source == "kgPanels", "imported from the original kgPanels")
 	check(count(db.global.layouts) == 2, "layouts imported")
 	check(M.disabled.kgPanels, "original addon disabled")
-	check(M.popups[1] == "NXPANELS_MIGRATED", "reload popup shown")
+	check(M.popups[1] == "NXPANELS_MIGRATED" and not nxPanelsWelcome, "reload popup shown, welcome waits")
+	I.Import:Finish()
+	check(nxPanelsWelcome and nxPanelsWelcome:IsShown() and nxPanelsWelcome.title:GetText() == L["WELCOME_TITLE"]:format("kgPanels"), "welcome after the reload, original name")
 
 elseif scenario == "handinstall" then
 	check(#M.loadCalls == 0, "running legacy addon read without loading anything")
@@ -838,12 +1129,33 @@ elseif scenario == "handinstall" then
 	check(count(db.global.layouts) == 2, "layouts imported")
 	check(deepEqual(kgPanelsDB, fixture()), "legacy data left untouched")
 	check(M.disabled.kgPanels_Reloaded and M.disabled.kgPanelsConfig_Reloaded, "legacy addons disabled")
-	check(M.popups[1] == "NXPANELS_MIGRATED", "reload popup shown")
+	check(M.popups[1] == "NXPANELS_MIGRATED" and not nxPanelsWelcome, "reload popup shown, welcome waits")
+	I.Import:Finish()
+	check(nxPanelsWelcome and nxPanelsWelcome:IsShown(), "welcome after the reload")
+
+elseif scenario == "notloaded" then
+	local hint = L["LEGACY_NOT_LOADED"]:format("Out of date"):gsub("%p", "%%%0")
+	check(count(db.global.layouts) == 0 and not db.global.migration, "nothing imported")
+	check(printed(hint), "kgPanels not loaded by the game: explained after login")
+	M.printed = {}
+	SlashCmdList.NXPANELS("import")
+	check(printed(hint), "explained again by /nxp import")
+	-- The player copies kgPanels.lua as kgPanels_Reloaded.lua: the bridge reads it
+	M.addons[2].loaded = false
+	M.addons[2].onLoad = function() kgPanelsDB = fixture() end
+	SlashCmdList.NXPANELS("import")
+	check(count(db.global.layouts) == 2 and deepEqual(kgPanelsDB, fixture()), "imported through the bridge, data untouched")
+
+elseif scenario == "nolibs" then
+	check(not ns.libsOK and not ns.db and not db, "missing library detected, no database")
+	check(loginOK, "login without error: " .. tostring(loginError))
+	check(not nxPanelsWelcome and #M.loadCalls == 0, "no import, no welcome")
 
 elseif scenario == "empty" then
 	check(count(db.global.layouts) == 0 and not db.global.migration, "nothing imported")
+	check(#M.popups == 0 and not nxPanelsWelcome, "no welcome without import")
 	local ok = pcall(SlashCmdList.NXPANELS, "status")
-	check(ok and printed(L["LAYOUT_NONE"]:gsub("%p", "%%%0")), "status without layout")
+	check(ok and printed((": " .. L["LAYOUT_NONE_ITEM"] .. ". "):gsub("%p", "%%%0")) and not printed("%.%."), "status without layout, a single period")
 	SlashCmdList.NXPANELS("import")
 	check(printed(L["MIGRATE_NOTHING"]), "import without legacy data")
 

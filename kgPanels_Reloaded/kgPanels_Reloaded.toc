@@ -1,11 +1,24 @@
-## Interface: 120000, 120001, 120005, 120007, 120100, 16001
+## Interface: 120000, 120001, 120005, 120007, 120100, 16001, 20505, 20506
 ## Title: kgPanels Reloaded |cff888888(migration to nxPanels)|r
 ## Notes: Keeps your kgPanels Reloaded data readable so nxPanels can import it. Loaded by nxPanels when needed.
 ## Notes-frFR: Garde vos données kgPanels Reloaded lisibles pour que nxPanels les importe. Chargé par nxPanels si besoin.
 ## Author: Adna
-## Version: 1.0.0
+## Version: 1.0.1
 ## X-License: All Rights Reserved
 ## LoadOnDemand: 1
+## IconTexture: Interface\AddOns\nxPanels\Media\icon
+## Category: User Interface
+## Category-deDE: Benutzerinterface
+## Category-esES: Interfaz de usuario
+## Category-esMX: Interfaz de usuario
+## Category-frFR: Interface utilisateur
+## Category-itIT: Interfaccia utente
+## Category-koKR: 사용자 인터페이스
+## Category-ptBR: Interface do usuário
+## Category-ruRU: Интерфейс пользователя
+## Category-zhCN: 用户界面
+## Category-zhTW: 使用者介面
+## Group: nxPanels
 ## SavedVariables: kgPanelsDB
 
 Bridge.lua

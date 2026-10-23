@@ -12,11 +12,29 @@ ns.L = L
 ---------------------------------------------------------------------------
 -- Client detection
 -- WoW Forever reports WOW_PROJECT_MAINLINE with a 1.x build (interface 16xxx).
+-- TBC Anniversary is a 2.5.x build (interface 205xx).
 ---------------------------------------------------------------------------
 local tocVersion = select(4, GetBuildInfo())
 ns.isMainline = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 ns.isForever = ns.isMainline and tocVersion >= 16000 and tocVersion < 20000
 ns.isRetail = ns.isMainline and tocVersion >= 100000
+ns.isAnniversary = tocVersion >= 20500 and tocVersion < 30000
+-- No specializations: primary / secondary talents instead
+ns.usesTalentGroups = ns.isForever or ns.isAnniversary
+
+-- Name of the client, for the status and the troubleshooting
+function ns:ClientName()
+	if self.isForever then return L["CLIENT_FOREVER"] end
+	if self.isAnniversary then return L["CLIENT_ANNIVERSARY"] end
+	if self.isRetail then return L["CLIENT_RETAIL"] end
+	return L["CLIENT_OTHER"]
+end
+
+-- Version and build of the game: "12.0.7.65893"
+function ns:GameVersion()
+	local version, build = GetBuildInfo()
+	return build and build ~= "" and (version .. "." .. build) or tostring(version)
+end
 
 ---------------------------------------------------------------------------
 -- Output

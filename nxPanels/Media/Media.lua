@@ -15,16 +15,43 @@ function Media:Init()
 	LSM:Register("background", "Solid", WHITE)
 	for kind, list in pairs(ns.db.global.media) do
 		for name, path in pairs(list) do
-			LSM:Register(kind, name, path)
+			self:Share(kind, name, path)
 		end
 	end
 	LSM.RegisterCallback(self, "LibSharedMedia_Registered", "OnMediaRegistered")
 end
 
--- Adds an entry to the user library (saved) and to LibSharedMedia
+-- Shares a library entry with the other addons through LibSharedMedia. Only a file the
+-- game knows, in its Interface folder: recent versions of LibSharedMedia report the
+-- others as a Lua error. An unknown file stays usable here (Fetch reads the library)
+-- and is shared after a restart. Returns true when the game knows the file.
+function Media:Share(kind, name, path)
+	if not self:IsKnownFile(path) then return false end
+	if type(path) == "string" and not path:lower():find("^interface") then return true end
+	LSM:Register(kind, name, path)
+	return true
+end
+
+-- Adds an entry to the user library (saved) and shares it. Returns true when the
+-- game knows the file (new files are only found after a restart).
 function Media:AddToLibrary(kind, name, path)
 	ns.db.global.media[kind][name] = path
-	LSM:Register(kind, name, path)
+	return self:Share(kind, name, path)
+end
+
+-- The game finds this file (a file id is trusted). New files are only found after a restart.
+function Media:IsKnownFile(path)
+	if type(path) ~= "string" then return path ~= nil end
+	local isKnown = C_UIFileAsset and C_UIFileAsset.IsKnownFile
+	if not isKnown then return true end
+	local ok, known = pcall(isKnown, path)
+	return not ok or known and true or false
+end
+
+-- Path saved in the user library, nil for other keys
+function Media:LibraryPath(kind, key)
+	local library = ns.db.global.media[kind]
+	return library and library[key]
 end
 
 -- Removes an entry from the user library. LibSharedMedia cannot unregister a
@@ -36,7 +63,7 @@ end
 -- Texture path of a background/border key; nil for "none" or unknown keys
 function Media:Fetch(kind, key, panelId)
 	if not key then return nil end
-	local path = LSM:Fetch(kind, key, true)
+	local path = LSM:Fetch(kind, key, true) or self:LibraryPath(kind, key)
 	if path and path ~= "" then
 		return path
 	end

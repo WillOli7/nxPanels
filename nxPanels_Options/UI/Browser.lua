@@ -7,8 +7,9 @@ local core = O.core
 --[[
 Texture browser: a grid of thumbnails instead of a list of names.
 	Browser:Open(kind, current, onSelect)   kind = "background" | "border"
-Backgrounds have a second tab with the Blizzard atlases (images of the game,
-available to every player without any file).
+Tabs: the media of the game and the other addons, the user library (the files
+added in the Library page), and for backgrounds the Blizzard atlases (images of
+the game, available to every player without any file).
 ]]
 local Browser = {}
 O.Browser = Browser
@@ -129,7 +130,12 @@ function Browser:Fill()
 	if self.kind == "icon" then return self:FillIcons() end
 	local filter = strtrim(f.search.edit:GetText() or ""):lower()
 	f.placeholder:SetShown(filter == "")
-	local items = self.tab == "atlas" and self:AtlasItems() or O.Options:MediaItems(self.kind)
+	local items
+	if self.tab == "atlas" then
+		items = self:AtlasItems()
+	else
+		items = O.Options:MediaItems(self.kind, self.tab == "library" and "library" or "shared")
+	end
 	local columns = math.max(1, math.floor((WIDTH - 40 + GAP) / (CELL_W + GAP)))
 	local shown = 0
 	for _, item in ipairs(items) do
@@ -148,6 +154,7 @@ function Browser:Fill()
 	end
 	for i = shown + 1, #cells do cells[i]:Hide() end
 	f.empty:SetShown(shown == 0)
+	f.empty:SetText(self.tab == "library" and #items == 0 and L["BROWSER_LIBRARY_EMPTY"] or L["BROWSER_EMPTY"])
 	f.scroll:SetContentHeight(math.ceil(shown / columns) * (CELL_H + GAP))
 	f.atlasRow:SetShown(self.tab == "atlas")
 	f.count:SetText(self.tab == "atlas" and L["ATLAS_COUNT"]:format(shown) or "")
@@ -187,6 +194,7 @@ local function create()
 
 	f.tabs = W.Tabs(f, {
 		{ key = "media", text = L["BROWSER_MEDIA"] },
+		{ key = "library", text = L["BROWSER_LIBRARY"] },
 		{ key = "atlas", text = L["BROWSER_ATLAS"] },
 	}, function(key)
 		Browser.tab = key
@@ -235,6 +243,8 @@ local function create()
 	f.scroll:SetPoint("BOTTOMRIGHT", -16, 16)
 	f.empty = T:Text(f.scroll.content, T.fonts.normal, C.textDim)
 	f.empty:SetPoint("TOPLEFT", 4, -8)
+	f.empty:SetPoint("RIGHT", -8, 0)
+	f.empty:SetWordWrap(true)
 	f.empty:SetText(L["BROWSER_EMPTY"])
 	f.scroll:HookScript("OnMouseWheel", function()
 		if Browser.kind == "icon" then Browser:FillIcons() end
@@ -338,11 +348,18 @@ function Browser:Open(kind, current, onSelect)
 	f.count:SetPoint("TOPRIGHT", -20, -96)
 	f.title:SetText(kind == "border" and L["BROWSER_TITLE_BORDER"] or L["BROWSER_TITLE_BACKGROUND"])
 	-- Borders have no atlas tab (an atlas is not an edge file)
-	f.tabs.buttons[2]:SetShown(kind ~= "border")
+	f.tabs.buttons[3]:SetShown(kind ~= "border")
 	local isAtlas = type(current) == "string" and current:find("^atlas:") ~= nil
 	f.search.edit:SetText("")
 	f.atlasBox.edit:SetText(isAtlas and current:sub(7) or "")
 	f.scroll:SetVerticalScroll(0)
 	f:Show()
-	f.tabs:Select((isAtlas and kind ~= "border") and "atlas" or "media")
+	-- The tab holding the current texture
+	local tab = "media"
+	if isAtlas and kind ~= "border" then
+		tab = "atlas"
+	elseif current and core.Media:LibraryPath(kind, current) then
+		tab = "library"
+	end
+	f.tabs:Select(tab)
 end

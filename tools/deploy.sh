@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Installs the working copy of nxPanels into the local game, for testing.
-# Usage: bash tools/deploy.sh [retail|forever|all] [--forever-testdata]
+# Usage: bash tools/deploy.sh [retail|forever|anniversary|all] [--forever-testdata]
 #
 # - The legacy kgPanels_Reloaded / kgPanelsConfig_Reloaded folders are MOVED (never deleted)
 #   to <flavor>/Interface/AddOns-backup-kgPanels/<date>/ and replaced by the migration bridge.
@@ -74,8 +74,9 @@ forever_testdata() {
 case "$TARGET" in
 	retail) deploy _retail_ ;;
 	forever) deploy _classic_beta_ ;;
-	all) deploy _retail_; deploy _classic_beta_ ;;
-	*) echo "Usage: bash tools/deploy.sh [retail|forever|all] [--forever-testdata]"; exit 1 ;;
+	anniversary) deploy _anniversary_ ;;
+	all) deploy _retail_; deploy _classic_beta_; deploy _anniversary_ ;;
+	*) echo "Usage: bash tools/deploy.sh [retail|forever|anniversary|all] [--forever-testdata]"; exit 1 ;;
 esac
 [ "$TESTDATA" = 1 ] && forever_testdata
 echo "Done. Restart the game (a /reload is not enough for new or changed .toc files)."

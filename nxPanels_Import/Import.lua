@@ -54,6 +54,16 @@ function Import:GetLegacyData()
 	end
 end
 
+-- The original kgPanels is installed but the game did not load it (made for another
+-- client, like BCC Anniversary on WoW Forever, or disabled): its data cannot be read.
+-- Returns the reason shown to the player, or nil.
+function Import:LegacyNotLoaded()
+	if isLoaded(ORIGINAL) or not exists(ORIGINAL) then return end
+	local _, _, _, _, reason = C_AddOns.GetAddOnInfo(ORIGINAL)
+	reason = tostring(reason or "NOT_LOADED")
+	return _G["ADDON_" .. reason] or reason
+end
+
 -- Adds the legacy layouts to nxPanels; returns layouts, panels, old name -> id
 local function importLayouts(legacyGlobal)
 	local g = ns.db.global
@@ -63,7 +73,7 @@ local function importLayouts(legacyGlobal)
 	end
 	for kind, list in pairs(g.media) do
 		for name, path in pairs(list) do
-			ns.Media.LSM:Register(kind, name, path)
+			ns.Media:Share(kind, name, path)
 		end
 	end
 	return layouts, panels, ids
@@ -81,7 +91,11 @@ function Import:Auto()
 	local legacyRunning = isLoaded(ORIGINAL) or isLoaded(RELOADED)
 
 	local legacy, source = self:GetLegacyData()
-	if type(legacy) ~= "table" or type(legacy.global) ~= "table" then return end
+	if type(legacy) ~= "table" or type(legacy.global) ~= "table" then
+		-- Explained after login, when the chat is ready
+		self.notLoaded = self:LegacyNotLoaded()
+		return
+	end
 	legacy = ns.DeepCopy(legacy)
 
 	local layoutCount, panelCount, ids = importLayouts(legacy.global)
@@ -124,10 +138,136 @@ function Import:Auto()
 	self.needReload = legacyRunning
 end
 
--- After login: report, and switch the legacy addons off
+---------------------------------------------------------------------------
+-- Repair of the imports made by 1.0.0: a panel named like the game frame it follows
+-- ("Minimap" anchored to "Minimap") was anchored to itself. Back to the frame name.
+---------------------------------------------------------------------------
+function Import:RepairSelfReferences()
+	if not ns.db or not ns.db.global.migration then return 0 end
+	local repaired = 0
+	for _, layout in pairs(ns.db.global.layouts) do
+		for id, panel in pairs(layout.panels) do
+			local own = "panel:" .. id
+			if panel.parent == own then
+				panel.parent = panel.name
+				repaired = repaired + 1
+			end
+			if type(panel.anchor) == "table" and panel.anchor.relativeTo == own then
+				panel.anchor.relativeTo = panel.name
+				repaired = repaired + 1
+			end
+		end
+	end
+	return repaired
+end
+
+---------------------------------------------------------------------------
+-- Welcome window, shown once after an import (also to players who imported before it existed)
+---------------------------------------------------------------------------
+local WHITE = "Interface\\Buttons\\WHITE8X8"
+local BANNER = "Interface\\AddOns\\nxPanels_Import\\Media\\banner"
+local WIDTH, HEIGHT = 520, 400
+
+local function fill(parent, layer, r, g, b)
+	local tex = parent:CreateTexture(nil, layer)
+	tex:SetTexture(WHITE)
+	tex:SetVertexColor(r, g, b, 1)
+	return tex
+end
+
+local function button(parent, text, onClick)
+	local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+	b:SetSize(170, 28)
+	b:SetText(text)
+	b:SetScript("OnClick", onClick)
+	return b
+end
+
+local function createWelcome()
+	local f = CreateFrame("Frame", "nxPanelsWelcome", UIParent)
+	f:SetSize(WIDTH, HEIGHT)
+	f:SetPoint("CENTER", 0, 60)
+	f:SetFrameStrata("DIALOG")
+	f:SetClampedToScreen(true)
+	f:EnableMouse(true)
+	f:SetMovable(true)
+	f:RegisterForDrag("LeftButton")
+	f:SetScript("OnDragStart", f.StartMoving)
+	f:SetScript("OnDragStop", f.StopMovingOrSizing)
+	tinsert(UISpecialFrames, "nxPanelsWelcome")
+
+	-- Same dark background as the banner, gold frame
+	fill(f, "BACKGROUND", 0.07, 0.063, 0.059):SetAllPoints()
+	for _, side in ipairs({ { "TOPLEFT", "TOPRIGHT", 0, 2 }, { "BOTTOMLEFT", "BOTTOMRIGHT", 0, 2 },
+		{ "TOPLEFT", "BOTTOMLEFT", 2, 0 }, { "TOPRIGHT", "BOTTOMRIGHT", 2, 0 } }) do
+		local edge = fill(f, "BORDER", 1, 0.76, 0.33)
+		edge:SetPoint(side[1])
+		edge:SetPoint(side[2])
+		if side[3] > 0 then edge:SetWidth(side[3]) else edge:SetHeight(side[4]) end
+	end
+
+	-- Banner: 512x128 texture, logo and name
+	local banner = f:CreateTexture(nil, "ARTWORK")
+	banner:SetTexture(BANNER)
+	banner:SetSize(480, 120)
+	banner:SetPoint("TOP", 0, -14)
+
+	f.title = f:CreateFontString(nil, "OVERLAY")
+	f.title:SetFont(STANDARD_TEXT_FONT, 20, "")
+	f.title:SetTextColor(1, 0.76, 0.33)
+	f.title:SetPoint("TOP", banner, "BOTTOM", 0, -14)
+	f.title:SetWidth(WIDTH - 60)
+
+	f.body = f:CreateFontString(nil, "OVERLAY")
+	f.body:SetFont(STANDARD_TEXT_FONT, 15, "")
+	f.body:SetTextColor(0.96, 0.93, 0.87)
+	f.body:SetJustifyH("CENTER")
+	f.body:SetJustifyV("TOP")
+	f.body:SetSpacing(4)
+	f.body:SetPoint("TOPLEFT", f.title, "BOTTOMLEFT", 0, -16)
+	f.body:SetPoint("TOPRIGHT", f.title, "BOTTOMRIGHT", 0, -16)
+	f.body:SetPoint("BOTTOM", 0, 64)
+
+	f.open = button(f, L["WELCOME_OPEN"], function()
+		f:Hide()
+		ns.Commands:OpenOptions(nil, true)
+	end)
+	f.open:SetPoint("BOTTOMRIGHT", f, "BOTTOM", -8, 22)
+	f.close = button(f, L["WELCOME_CLOSE"], function() f:Hide() end)
+	f.close:SetPoint("BOTTOMLEFT", f, "BOTTOM", 8, 22)
+	return f
+end
+
+function Import:Welcome()
+	-- No database when a library is missing
+	if not ns.db then return end
+	local done = ns.db.global.migration
+	if type(done) ~= "table" or done.welcomed then return end
+	local f = self.welcomeFrame or createWelcome()
+	self.welcomeFrame = f
+	f.title:SetText(L["WELCOME_TITLE"]:format(done.source == ORIGINAL and "kgPanels" or "kgPanels Reloaded"))
+	local body = L["WELCOME_BODY"]
+	-- No count when the old addon had no layout
+	if (tonumber(done.layouts) or 0) > 0 then
+		body = L["WELCOME_COUNT"]:format(done.layouts, tonumber(done.panels) or 0) .. "\n" .. body
+	end
+	f.body:SetText(body)
+	f:Show()
+	-- Recorded once shown: an error above leaves the welcome for the next login
+	done.welcomed = true
+end
+
+-- After login: report, switch the legacy addons off, then welcome (after the reload if one is needed)
 function Import:Finish()
 	local done = self.done
-	if not done then return end
+	if not done then
+		if self.notLoaded then
+			ns:Print(L["LEGACY_NOT_LOADED"], self.notLoaded)
+			self.notLoaded = nil
+		end
+		self:Welcome()
+		return
+	end
 	self.done = nil
 	ns:Print(L["MIGRATED"], done.layouts, done.panels, done.source)
 
@@ -146,6 +286,8 @@ function Import:Finish()
 			hideOnEscape = true,
 		}
 		StaticPopup_Show("NXPANELS_MIGRATED")
+	else
+		self:Welcome()
 	end
 end
 
@@ -155,7 +297,12 @@ end
 function Import:Again()
 	local legacy, source = self:GetLegacyData()
 	if type(legacy) ~= "table" or type(legacy.global) ~= "table" then
-		ns:Print(L["MIGRATE_NOTHING"])
+		local reason = self:LegacyNotLoaded()
+		if reason then
+			ns:Print(L["LEGACY_NOT_LOADED"], reason)
+		else
+			ns:Print(L["MIGRATE_NOTHING"])
+		end
 		return
 	end
 	local layouts, panels = importLayouts(legacy.global)
@@ -202,6 +349,7 @@ end
 ns:RegisterEvent("ADDON_LOADED", function(_, name)
 	if name ~= ADDON or not ns.libsOK then return end
 	Import:Auto()
+	Import:RepairSelfReferences()
 	ns.Commands:Register("import", L["HELP_IMPORT"], function() Import:Again() end)
 	ns.Share:RegisterDecoder(decodeLegacyString)
 end)

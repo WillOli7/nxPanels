@@ -6,11 +6,6 @@ local core = O.core
 -- General settings, edit mode settings, information
 local function edit() return core.db.global.editMode end
 
-local function clientName()
-	if core.isForever then return L["CLIENT_FOREVER"] end
-	if core.isRetail then return L["CLIENT_RETAIL"] end
-	return L["CLIENT_OTHER"]
-end
 
 local function build(page, width)
 	local scroll, form = Options:ScrollForm(page, width)
@@ -71,7 +66,7 @@ local function build(page, width)
 	form:Section(L["SECTION_ABOUT"])
 	local about = W.TextRow(form, "", 96)
 	function about:Refresh()
-		self:SetText(L["ABOUT"]:format(core.version, clientName(), GetLocale(), core.Media:DefaultFont()))
+		self:SetText(L["ABOUT"]:format(core.version, core:ClientName(), GetLocale(), core.Media:DefaultFont()))
 	end
 end
 

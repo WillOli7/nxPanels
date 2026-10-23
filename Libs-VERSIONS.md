@@ -2,7 +2,7 @@
 
 Les librairies sont intégrées directement dans l'addon. Avant chaque release, lancer `tools/check-libs.sh` pour comparer ces versions aux dernières disponibles.
 
-Dernière mise à jour : 2026-09-27
+Dernière mise à jour : 2026-10-23
 
 ## Socle — `nxPanels/Libs`
 
@@ -13,11 +13,11 @@ Dernière mise à jour : 2026-09-27
 | AceDB-3.0 | 39 | [WoWUIDev/Ace3](https://github.com/WoWUIDev/Ace3) | master `a360495` (compatibilité WoW Forever, absente de la release r1403) |
 | AceLocale-3.0 | 6 | [WoWUIDev/Ace3](https://github.com/WoWUIDev/Ace3) | master `a360495` |
 | AceSerializer-3.0 | 5 | [WoWUIDev/Ace3](https://github.com/WoWUIDev/Ace3) | master `a360495` |
-| LibSharedMedia-3.0 | 12000002 | [WowAce SVN](https://repos.wowace.com/wow/libsharedmedia-3-0/trunk/) | trunk r177 |
-| LibSerialize | 6 (v1.2.2) | [rossnichols/LibSerialize](https://github.com/rossnichols/LibSerialize) | tag `v1.2.2`, **patched**: no division by zero (WoW Forever raises an error), lines marked "nxPanels patch" — keep the patch when updating |
+| LibSharedMedia-3.0 | 12000005 | [WowAce SVN](https://repos.wowace.com/wow/libsharedmedia-3-0/trunk/) | trunk r185. Signale un fichier inconnu du jeu ou hors du dossier Interface par une erreur Lua (`geterrorhandler`) : nxPanels ne lui transmet que les fichiers connus (`Media:Share`) |
+| LibSerialize | 7 (v1.2.3) | [rossnichols/LibSerialize](https://github.com/rossnichols/LibSerialize) | tag `v1.2.3`, sans modification : la correction de la division par zéro (WoW Forever) est désormais dans la version officielle |
 | LibDeflate | 3 (1.0.2-release) | [SafeteeWoW/LibDeflate](https://github.com/SafeteeWoW/LibDeflate) | tag `1.0.2-release` |
 | LibDataBroker-1.1 | 4 | [WowAce SVN (libdbicon)](https://repos.wowace.com/wow/libdbicon-1-0/trunk/) | trunk r162 |
-| LibDBIcon-1.0 | 56 | [WowAce SVN](https://repos.wowace.com/wow/libdbicon-1-0/trunk/) | trunk r162 |
+| LibDBIcon-1.0 | 57 | [WowAce SVN](https://repos.wowace.com/wow/libdbicon-1-0/trunk/) | trunk r168 (compartiment d'addons détecté par sa présence, utile pour TBC Anniversary) |
 
 `nxPanels_Options` n'embarque aucune librairie : il utilise celles du socle.
 

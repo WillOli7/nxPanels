@@ -8,11 +8,23 @@ the texture holds 8 square segments side by side, 1/8 of the width each:
 	0 LEFT, 1 RIGHT, 2 TOP, 3 BOTTOM, 4 TOPLEFT, 5 TOPRIGHT, 6 BOTTOMLEFT, 7 BOTTOMRIGHT
 TOP and BOTTOM are stored vertically and drawn rotated. Sides repeat along
 their length, drawn inside the frame like the legacy backdrop.
+
+Texture coordinates and repeat counts are the ones of Blizzard's BackdropTemplate,
+so borders look exactly as before (to the pixel): each segment is cropped by 1/128
+on its sides and 1/16 at its ends.
 ]]
 local Border = {}
 ns.Border = Border
 
 local SEGMENT = 1 / 8
+local CROP_X = 1 / 128
+local CROP_START = 0.0625
+local CROP_END = 1 - CROP_START
+
+-- Horizontal coordinates of a segment, cropped like the backdrop
+local function segment(index)
+	return index * SEGMENT + CROP_X, (index + 1) * SEGMENT - CROP_X
+end
 local SECTIONS = {
 	LEFT = 0, RIGHT = 1, TOP = 2, BOT = 3,
 	TOPLEFTCORNER = 4, TOPRIGHTCORNER = 5, BOTLEFTCORNER = 6, BOTRIGHTCORNER = 7,
@@ -48,7 +60,8 @@ function Border:Apply(frame, file, size, color, hidden)
 		if index >= 4 then
 			tex:SetTexture(file, "CLAMP", "CLAMP")
 			tex:SetSize(size, size)
-			tex:SetTexCoord(index * SEGMENT, (index + 1) * SEGMENT, 0, 1)
+			local x1, x2 = segment(index)
+			tex:SetTexCoord(x1, x2, CROP_START, CROP_END)
 		else
 			tex:SetTexture(file, "CLAMP", "REPEAT")
 		end
@@ -77,22 +90,27 @@ function Border:Apply(frame, file, size, color, hidden)
 	self:UpdateCoords(frame)
 end
 
--- Side texture coordinates depend on the frame size (repeat count)
+-- Side texture coordinates depend on the frame size (repeat count). Same formula as
+-- the backdrop, effective scale included.
 function Border:UpdateCoords(frame)
 	local b = frame.border
 	local size = b.size
 	if not size or size <= 0 then return end
 	local t = b.textures
 	local width, height = frame:GetSize()
-	local vRepeat = math.max(0, height - 2 * size) / size
-	local hRepeat = math.max(0, width - 2 * size) / size
+	local scale = frame:GetEffectiveScale()
+	local hRepeat = math.max(0, width / size * scale - 2 - CROP_START)
+	local vRepeat = math.max(0, height / size * scale - 2 - CROP_START)
 
-	t.LEFT:SetTexCoord(0, SEGMENT, 0, vRepeat)
-	t.RIGHT:SetTexCoord(SEGMENT, 2 * SEGMENT, 0, vRepeat)
+	-- ULx, ULy, LLx, LLy, URx, URy, LRx, LRy
+	local x1, x2 = segment(SECTIONS.LEFT)
+	t.LEFT:SetTexCoord(x1, CROP_START, x1, vRepeat, x2, CROP_START, x2, vRepeat)
+	x1, x2 = segment(SECTIONS.RIGHT)
+	t.RIGHT:SetTexCoord(x1, CROP_START, x1, vRepeat, x2, CROP_START, x2, vRepeat)
 
-	-- Rotated: ULx, ULy, LLx, LLy, URx, URy, LRx, LRy
-	local x1, x2 = 2 * SEGMENT, 3 * SEGMENT
-	t.TOP:SetTexCoord(x1, 0, x2, 0, x1, hRepeat, x2, hRepeat)
-	x1, x2 = 3 * SEGMENT, 4 * SEGMENT
-	t.BOT:SetTexCoord(x1, 0, x2, 0, x1, hRepeat, x2, hRepeat)
+	-- Rotated
+	x1, x2 = segment(SECTIONS.TOP)
+	t.TOP:SetTexCoord(x1, hRepeat, x2, hRepeat, x1, CROP_START, x2, CROP_START)
+	x1, x2 = segment(SECTIONS.BOT)
+	t.BOT:SetTexCoord(x1, hRepeat, x2, hRepeat, x1, CROP_START, x2, CROP_START)
 end

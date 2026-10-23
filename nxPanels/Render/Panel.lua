@@ -68,9 +68,12 @@ function Panel:Acquire(panelId)
 		local keys = {}
 		for key in pairs(frame) do keys[key] = true end
 		keys.panelId, keys.tileSize, keys.textTemplate, keys.nxManaged = true, true, true, true
+		keys.nxShowPending, keys.nxShownBefore = true, true
 		ownKeys[frame] = keys
 	end
 	frame.panelId = panelId
+	-- Shown once placed (then its scripts or display conditions decide)
+	frame.nxShowPending = true
 	-- Stable global name, so other addons and scripts can anchor to a panel
 	_G["nxPanel_" .. panelId] = frame
 	return frame

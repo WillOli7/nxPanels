@@ -4,14 +4,14 @@ local _, ns = ...
 Specializations, to activate a layout per specialization.
 Keys are neutral and stable, so one profile can be shared by several classes:
 	"S<specID>"   Retail: specialization id (unique across classes)
-	"G1", "G2"    WoW Forever: primary / secondary talents
+	"G1", "G2"    WoW Forever, TBC Anniversary: primary / secondary talents
 ]]
 local Specs = {}
 ns.Specs = Specs
 
 -- Key of the current specialization, nil while unknown (loading, low level)
 function Specs:Current()
-	if ns.isForever then
+	if ns.usesTalentGroups then
 		local getGroup = C_SpecializationInfo and C_SpecializationInfo.GetActiveSpecGroup or GetActiveTalentGroup
 		local group = getGroup and getGroup()
 		return group and group > 0 and ("G" .. group) or nil
@@ -26,7 +26,7 @@ end
 -- Specializations of the player's class: { { key = "...", name = "..." }, ... }
 function Specs:List()
 	local list = {}
-	if ns.isForever then
+	if ns.usesTalentGroups then
 		list[1] = { key = "G1", name = TALENT_SPEC_PRIMARY or "1" }
 		list[2] = { key = "G2", name = TALENT_SPEC_SECONDARY or "2" }
 		return list

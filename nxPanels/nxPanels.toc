@@ -1,11 +1,18 @@
-## Interface: 120000, 120001, 120005, 120007, 120100, 16001
+## Interface: 120000, 120001, 120005, 120007, 120100, 16001, 20505, 20506
 ## Title: nxPanels
 ## Notes: Artistic panels for your interface: backgrounds, borders, text and scripts.
 ## Notes-frFR: Panneaux artistiques pour votre interface : fonds, bordures, texte et scripts.
 ## Notes-zhCN: 为你的界面添加艺术面板：背景、边框、文字与脚本。
 ## Notes-zhTW: 為你的介面加入藝術面板：背景、邊框、文字與腳本。
+## Notes-deDE: Künstlerische Panels für deine Oberfläche: Hintergründe, Rahmen, Text und Skripte.
+## Notes-esES: Paneles artísticos para tu interfaz: fondos, bordes, texto y scripts.
+## Notes-esMX: Paneles artísticos para tu interfaz: fondos, bordes, texto y scripts.
+## Notes-itIT: Pannelli artistici per la tua interfaccia: sfondi, bordi, testo e script.
+## Notes-koKR: 인터페이스를 위한 예술적인 패널: 배경, 테두리, 텍스트, 스크립트.
+## Notes-ptBR: Painéis artísticos para sua interface: fundos, bordas, texto e scripts.
+## Notes-ruRU: Художественные панели для интерфейса: фоны, рамки, текст и скрипты.
 ## Author: Adna
-## Version: 1.0.0
+## Version: 1.0.1
 ## X-License: All Rights Reserved
 ## X-Curse-Project-ID: 1444518
 ## SavedVariables: nxPanelsDB
@@ -30,6 +37,12 @@ Locales\enUS.lua
 Locales\frFR.lua
 Locales\zhCN.lua
 Locales\zhTW.lua
+Locales\deDE.lua
+Locales\esES.lua
+Locales\itIT.lua
+Locales\koKR.lua
+Locales\ptBR.lua
+Locales\ruRU.lua
 
 Core\Init.lua
 Core\Defaults.lua

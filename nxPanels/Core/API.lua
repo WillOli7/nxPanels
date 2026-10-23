@@ -62,5 +62,7 @@ function API.RegisterMedia(...)
 	local kind, name, path = ...
 	if kind == API then kind, name, path = select(2, ...) end
 	if type(kind) ~= "string" or type(name) ~= "string" or not path then return false end
+	-- A file the game does not know: false rather than a Lua error from LibSharedMedia
+	if not ns.Media:IsKnownFile(path) then return false end
 	return ns.Media.LSM:Register(kind, name, path) and true or false
 end

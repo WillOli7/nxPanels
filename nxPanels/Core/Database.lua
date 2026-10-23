@@ -10,7 +10,7 @@ nxPanelsDB (AceDB)
 	global.layouts[id]       { name = "...", folders = { "name", ... }, panels = { [panelId] = panel } }
 	global.media.background  user library: [name] = path
 	global.media.border      user library: [name] = path
-	global.migration         { source = "...", date = time() } set by an import module
+	global.migration         { source = "...", date = time(), layouts, panels, welcomed } set by an import module
 	global.optionsScale      scale of the options window
 	global.optionsTheme      look of the options window: { style = "...", accent = "..." }
 	global.editMode          grid and snapping of the edit mode
@@ -277,8 +277,7 @@ function Database:DuplicatePanel(layoutId, panelId)
 	local id = self:NewId("P")
 	local panel = ns.DeepCopy(source)
 	panel.name = self:UniquePanelName(layout, source.name)
-	panel.anchor.x = panel.anchor.x + 20
-	panel.anchor.y = panel.anchor.y - 20
+	-- Same position: duplicate, then change the anchor frame (raid frame 1, 2, 3...)
 	layout.panels[id] = panel
 	return id, panel
 end

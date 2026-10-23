@@ -93,9 +93,12 @@ local function convertPanel(old, name, refToId, dependency)
 	p.name = name
 	p.folder = type(old.folder) == "string" and old.folder ~= "" and old.folder or nil
 
-	-- References to another panel of the same layout become "panel:<id>"
+	-- References to another panel of the same layout become "panel:<id>". Same order as
+	-- the legacy addon: a game frame of that name first, then another panel, never itself
+	-- (a panel named "Minimap" anchored to "Minimap" follows the minimap)
 	local function ref(value)
 		if type(value) ~= "string" or value == "" then return "UIParent" end
+		if value == name or ns.Anchors:Resolve(value) then return value end
 		if refToId[value] then return "panel:" .. refToId[value] end
 		return value
 	end

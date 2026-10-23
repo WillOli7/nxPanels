@@ -2,6 +2,13 @@
 
 All notable changes to nxPanels. Versions follow [Semantic Versioning](https://semver.org/).
 
+## 1.0.1 — 2026-09-29
+- **Welcome window** after the import of your kgPanels / kgPanels Reloaded layouts, shown once: what changed, and how to open nxPanels (`/nxp`, `/nxp edit`). Players who already updated to 1.0.0 see it once too.
+- **TBC Anniversary** support (interface 20505 and 20506): layouts per talent group, like on WoW Forever.
+- **Library**: add all the files of a folder at once (paste the paths copied from the file explorer); the texture browser has a "My library" tab; your files work even when the game does not index them, and a full Windows path is reduced to the game path.
+- The sidebar of the window shows the client and the exact version of the game, for troubleshooting.
+- **Every language of the game**: German, Spanish (Spain and Mexico), Italian, Brazilian Portuguese, Russian and Korean, in addition to English, French and Chinese. Reviews by native speakers welcome.
+
 ## 1.0.0 — 2026-09-29
 
 **kgPanels Reloaded is now nxPanels**, a complete rewrite. **Nothing to do:** your layouts, panels, folders, profiles and custom art are imported automatically on the first start. Your old data is never modified, and `/nxp import` imports it again at any time.
