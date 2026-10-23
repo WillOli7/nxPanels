@@ -352,6 +352,8 @@ function W.LinkRow(form, label, url, hint)
 		end
 	end)
 	e:HookScript("OnEditFocusGained", function(self) self:HighlightText() end)
+	-- Only the address being copied stays selected
+	e:HookScript("OnEditFocusLost", function(self) self:HighlightText(0, 0) end)
 	e:SetScript("OnMouseUp", function(self) self:HighlightText() end)
 	if hint then T:Tooltip(row.box, label, hint) end
 	return form:Add(row, true)
