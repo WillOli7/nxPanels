@@ -2,6 +2,10 @@
 
 All notable changes to nxPanels. Versions follow [Semantic Versioning](https://semver.org/).
 
+## 1.1.1 — 2026-10-23
+
+- Retail: compatible with patch 12.1.5 (interface 120105).
+
 ## 1.1.0 — 2026-10-23
 
 New:

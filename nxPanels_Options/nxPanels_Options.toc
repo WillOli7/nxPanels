@@ -1,4 +1,4 @@
-## Interface: 120000, 120001, 120005, 120007, 120100, 16001, 20505, 20506
+## Interface: 120000, 120001, 120005, 120007, 120100, 120105, 16001, 20505, 20506
 ## Title: nxPanels |cff33ccffOptions|r
 ## Notes: Configuration window of nxPanels, loaded when you open it.
 ## Notes-frFR: Fenêtre de configuration de nxPanels, chargée à l'ouverture.
@@ -12,7 +12,7 @@
 ## Notes-ptBR: Janela de configuração do nxPanels, carregada ao abrir.
 ## Notes-ruRU: Окно настроек nxPanels, загружается при открытии.
 ## Author: Adna
-## Version: 1.1.0
+## Version: 1.1.1
 ## X-License: All Rights Reserved
 ## RequiredDeps: nxPanels
 ## LoadOnDemand: 1
