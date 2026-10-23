@@ -182,9 +182,13 @@ function Options:Create()
 	local version = T:Text(side, T.fonts.small, C.textMuted)
 	version:SetPoint("BOTTOMLEFT", 22, 16)
 	version:SetText("v" .. core.version)
-	-- Own line above the version: both are too wide to share one line
+	-- Client and build of the game, for the troubleshooting (screenshots)
+	self.game = T:Text(side, T.fonts.small, C.textMuted)
+	self.game:SetPoint("BOTTOMLEFT", version, "TOPLEFT", 0, 4)
+	self.game:SetText(core:ClientName() .. " " .. core:GameVersion())
+	-- Own lines above the versions: they are too wide to share one line
 	self.stats = T:Text(side, T.fonts.small, C.textMuted)
-	self.stats:SetPoint("BOTTOMLEFT", version, "TOPLEFT", 0, 6)
+	self.stats:SetPoint("BOTTOMLEFT", self.game, "TOPLEFT", 0, 6)
 
 	-- Header
 	self.title = T:Text(f, T.fonts.title, C.text)
@@ -323,17 +327,39 @@ end
 Dropdown items of the LibSharedMedia lists.
 kind = "background" | "border": "none" is false, like in the data
 kind = "font": the language default font is nil
+source = "library": only the user library (also the files LibSharedMedia refused)
+source = "shared": only the media of the game and the other addons
+source = nil: everything, sorted by name
 ]]
-function Options:MediaItems(kind)
+function Options:MediaItems(kind, source)
 	local LSM = core.Media.LSM
 	local items = {}
-	if kind == "font" then
-		items[1] = { value = nil, text = L["DEFAULT_FONT"], font = core.Media:DefaultFont() }
-	else
-		items[1] = { value = false, text = L["NONE"] }
+	if source ~= "library" then
+		if kind == "font" then
+			items[1] = { value = nil, text = L["DEFAULT_FONT"], font = core.Media:DefaultFont() }
+		else
+			items[1] = { value = false, text = L["NONE"] }
+		end
 	end
-	local paths = LSM:HashTable(kind)
-	for _, name in ipairs(LSM:List(kind)) do
+	local paths, names = {}, {}
+	local library = core.db.global.media[kind] or {}
+	if source ~= "shared" then
+		for name, path in pairs(library) do
+			names[#names + 1] = name
+			paths[name] = path
+		end
+	end
+	if source ~= "library" then
+		local shared = LSM:HashTable(kind)
+		for _, name in ipairs(LSM:List(kind)) do
+			if not library[name] then
+				names[#names + 1] = name
+				paths[name] = shared[name]
+			end
+		end
+	end
+	table.sort(names, function(a, b) return a:lower() < b:lower() end)
+	for _, name in ipairs(names) do
 		local path = paths[name]
 		if name ~= "None" and path and path ~= "" then
 			local item = { value = name, text = name }

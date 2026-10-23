@@ -1,11 +1,18 @@
-## Interface: 120000, 120001, 120005, 120007, 120100, 16001
+## Interface: 120000, 120001, 120005, 120007, 120100, 16001, 20505, 20506
 ## Title: nxPanels |cff888888Import|r
 ## Notes: Imports your kgPanels and kgPanels Reloaded layouts into nxPanels. You can disable it once your layouts are imported.
 ## Notes-frFR: Importe vos layouts kgPanels et kgPanels Reloaded dans nxPanels. Vous pouvez le désactiver une fois vos layouts importés.
 ## Notes-zhCN: 将你的 kgPanels 与 kgPanels Reloaded 布局导入 nxPanels。导入完成后可以禁用。
 ## Notes-zhTW: 將你的 kgPanels 與 kgPanels Reloaded 版面匯入 nxPanels。匯入完成後可以停用。
+## Notes-deDE: Importiert deine kgPanels- und kgPanels-Reloaded-Layouts in nxPanels. Nach dem Import kannst du es deaktivieren.
+## Notes-esES: Importa tus diseños de kgPanels y kgPanels Reloaded a nxPanels. Puedes desactivarlo una vez importados.
+## Notes-esMX: Importa tus diseños de kgPanels y kgPanels Reloaded a nxPanels. Puedes desactivarlo una vez importados.
+## Notes-itIT: Importa i tuoi layout di kgPanels e kgPanels Reloaded in nxPanels. Puoi disattivarlo dopo l'importazione.
+## Notes-koKR: kgPanels와 kgPanels Reloaded 레이아웃을 nxPanels로 가져옵니다. 가져온 후에는 비활성화해도 됩니다.
+## Notes-ptBR: Importa seus layouts do kgPanels e do kgPanels Reloaded para o nxPanels. Você pode desativá-lo depois da importação.
+## Notes-ruRU: Импортирует ваши макеты kgPanels и kgPanels Reloaded в nxPanels. После импорта его можно отключить.
 ## Author: Adna
-## Version: 1.0.0
+## Version: 1.1.0
 ## X-License: All Rights Reserved
 ## RequiredDeps: nxPanels
 ## OptionalDeps: kgPanels

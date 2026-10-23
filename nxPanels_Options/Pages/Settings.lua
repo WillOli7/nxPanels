@@ -6,11 +6,11 @@ local core = O.core
 -- General settings, edit mode settings, information
 local function edit() return core.db.global.editMode end
 
-local function clientName()
-	if core.isForever then return L["CLIENT_FOREVER"] end
-	if core.isRetail then return L["CLIENT_RETAIL"] end
-	return L["CLIENT_OTHER"]
-end
+-- Where players report a problem: CurseForge (where they already are), GitHub for a
+-- detailed report (form with version, client, Lua error)
+local SUPPORT_URL = "curseforge.com/wow/addons/nxpanels"
+local DETAILS_URL = "github.com/WillOli7/nxPanels/issues"
+
 
 local function build(page, width)
 	local scroll, form = Options:ScrollForm(page, width)
@@ -68,11 +68,20 @@ local function build(page, width)
 		{ text = L["EDIT_MODE"], style = "primary", width = 190, onClick = function() O.EditMode:Start() end },
 	}, L["EDIT_MODE_HELP_SHORT"])
 
+	-- Useful for the troubleshooting (screenshots of players)
 	form:Section(L["SECTION_ABOUT"])
-	local about = W.TextRow(form, "", 96)
-	function about:Refresh()
-		self:SetText(L["ABOUT"]:format(core.version, clientName(), GetLocale(), core.Media:DefaultFont()))
-	end
+	W.InfoRow(form, L["ABOUT_VERSION"], function() return core.version end)
+	W.InfoRow(form, L["ABOUT_CLIENT"], function() return core:ClientName() .. " " .. core:GameVersion() end)
+	W.InfoRow(form, L["ABOUT_LANGUAGE"], function() return GetLocale() end)
+	W.InfoRow(form, L["ABOUT_FONT"], function()
+		local font = tostring(core.Media:DefaultFont())
+		return font:match("([^\\/]+)$") or font
+	end)
+	-- Help: whole width, addresses the player can copy
+	form:Section(L["SECTION_HELP"])
+	W.InfoRow(form, L["ABOUT_COMMANDS"], function() return "/nxp help" end, true)
+	W.LinkRow(form, L["ABOUT_SUPPORT"], SUPPORT_URL, L["COPY_HINT"])
+	W.LinkRow(form, L["ABOUT_DETAILS"], DETAILS_URL, L["COPY_HINT"])
 end
 
 Options:RegisterPage({

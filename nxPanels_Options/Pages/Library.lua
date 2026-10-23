@@ -12,14 +12,23 @@ local ROW = 52
 local rows = {}
 local WHITE_COLOR = { r = 1, g = 1, b = 1, a = 1 }
 
--- "Interface/AddOns/x.tga" -> "Interface\AddOns\x.tga"; a number is a file id
+-- "Interface/AddOns/x.tga" -> "Interface\AddOns\x.tga"; a number is a file id.
+-- A full Windows path (C:\...\_retail_\Interface\AddOns\x.tga) keeps its game part,
+-- "AddOns\x.tga" gets its "Interface\".
 local function normalizePath(text)
 	text = strtrim((text or ""):gsub("[\"']", "") or "")
 	if text == "" then return nil end
 	if tonumber(text) then return tonumber(text) end
 	text = text:gsub("/", "\\"):gsub("\\+", "\\")
+	local start = ("\\" .. text:lower()):find("\\interface\\", 1, true)
+	if start then
+		text = text:sub(start)
+	elseif text:lower():find("^addons\\") then
+		text = "Interface\\" .. text
+	end
 	return text
 end
+Library.NormalizePath = normalizePath
 
 -- Draws a media in a preview frame (texture or border)
 local function drawPreview(box, kind, path)
@@ -87,13 +96,176 @@ function Library:Add()
 		say(L["MEDIA_NAME_TAKEN"]:format(name), C.danger)
 		return
 	end
-	core.Media:AddToLibrary(self.kind, name, path)
+	-- The game only reads files of its Interface folder
+	if type(path) == "string" and not path:lower():find("^interface\\") then
+		say(L["MEDIA_BAD_PATH"], C.danger)
+		return
+	end
+	local known = core.Media:AddToLibrary(self.kind, name, path)
 	page.nameBox.edit:SetText("")
 	page.pathBox.edit:SetText("")
-	say(L["MEDIA_ADDED"]:format(name), C.success)
+	if known then
+		say(L["MEDIA_ADDED"]:format(name), C.success)
+	else
+		say(L["MEDIA_ADDED_NOT_FOUND"]:format(name), C.warning)
+	end
 	-- Panels waiting for this name can be drawn now
 	core.Layouts:RefreshAll()
 	Options:Refresh()
+end
+
+---------------------------------------------------------------------------
+-- Several files at once: paths pasted from the file explorer ("Copy as path"),
+-- one per line. Each name comes from its file name.
+---------------------------------------------------------------------------
+-- Free name: "art", then "art (2)"... (names used by other addons are taken too)
+local function freeName(kind, name)
+	local library = core.db.global.media[kind]
+	local function taken(n) return library[n] ~= nil or core.Media.LSM:IsValid(kind, n) end
+	local candidate, n = name, 1
+	while taken(candidate) do
+		n = n + 1
+		candidate = ("%s (%d)"):format(name, n)
+	end
+	return candidate
+end
+
+--[[
+Adds every path of the text to the library of `kind`. Returns a summary:
+{ added = { names }, existing = n, outside = { paths }, notFound = { names } }
+]]
+function Library:AddMany(kind, text)
+	local library = core.db.global.media[kind]
+	local known = {}
+	for _, path in pairs(library) do known[tostring(path):lower()] = true end
+	local result = { added = {}, existing = 0, outside = {}, notFound = {} }
+	for line in (text or ""):gmatch("[^\r\n]+") do
+		local path = normalizePath(line)
+		if type(path) == "string" then
+			local file = path:match("([^\\]+)$") or path
+			local name = strtrim((file:gsub("%.[^%.]*$", "")))
+			if not path:lower():find("^interface\\") then
+				result.outside[#result.outside + 1] = file
+			elseif known[path:lower()] then
+				result.existing = result.existing + 1
+			elseif name ~= "" then
+				name = freeName(kind, name)
+				known[path:lower()] = true
+				result.added[#result.added + 1] = name
+				if not core.Media:AddToLibrary(kind, name, path) then
+					result.notFound[#result.notFound + 1] = name
+				end
+			end
+		end
+	end
+	if #result.added > 0 then
+		core.Layouts:RefreshAll()
+		Options:Refresh()
+	end
+	return result
+end
+
+-- Text of a summary, and whether everything went well
+local function summary(result)
+	local lines = {}
+	if #result.added == 0 and result.existing == 0 and #result.outside == 0 then
+		return L["MANY_EMPTY"], false
+	end
+	lines[#lines + 1] = L["MANY_ADDED"]:format(#result.added)
+	if result.existing > 0 then lines[#lines + 1] = L["MANY_EXISTING"]:format(result.existing) end
+	if #result.outside > 0 then
+		lines[#lines + 1] = L["MANY_OUTSIDE"]:format(#result.outside, table.concat(result.outside, ", "))
+	end
+	if #result.notFound > 0 then
+		lines[#lines + 1] = L["MANY_NOT_FOUND"]:format(#result.notFound, table.concat(result.notFound, ", "))
+	end
+	return table.concat(lines, "\n"), #result.outside == 0 and #result.notFound == 0
+end
+
+local function createManyWindow()
+	local f = CreateFrame("Frame", "nxPanelsAddMany", UIParent)
+	f:SetSize(640, 650)
+	f:SetPoint("CENTER")
+	f:SetFrameStrata("FULLSCREEN_DIALOG")
+	f:SetToplevel(true)
+	f:EnableMouse(true)
+	f:SetMovable(true)
+	f:RegisterForDrag("LeftButton")
+	f:SetScript("OnDragStart", f.StartMoving)
+	f:SetScript("OnDragStop", f.StopMovingOrSizing)
+	f:SetClampedToScreen(true)
+	T:Fill(f, C.window)
+	T:Border(f, C.accent)
+	tinsert(UISpecialFrames, "nxPanelsAddMany")
+
+	f.title = T:Text(f, T.fonts.header, C.text)
+	f.title:SetPoint("TOPLEFT", 20, -18)
+	local close = W.Button(f, "X", 28, "ghost", function() f:Hide() end)
+	close:SetPoint("TOPRIGHT", -12, -12)
+
+	-- Which kind of files this window adds: fonds and bordures must not be mixed
+	-- Spaced lines: long explanations stay easy to read
+	f.kindText = T:Text(f, T.fonts.normal, C.warning)
+	f.kindText:SetPoint("TOPLEFT", 20, -52)
+	f.kindText:SetPoint("RIGHT", -20, 0)
+	f.kindText:SetWordWrap(true)
+	f.kindText:SetSpacing(4)
+	-- One text per paragraph of the help, so the steps 1, 2, 3 are spaced out
+	local previous, gap = f.kindText, 16
+	for paragraph in (L["MANY_HELP"] .. "\n"):gmatch("(.-)\n") do
+		if paragraph == "" then
+			gap = 16
+		else
+			local text = T:Text(f, T.fonts.small, C.textDim)
+			text:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -gap)
+			text:SetPoint("RIGHT", -20, 0)
+			text:SetWordWrap(true)
+			text:SetSpacing(5)
+			text:SetText(paragraph)
+			previous, gap = text, 10
+		end
+	end
+
+	f.area = W.TextArea(f, 600, 150)
+	f.area:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -18)
+	f.placeholder = T:Text(f.area, T.fonts.normal, C.textMuted)
+	f.placeholder:SetPoint("TOPLEFT", 10, -10)
+	f.placeholder:SetText(L["MANY_PASTE"])
+	f.area.edit:HookScript("OnTextChanged", function(self)
+		f.placeholder:SetShown((self:GetText() or "") == "")
+	end)
+
+	f.result = T:Text(f, T.fonts.small, C.textDim)
+	f.result:SetPoint("TOPLEFT", f.area, "BOTTOMLEFT", 0, -12)
+	f.result:SetPoint("RIGHT", -20, 0)
+	f.result:SetWordWrap(true)
+	f.result:SetSpacing(4)
+
+	local done = W.Button(f, L["DONE"], 120, nil, function() f:Hide() end)
+	done:SetPoint("BOTTOMRIGHT", -20, 16)
+	f.addAll = W.Button(f, L["MANY_ADD"], 160, "primary", function()
+		local result = Library:AddMany(f.kind, f.area:GetText())
+		local text, clean = summary(result)
+		f.result:SetText(text)
+		f.result:SetTextColor(unpack(clean and C.success or C.warning))
+		if clean and #result.added > 0 then f.area:SetText("") end
+	end)
+	f.addAll:SetPoint("RIGHT", done, "LEFT", -8, 0)
+	return f
+end
+
+-- Opens the window for the current tab (backgrounds or borders)
+function Library:OpenMany()
+	local f = self.manyWindow or createManyWindow()
+	self.manyWindow = f
+	f.kind = self.kind
+	local border = self.kind == "border"
+	f.title:SetText(border and L["MANY_TITLE_BORDER"] or L["MANY_TITLE_BACKGROUND"])
+	f.kindText:SetText(border and L["MANY_KIND_BORDER"] or L["MANY_KIND_BACKGROUND"])
+	f.area:SetText("")
+	f.placeholder:Show()
+	f.result:SetText("")
+	f:Show()
 end
 
 Options:RegisterPage({
@@ -150,9 +322,12 @@ Options:RegisterPage({
 		help:SetPoint("RIGHT", page.preview, "LEFT", -12, 0)
 		help:SetWordWrap(true)
 		help:SetText(L["MEDIA_HELP"])
+		-- Several files: under the preview and the add button
+		page.addMany = W.Button(card, L["ADD_MANY"], 206, nil, function() Library:OpenMany() end)
+		page.addMany:SetPoint("BOTTOMRIGHT", -16, 12)
 		page.message = T:Text(card, T.fonts.small, C.textDim)
 		page.message:SetPoint("TOPLEFT", help, "BOTTOMLEFT", 0, -6)
-		page.message:SetPoint("RIGHT", -16, 0)
+		page.message:SetPoint("RIGHT", page.addMany, "LEFT", -12, 0)
 
 		-- List
 		page.list = W.Scroll(page)
@@ -180,6 +355,8 @@ Options:RegisterPage({
 			r:Show()
 			r.name:SetText(name)
 			r.path:SetText(tostring(library[name]))
+			-- A file the game does not find shows in warning color
+			r.path:SetTextColor(unpack(core.Media:IsKnownFile(library[name]) and C.textDim or C.warning))
 			drawPreview(r.preview, kind, library[name])
 		end
 		for i = #names + 1, #rows do rows[i]:Hide() end

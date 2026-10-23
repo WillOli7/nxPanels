@@ -99,22 +99,34 @@ function Visibility:Refresh(panelId, instant)
 	if not frame or not panel or ns.Layouts.waiting[panelId] then return end
 	local d = panel.display
 	if self.forceShow then
-		-- Edit mode shows everything
+		-- Edit mode shows everything, the state chosen by the scripts comes back after
+		if frame.nxShownBefore == nil then frame.nxShownBefore = frame:IsShown() end
 		fades[frame] = nil
 		frame:SetAlpha(1)
 		frame:Show()
 		return
 	end
+	local shownBefore = frame.nxShownBefore
+	frame.nxShownBefore = nil
 	if isDefault(d) then
-		-- Default settings leave the panel to its scripts
+		-- Default settings leave the panel to its scripts: shown only when the engine
+		-- hid it (new panel, frame found again, conditions removed), never on an event,
+		-- or a script hiding its panel (self:Hide()) would be undone
+		local show = frame.nxShowPending or frame.nxManaged
 		if frame.nxManaged then
 			frame.nxManaged = nil
 			fades[frame] = nil
 			frame:SetAlpha(1)
 		end
-		frame:Show()
+		frame.nxShowPending = nil
+		if show then
+			frame:Show()
+		elseif shownBefore ~= nil then
+			frame:SetShown(shownBefore)
+		end
 		return
 	end
+	frame.nxShowPending = nil
 	frame.nxManaged = true
 	local fade = instant and 0 or d.fade
 	if conditionsMet(d) then
@@ -134,6 +146,7 @@ end
 function Visibility:Forget(frame)
 	fades[frame] = nil
 	frame.nxManaged = nil
+	frame.nxShownBefore = nil
 	frame:SetAlpha(1)
 end
 

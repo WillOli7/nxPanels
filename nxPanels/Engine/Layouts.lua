@@ -91,6 +91,7 @@ function Layouts:Place(panelId)
 		self.waiting[panelId] = true
 		ns.Panel:Apply(frame, panel, parent or UIParent, anchor or UIParent)
 		frame:Hide()
+		frame.nxShowPending = true
 		return false
 	end
 	self.waiting[panelId] = nil

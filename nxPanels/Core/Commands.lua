@@ -7,14 +7,10 @@ ns.Commands = Commands
 
 local ICON = "Interface\\AddOns\\nxPanels\\Media\\icon"
 
-local function clientName()
-	if ns.isForever then return L["CLIENT_FOREVER"] end
-	if ns.isRetail then return L["CLIENT_RETAIL"] end
-	return L["CLIENT_OTHER"]
-end
 
 local function activeName()
-	return (ns.API.GetActiveLayout()) or L["LAYOUT_NONE"]
+	-- Inside a sentence: "No layout", without the final period of LAYOUT_NONE
+	return (ns.API.GetActiveLayout()) or L["LAYOUT_NONE_ITEM"]
 end
 
 function Commands:ListLayouts()
@@ -52,7 +48,7 @@ end
 
 function Commands:Status()
 	local shown, waiting = ns.Layouts:CountShown()
-	ns:Print(L["STATUS"], ns.version, clientName(), activeName(), shown, waiting)
+	ns:Print(L["STATUS"], ns.version, ns:ClientName(), activeName(), shown, waiting)
 end
 
 -- Commands added by other modules: [name] = { help = "...", run = function(rest) }
@@ -80,7 +76,8 @@ function Commands:ToggleMinimap()
 	if settings.hide then icon:Hide(ADDON) else icon:Show(ADDON) end
 end
 
-function Commands:OpenOptions(page)
+-- show: always show the window (by default it is closed when already open)
+function Commands:OpenOptions(page, show)
 	if not C_AddOns.IsAddOnLoaded("nxPanels_Options") then
 		local loaded, reason = C_AddOns.LoadAddOn("nxPanels_Options")
 		if not loaded then
@@ -89,7 +86,7 @@ function Commands:OpenOptions(page)
 		end
 	end
 	if ns.Options then
-		ns.Options:Toggle(page)
+		if show then ns.Options:Show(page) else ns.Options:Toggle(page) end
 	end
 end
 

@@ -324,6 +324,41 @@ function W.ToggleRow(form, label, get, set, tooltip)
 	return form:Add(row)
 end
 
+-- Read-only information: label on the left, value on the right (get() gives the text)
+function W.InfoRow(form, label, get, full)
+	local row = baseRow(label)
+	row.value = T:Text(row, T.fonts.normal, C.textDim, "RIGHT")
+	row.value:SetPoint("RIGHT", -PAD, 0)
+	row.value:SetPoint("LEFT", row.label, "RIGHT", 8, 0)
+	function row:Refresh() self.value:SetText(get() or "") end
+	return form:Add(row, full)
+end
+
+-- Address the player can copy (WoW cannot open a browser): read-only box on the
+-- whole width, a click selects everything for Ctrl+C
+function W.LinkRow(form, label, url, hint)
+	local row = baseRow(label)
+	row.box = W.EditBox(row, 360, 26)
+	row.box:SetPoint("RIGHT", -PAD, 0)
+	row.label:SetPoint("RIGHT", row.box, "LEFT", -8, 0)
+	local e = row.box.edit
+	e:SetText(url)
+	e:SetCursorPosition(0)
+	-- Read-only: any change puts the address back
+	e:SetScript("OnTextChanged", function(self, userInput)
+		if userInput and self:GetText() ~= url then
+			self:SetText(url)
+			self:HighlightText()
+		end
+	end)
+	e:HookScript("OnEditFocusGained", function(self) self:HighlightText() end)
+	-- Only the address being copied stays selected
+	e:HookScript("OnEditFocusLost", function(self) self:HighlightText(0, 0) end)
+	e:SetScript("OnMouseUp", function(self) self:HighlightText() end)
+	if hint then T:Tooltip(row.box, label, hint) end
+	return form:Add(row, true)
+end
+
 local function formatValue(value, step)
 	if step and step < 1 then
 		local text = ("%.2f"):format(value):gsub("0+$", ""):gsub("%.$", "")

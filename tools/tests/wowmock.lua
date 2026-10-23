@@ -49,7 +49,8 @@ function hooksecurefunc(t, name, fn)
 	end
 end
 function ReloadUI() M.reloaded = true end
-C_UIFileAsset = { IsKnownFile = function() return true end }
+-- Files the game does not know: M.unknownFiles[path] = true
+C_UIFileAsset = { IsKnownFile = function(path) return not (M.unknownFiles and M.unknownFiles[path]) end }
 C_GameRules = { IsGameRuleActive = function() return false end }
 Enum = { GameRule = {} }
 StaticPopupDialogs = {}
@@ -88,7 +89,7 @@ C_AddOns = {
 	GetNumAddOns = function() return #M.addons end,
 	GetAddOnInfo = function(i)
 		local a = type(i) == "number" and M.addons[i] or findAddon(i)
-		if a then return a.name, a.name, "", true, nil end
+		if a then return a.name, a.name, "", not a.reason, a.reason end
 	end,
 	LoadAddOn = function(name)
 		M.loadCalls[#M.loadCalls + 1] = name
@@ -131,9 +132,20 @@ function Region:SetHeight(h) self.h = h end
 function Region:GetWidth() return self.w end
 function Region:GetHeight() return self.h end
 function Region:GetSize() return self.w, self.h end
-function Region:Show() self.shown = true end
-function Region:Hide() self.shown = false end
-function Region:SetShown(v) self.shown = not not v end
+-- OnShow / OnHide run when the state changes, like the game
+function Region:Show()
+	if self.shown then return end
+	self.shown = true
+	if self.scripts.OnShow then self.scripts.OnShow(self) end
+end
+function Region:Hide()
+	if not self.shown then return end
+	self.shown = false
+	if self.scripts.OnHide then self.scripts.OnHide(self) end
+end
+function Region:SetShown(v) if v then self:Show() else self:Hide() end end
+function Region:SetChecked(v) self.checked = not not v end
+function Region:GetChecked() return self.checked or false end
 function Region:IsShown() return self.shown end
 function Region:GetParent() return self.parent end
 function Region:SetParent(p) assert(type(p) == "table", "SetParent: nil parent") self.parent = p end
@@ -165,6 +177,7 @@ function Region:SetJustifyV(v) self.justifyV = v end
 function Region:SetTextColor(r, g, b, a) self.textColor = { r, g, b, a } end
 function Region:SetText(t) self.textValue = t end
 function Region:SetFontObject() end
+function Region:SetSpacing(v) self.spacing = v end
 
 -- Frames
 function Region:SetScript(name, fn)
@@ -172,7 +185,11 @@ function Region:SetScript(name, fn)
 	if name == "OnSizeChanged" then end
 end
 function Region:GetScript(name) return self.scripts[name] end
-function Region:RegisterEvent(e) self.events[e] = true end
+-- Events missing on a client (M.unknownEvents) raise an error, like the game
+function Region:RegisterEvent(e)
+	if M.unknownEvents and M.unknownEvents[e] then error("Attempt to register unknown event \"" .. e .. "\"") end
+	self.events[e] = true
+end
 function Region:UnregisterAllEvents() self.events = {} end
 function Region:CreateTexture() local t = newRegion("Texture", self) return t end
 function Region:CreateFontString() local t = newRegion("FontString", self) return t end

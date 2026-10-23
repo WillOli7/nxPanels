@@ -92,6 +92,7 @@ C.section = Theme.ornate and { r, g, b, 0.85 } or C.textMuted
 C.danger = { 1, 0.38, 0.38, 1 }
 C.dangerSoft = { 1, 0.38, 0.38, 0.14 }
 C.success = { 0.35, 0.9, 0.55, 1 }
+C.warning = { 1, 0.76, 0.33, 1 }
 Theme.colors = C
 -- For |c...|r codes in texts
 Theme.accentCode = ("|cff%02x%02x%02x"):format(r * 255, g * 255, b * 255)

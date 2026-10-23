@@ -4,7 +4,7 @@ Document de reprise : l'état exact du projet, pour continuer dans une nouvelle 
 À lire avec `CLAUDE.md` (règles du projet) et `docs/ROADMAP.md` (idées et backlog).
 **Mettre ce fichier à jour à la fin de chaque session de travail.**
 
-Dernière mise à jour : 2026-09-29
+Dernière mise à jour : 2026-10-23
 
 ---
 
@@ -13,13 +13,13 @@ Dernière mise à jour : 2026-09-29
 | Élément | État |
 |---|---|
 | Version | **`1.0.0` publiée en release le 2026-09-29** (tous les TOC alignés). Avant : `1.0.0-alpha.2` (archivé sur CurseForge ; pré-version sur GitHub) |
-| Branche de travail | aucune : tout est sur `main` |
-| Pull request | PR #1 à #14 fusionnées dans `main` ; aucune PR ouverte |
+| Branche de travail | **`release/1.0.1`** : corrections des retours joueurs + nouveautés (section 7 bis). Prochaine version : **`1.1.0`** (TOC et CHANGELOG à jour, date du CHANGELOG à ajuster le jour de la publication) |
+| Pull request | PR #1 à #15 fusionnées dans `main` ; aucune PR ouverte |
 | `main` | = tag `1.0.0` + mises à jour du suivi |
 | Logo | ✅ 2026-09-28 (PR #4) : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7. Icône vérifiée en jeu (Retail et Forever) le 2026-09-29. Reste : image sociale à envoyer à la main (Settings → Social preview) |
 | Installé sur Mac | Retail (`/Applications/World of Warcraft/_retail_`, compte DARKICE7, aucune donnée kgPanels : test de première installation) via `WOW_DIR="/Applications/World of Warcraft" bash tools/deploy.sh retail`. Forever pas encore lancé sur ce Mac. Test en jeu à faire |
-| Tests hors jeu | Tous verts : `bash tools/tests/run-all.sh <luajit>` (migrate, original, handinstall, empty, forever, zhcn, options ×4 langues) + `real` avec les vraies données |
-| Installé en local | Oui, Retail (`_retail_`) et Forever (`_classic_beta_`) via `bash tools/deploy.sh all` |
+| Tests hors jeu | Tous verts : `bash tools/tests/run-all.sh <luajit>` (migrate, original, handinstall, empty, nolibs, notloaded, forever, tbc, zhcn, options ×11 langues) + `real` avec les vraies données |
+| Installé en local | Oui, Retail (`_retail_`), Forever (`_classic_beta_`, bêta fermée jusqu'au 5 novembre) et TBC Anniversary (`_anniversary_`) via `bash tools/deploy.sh all`. Fichiers de test de la bibliothèque dans `Interface\AddOns\nxTestMedia\` (Retail, Anniversary) |
 | CurseForge | Projet `1444518` **renommé nxPanels** (slug `nxpanels`, logo, description courte, licence « All Rights Reserved », distribution tierce refusée). Secret GitHub `CF_API_KEY` en place, envoi automatique au tag. Fichiers : **`1.0.0` (release, approuvé le 2026-09-29)** ; `1.0.0-alpha.2` archivé |
 | Publication | Dossier prêt : `docs/publication/PUBLICATION.md` (étapes, test de mise à jour, message au modérateur, captures, brief du logo, GitHub) et `docs/publication/CURSEFORGE.md` (page CurseForge EN + FR / zhCN / zhTW). Workflow `.github/workflows/release.yml` (tag → release GitHub, CurseForge si secret `CF_API_KEY` ; lancement manuel = construction de test sans envoi) |
 | Phase B | ✅ 2026-09-29 avec le zip du run sur `a805446` (`tools/update-test.sh`) : v0.4.0 affichée, puis mise à jour → 3 layouts / 33 panneaux importés, panneaux identiques, `/nxp status` sans erreur, anciens addons désactivés, `/reload` et autre personnage OK, `kgPanelsDB` inchangé. Installation remise en état (`restore`) |
@@ -62,7 +62,7 @@ Mode édition (`/nxp edit`) : déplacement fluide, redimensionnement, grille (ai
 
 API : `nxPanels.GetPanelFrame`, `ActivateLayout`, `GetActiveLayout`, `RegisterMedia` (packs de médias).
 
-Langues : enUS, frFR, zhCN, zhTW (mêmes clés partout, vérifié par les tests). Traductions chinoises à faire relire par un joueur natif.
+Langues : enUS, frFR, zhCN, zhTW, et depuis `release/1.0.1` deDE, esES (sert aussi à esMX), itIT, ptBR, ruRU, koKR (mêmes clés et mêmes `%s` / `%d` partout, vérifié par les tests). Toutes les traductions sauf le français sont à faire relire par des joueurs natifs.
 
 ## 4. Décisions prises (ne pas les rediscuter sans raison)
 
@@ -72,7 +72,13 @@ Langues : enUS, frFR, zhCN, zhTW (mêmes clés partout, vérifié par les tests)
 | Aucune mention de kgPanels dans `nxPanels/` et `nxPanels_Options/` | Tout l'héritage vit dans `nxPanels_Import` |
 | **Layout par spécialisation** au lieu de profils par spécialisation ; LibDualSpec retirée | Choix du mainteneur : les spés choisissent un layout, les profils servent par classe / faction |
 | Anciennes librairies de config (AceGUI, AceConfig, AceDBOptions) retirées | Remplacées par la fenêtre maison |
-| **LibSerialize patchée** (lignes « nxPanels patch ») | Le client Forever lève une erreur sur toute division par zéro. Garder le patch à chaque mise à jour de la librairie |
+| LibSerialize **v1.2.3 officielle**, sans patch | Le client Forever lève une erreur sur toute division par zéro ; notre correctif a été intégré par l'auteur dans la v1.2.3 (2026-10-23) |
+| Fichiers de la bibliothèque transmis à LibSharedMedia **seulement s'ils sont connus du jeu** (`Media:Share`) | Les versions récentes de LibSharedMedia signalent un fichier inconnu par une erreur Lua ; un fichier inconnu reste utilisable dans nxPanels (`Media:Fetch` lit la bibliothèque) |
+| Un panneau sans condition d'affichage n'est réaffiché par le moteur que s'il l'a lui-même caché | Sinon un `self:Hide()` de script était annulé à chaque événement (issue #16) |
+| Bordures : coordonnées exactes du `BackdropTemplate` de Blizzard | Rendu identique au pixel près à kgPanels (issue #16) |
+| Import : une frame du jeu passe avant un panneau du même nom, jamais d'auto-référence | Même ordre que kgPanels (panneau « Minimap » ancré à `Minimap`, issue #16) |
+| Une copie de panneau garde la position exacte | Comme kgPanels (issue #17) |
+| Pas de choix de dossier par fenêtre Windows | Impossible pour un addon (aucun accès au disque) : remplacé par le collage de chemins (« Copier en tant que chemin d'accès ») |
 | Sélecteur de frame à la souris **retiré** | Frames protégées depuis Midnight (« secret values ») et trop coûteux sur une grosse interface. Reste « Autre frame… » + `/fstack` |
 | Galerie de modèles dans le menu « Nouveau panneau » | Plus logique que dans Import / Export (retour du mainteneur) |
 | Style par défaut **Atelier + or** | Préféré par le mainteneur |
@@ -135,6 +141,32 @@ Reste à tester : layout par spécialisation sur Forever (talents principaux / s
 6. Backlog (`docs/ROADMAP.md`) : masques (coins arrondis), plusieurs calques, ombres, coloration du code des scripts, layout par résolution d'écran.
 
 Installation locale du PC de jeu : Retail = dossiers installés par l'appli CurseForge (`1.0.0-alpha.2`, l'appli propose `1.0.0`) avec les données nxPanels d'avant les tests ; Forever = copie de travail (`deploy.sh`). Copies des données des tests : `SavedVariables/nxPanels.lua.phaseB` / `.phaseC`, sauvegardes complètes dans `Interface/AddOns-backup-kgPanels/phaseB-*`. Pour une version suivante : même procédure (tests, construction de test, `tools/update-test.sh` si la migration change, tag `x.y.z`).
+
+## 7 bis. Branche `release/1.0.1` (2026-10-23) : retours des joueurs
+
+Retours traités, dans l'ordre chronologique (commentaires CurseForge et issues GitHub #16, #17) :
+
+| Retour | Fait | Validé en jeu (Retail) |
+|---|---|---|
+| Liste des panneaux après suppression / renommage (ancien retour) | Vérifié + test | ✅ |
+| Client zhCN (ancien retour) | Couvert par les tests | — |
+| Panneau ancré à la Minimap après l'import (Cnas, #16) | Import corrigé + réparation au démarrage des layouts importés en 1.0.0 | — (pas de donnée concernée) |
+| Script `self:Hide()` annulé (#16) | Corrigé (`Visibility.lua`) | ✅ |
+| Bordures décalées d'1 px (#16) | Coordonnées du BackdropTemplate | ✅ (bordure de test) |
+| Copie décalée de 20 px (#17) | Corrigé | — |
+| kgPanels copié depuis BCC Anniversary (moosetraxftw) | Message quand kgPanels n'est pas chargé + solution par le pont | — |
+| Bibliothèque introuvable (Shailay) | Entrées utilisables même refusées par LibSharedMedia, chemin Windows complet accepté, onglet « Ma bibliothèque » dans le navigateur, ajout de plusieurs fichiers par collage des chemins | ✅ |
+
+Autres nouveautés : support **TBC Anniversary** (interfaces 20505, 20506 ; ✅ chargé en jeu), **7 langues** de plus, client et version du jeu dans le panneau latéral, fenêtre de bienvenue après l'import (une fois), icône et groupe des dossiers de pont, librairies à jour (LibSharedMedia r185, LibSerialize v1.2.3, LibDBIcon 57), avertissement des scripts sur deux lignes, `/nxp status` sans double point.
+
+Fenêtre des nouveautés (`Core/News.lua`, cadre partagé avec la bienvenue dans `Core/Splash.lua`) : une fois au premier démarrage d'une nouvelle version (`global.newsSeen`), pas pour un nouveau joueur ni juste après un import, après la fenêtre de bienvenue si elle est ouverte ; case « Ne plus afficher » (`global.showNews`). Page « Nouveautés » dans le menu de gauche (après Mode édition) : bannière, réglage d'affichage au démarrage, notes de toutes les versions, la plus récente d'abord (`Pages/News.lua`). **À chaque nouvelle version** : ajouter ses notes dans `News.NOTES` et la clé `NEWS_x_y_z` dans les 10 langues (sinon pas de fenêtre).
+
+Reste à faire avant la publication :
+1. ~~Numéro de version~~ : 1.1.0 (TOC, CHANGELOG). Ajuster la date du CHANGELOG le jour de la publication.
+2. Tests de migration (`migrate`, `original`, `real`) : verts à chaque commit ; test de mise à jour (`tools/update-test.sh`) si besoin.
+3. Forever : **exception décidée par le mainteneur le 2026-10-23** à la règle « rien sur CurseForge sans test en jeu sur Retail et Forever » : la 1.1.0 est publiée après les tests Retail et TBC Anniversary seulement (bêta de Forever fermée). Tests en jeu sur Forever à faire dès la réouverture (5 novembre) ; correctif 1.1.1 si besoin.
+4. Import réel depuis TBC Anniversary : créer quelques panneaux avec kgPanels sur ce client, puis importer (le fichier peut aussi servir au scénario `real`).
+5. Répondre sur CurseForge (Cnas, Shailay, moosetraxftw) et GitHub (#16, #17) une fois la version publiée.
 
 ## 8. Reprendre le travail
 

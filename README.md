@@ -14,6 +14,7 @@
   <a href="https://github.com/WillOli7/nxPanels/releases"><img src="https://img.shields.io/github/v/release/WillOli7/nxPanels?include_prereleases&label=version&color=ffc254" alt="Latest version"></a>
   <img src="https://img.shields.io/badge/Retail-12.x-1f6feb" alt="Retail 12.x">
   <img src="https://img.shields.io/badge/WoW%20Forever-1.60-8250df" alt="WoW Forever">
+  <img src="https://img.shields.io/badge/TBC%20Anniversary-2.5.x-2ea043" alt="TBC Anniversary">
   <a href="https://github.com/WillOli7/nxPanels/actions/workflows/tests.yml"><img src="https://github.com/WillOli7/nxPanels/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-all%20rights%20reserved-lightgrey" alt="License: all rights reserved"></a>
 </p>
@@ -40,7 +41,7 @@
 - Scripts for advanced users (OnLoad, OnEvent, OnUpdate, OnClick…), with a syntax check that shows the line of the error.
 
 **Layouts and profiles**
-- Several layouts, switched in one click or automatically per specialization (Retail) or talent group (WoW Forever).
+- Several layouts, switched in one click or automatically per specialization (Retail) or talent group (WoW Forever, TBC Anniversary).
 - Profiles per character, class or faction.
 - Share a layout, a folder or a single panel with a text string (`!NXP1!…`), with a warning when it contains scripts.
 - Your own backgrounds and borders by file path, and an API for media packs (`nxPanels.RegisterMedia`).
@@ -61,8 +62,9 @@
 |---|---|
 | Retail (12.x) | 120000 – 120100 |
 | WoW Forever | 16001 |
+| TBC Anniversary | 20505, 20506 |
 
-One package works on both.
+One package works on every client.
 
 ## Languages
 
@@ -72,13 +74,19 @@ One package works on both.
 | Français (frFR) | complete |
 | 简体中文 (zhCN) | complete, **review by a native speaker welcome** |
 | 繁體中文 (zhTW) | complete, **review by a native speaker welcome** |
+| Deutsch (deDE) | complete, **review by a native speaker welcome** |
+| Español (esES, esMX) | complete, **review by a native speaker welcome** |
+| Italiano (itIT) | complete, **review by a native speaker welcome** |
+| Português (ptBR) | complete, **review by a native speaker welcome** |
+| Русский (ruRU) | complete, **review by a native speaker welcome** |
+| 한국어 (koKR) | complete, **review by a native speaker welcome** |
 
-Every other client language works with English texts. Panel text always uses the font of your client, so Chinese, Korean and Russian text is readable. [Help translate](#translations).
+Every language of the game is translated. Panel text always uses the font of your client, so Chinese, Korean and Russian text is readable. [Help translate](#translations).
 
 ## Installation
 
 - **CurseForge app, WowUp or Wago app:** search for **nxPanels** and install it.
-- **By hand:** download the zip from [the releases](https://github.com/WillOli7/nxPanels/releases), then extract every folder into `World of Warcraft\_retail_\Interface\AddOns` (or the AddOns folder of WoW Forever).
+- **By hand:** download the zip from [the releases](https://github.com/WillOli7/nxPanels/releases), then extract every folder into `World of Warcraft\_retail_\Interface\AddOns` (or the AddOns folder of WoW Forever or TBC Anniversary).
 
 ## Coming from kgPanels or kgPanels Reloaded
 
@@ -121,7 +129,7 @@ A failing script is reported once and switched off until the next reload.
 ## Contributing
 
 ### Translations
-Texts live in `nxPanels/Locales/<locale>.lua` and `nxPanels_Import/Locales.lua`. Every language file has the same keys as `enUS.lua`: translate the values, never the keys. Native speakers of **Simplified and Traditional Chinese** are especially welcome to review `zhCN.lua` and `zhTW.lua`; other languages (deDE, esES, koKR, ruRU, ptBR…) are welcome too.
+Texts live in `nxPanels/Locales/<locale>.lua` and `nxPanels_Import/Locales.lua`. Every language file has the same keys as `enUS.lua`: translate the values, never the keys. Every translation except French still needs a review by a native speaker (`zhCN`, `zhTW`, `deDE`, `esES` (also used by esMX), `itIT`, `ptBR`, `ruRU`, `koKR`): corrections are very welcome. The tests check that every file has the same keys and the same `%s` / `%d` as English.
 
 Send a pull request, or open an issue with your corrections if you prefer not to use Git.
 
@@ -134,7 +142,7 @@ Open an [issue](https://github.com/WillOli7/nxPanels/issues) with the error text
 |---|---|
 | Offline tests (LuaJIT) | `bash tools/tests/run-all.sh path/to/luajit` |
 | Library versions | `bash tools/check-libs.sh` |
-| Local install (Retail + WoW Forever) | `bash tools/deploy.sh all` |
+| Local install (Retail + WoW Forever + TBC Anniversary) | `bash tools/deploy.sh all` |
 
 [Libs-VERSIONS.md](Libs-VERSIONS.md) lists the embedded libraries, [CHANGELOG.md](CHANGELOG.md) the changes.
 

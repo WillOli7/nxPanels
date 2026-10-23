@@ -1,6 +1,6 @@
 # nxPanels — project guide
 
-Artistic panels addon for World of Warcraft (Retail 12.x and WoW Forever), a full rewrite, all rights reserved (see `LICENSE`; the embedded libraries keep their own licenses). The maintainer writes in French: answer in French.
+Artistic panels addon for World of Warcraft (Retail 12.x, WoW Forever and TBC Anniversary), a full rewrite, all rights reserved (see `LICENSE`; the embedded libraries keep their own licenses). The maintainer writes in French: answer in French.
 
 ## Layout of the repository
 | Folder | Role |
@@ -18,10 +18,10 @@ Artistic panels addon for World of Warcraft (Retail 12.x and WoW Forever), a ful
 - **Never translate data keys** (texture names, points, styles): translate only displayed texts. Texts live in `nxPanels/Locales/`.
 - **Chinese clients:** fonts always fall back to `STANDARD_TEXT_FONT`; never hard-code a latin font.
 - **Data schema:** stable ids (`L<n>` layouts, `P<n>` panels), references `panel:<id>`, texture "none" is `false` (nil is replaced by defaults). Bump `ns.SCHEMA` and add an upgrade step for any schema change.
-- **One TOC per addon** lists every interface number (Retail 1200xx and Forever 16001).
+- **One TOC per addon** lists every interface number (Retail 1200xx, Forever 16001, TBC Anniversary 20505 and 20506).
 - **Embedded libraries** stay in the repository; versions in `Libs-VERSIONS.md`, checked with `bash tools/check-libs.sh`. Ace3 comes from its master branch (AceDB WoW Forever support).
 - **Never break the migration from kgPanels_Reloaded** (invariants in `docs/SUIVI.md` section 5): keep the `kgPanels_Reloaded` bridge folder with `## SavedVariables: kgPanelsDB`, never write to `kgPanelsDB`, run the `migrate`, `original` and `real` scenarios before any release.
-- **WoW Forever raises an error on division by zero**: never divide by a value that can be 0. LibSerialize is patched for this (keep the "nxPanels patch" lines when updating it).
+- **WoW Forever raises an error on division by zero**: never divide by a value that can be 0. LibSerialize handles it since v1.2.3 (official fix, no local patch any more).
 - Lua 5.1, tabs, comments in English, one module per file (`local _, ns = ...`).
 
 ## Workflow
@@ -29,5 +29,5 @@ Artistic panels addon for World of Warcraft (Retail 12.x and WoW Forever), a ful
 - Offline tests before every commit: `bash tools/tests/run-all.sh <path to luajit>` (add checks for new behavior in `tools/tests/run.lua`).
 - Local game install for the maintainer's tests: `bash tools/deploy.sh all` (game closed; a restart is needed for TOC changes).
 - Branches: `main` stable, `feature/<name>` then pull request. Commit messages in English.
-- Nothing is published to CurseForge until it works in game on Retail and Forever.
+- Nothing is published to CurseForge until it works in game on Retail, Forever and TBC Anniversary.
 - 1.0.0 released on 2026-09-29 (maintainer's choice). Still to do from the original v1.0 criteria: native review of the Chinese translations, layout per talent group tested in game on WoW Forever.
