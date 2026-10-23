@@ -89,7 +89,7 @@ Dans la console auteur (authors.curseforge.com → Projects → kgPanels_Reloade
 | Avatar | ancien | logo 400×400 minimum (section 7) |
 | Description | ancienne | `CURSEFORGE.md`, éditeur en **Markdown** |
 
-Versions de jeu : elles viennent de chaque fichier envoyé (le packager les lit dans le TOC : Retail 12.0.0 à 12.1.0 et WoW Forever 1.60.1). Les vérifier sur le fichier dans l'onglet Files.
+Versions de jeu : elles viennent de chaque fichier envoyé (le packager les lit dans le TOC : Retail 12.0.0 à 12.1.5 et WoW Forever 1.60.1). Les vérifier sur le fichier dans l'onglet Files.
 
 Envoi automatique des fichiers : console auteur → **API tokens** → créer un jeton, puis GitHub → dépôt → Settings → Secrets and variables → Actions → nouveau secret **`CF_API_KEY`**. Sans ce secret, un tag ne crée que la release GitHub.
 

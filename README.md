@@ -60,7 +60,7 @@
 
 | Client | Interface |
 |---|---|
-| Retail (12.x) | 120000 – 120100 |
+| Retail (12.x) | 120000 – 120105 |
 | WoW Forever | 16001 |
 | TBC Anniversary | 20505, 20506 |
 

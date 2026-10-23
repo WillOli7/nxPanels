@@ -12,8 +12,8 @@ Dernière mise à jour : 2026-10-23
 
 | Élément | État |
 |---|---|
-| Version | **`1.1.0` publiée en release le 2026-10-23** (PR #18, tag `1.1.0`, envoyée sur CurseForge pour Retail 12.0.0–12.1.0, TBC Anniversary 2.5.5 / 2.5.6 et Forever 1.60.1). Avant : `1.0.0` (2026-09-29) |
-| Branche de travail | aucune : tout est sur `main` |
+| Version | **`1.1.1` en préparation** (branche `release/1.1.1` : compatibilité Retail 12.1.5, interface 120105, rien d'autre). Avant : **`1.1.0` publiée en release le 2026-10-23** (PR #18, tag `1.1.0`, envoyée sur CurseForge pour Retail 12.0.0–12.1.0, TBC Anniversary 2.5.5 / 2.5.6 et Forever 1.60.1). Avant : `1.0.0` (2026-09-29) |
+| Branche de travail | `release/1.1.1` (TOC 120105 + version, README, CHANGELOG) |
 | Pull request | PR #1 à #18 fusionnées dans `main` (+ la PR de ce suivi) ; aucune autre ouverte |
 | `main` | = tag `1.1.0` + mises à jour du suivi |
 | Logo | ✅ 2026-09-28 (PR #4) : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7. Icône vérifiée en jeu (Retail et Forever) le 2026-09-29. Reste : image sociale à envoyer à la main (Settings → Social preview) |
@@ -169,6 +169,7 @@ Publication (2026-10-23) :
 5. ~~Description CurseForge~~ ✅ résumé et description à jour (TBC Anniversary, 10 langues, bibliothèque).
 
 Reste à faire :
+0. **1.1.1** : PR `release/1.1.1`, fusion, tag `1.1.1` (envoi CurseForge automatique), vérifier que le fichier CurseForge liste bien 12.1.5. Tests hors jeu verts le 2026-10-23 (tous les scénarios + `real`). Pas de fenêtre des nouveautés pour cette version (pas d'entrée dans `News.NOTES`).
 1. Forever : tests en jeu le 5 novembre (point 3).
 2. Import réel depuis TBC Anniversary : créer quelques panneaux avec kgPanels sur ce client, puis importer (le fichier peut aussi servir au scénario `real`).
 3. Surveiller les commentaires CurseForge (32 le 2026-10-23, un nouveau après les réponses) et les issues GitHub.
