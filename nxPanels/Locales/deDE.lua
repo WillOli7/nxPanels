@@ -312,7 +312,12 @@ L["SNAP_PANELS_DESC"] = "Richtet an den Kanten und Mitten der anderen Panels und
 L["SNAP_DISTANCE"] = "Einrastabstand"
 L["BIG_STEP"] = "Schrittweite von Umschalt + Pfeiltasten"
 L["EDIT_MODE_HELP_SHORT"] = "Mit der Maus verschieben und skalieren"
-L["ABOUT"] = "nxPanels %s, Client %s, Sprache %s.\nTextschrift: %s\n\nKostenlos. Befehle: /nxp help"
+L["ABOUT_VERSION"] = "Version"
+L["ABOUT_CLIENT"] = "Client"
+L["ABOUT_LANGUAGE"] = "Sprache"
+L["ABOUT_FONT"] = "Textschrift"
+L["ABOUT_COMMANDS"] = "Befehle"
+L["ABOUT_SUPPORT"] = "Problem melden"
 
 L["GRID"] = "Raster"
 L["SNAP"] = "Einrasten"

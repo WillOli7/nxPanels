@@ -312,7 +312,12 @@ L["SNAP_PANELS_DESC"] = "Выравнивает по краям и центра�
 L["SNAP_DISTANCE"] = "Расстояние привязки"
 L["BIG_STEP"] = "Шаг для Shift + стрелки"
 L["EDIT_MODE_HELP_SHORT"] = "Перемещение и изменение размера мышью"
-L["ABOUT"] = "nxPanels %s, клиент %s, язык %s.\nШрифт текста: %s\n\nБесплатно. Команды: /nxp help"
+L["ABOUT_VERSION"] = "Версия"
+L["ABOUT_CLIENT"] = "Клиент"
+L["ABOUT_LANGUAGE"] = "Язык"
+L["ABOUT_FONT"] = "Шрифт текста"
+L["ABOUT_COMMANDS"] = "Команды"
+L["ABOUT_SUPPORT"] = "Сообщить о проблеме"
 
 L["GRID"] = "Сетка"
 L["SNAP"] = "Привязка"

@@ -324,6 +324,16 @@ function W.ToggleRow(form, label, get, set, tooltip)
 	return form:Add(row)
 end
 
+-- Read-only information: label on the left, value on the right (get() gives the text)
+function W.InfoRow(form, label, get)
+	local row = baseRow(label)
+	row.value = T:Text(row, T.fonts.normal, C.textDim, "RIGHT")
+	row.value:SetPoint("RIGHT", -PAD, 0)
+	row.value:SetPoint("LEFT", row.label, "RIGHT", 8, 0)
+	function row:Refresh() self.value:SetText(get() or "") end
+	return form:Add(row)
+end
+
 local function formatValue(value, step)
 	if step and step < 1 then
 		local text = ("%.2f"):format(value):gsub("0+$", ""):gsub("%.$", "")

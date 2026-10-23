@@ -312,7 +312,12 @@ L["SNAP_PANELS_DESC"] = "다른 패널과 화면의 가장자리 및 중심에 �
 L["SNAP_DISTANCE"] = "맞춤 거리"
 L["BIG_STEP"] = "Shift + 화살표 이동 거리"
 L["EDIT_MODE_HELP_SHORT"] = "마우스로 이동 및 크기 조절"
-L["ABOUT"] = "nxPanels %s, %s 클라이언트, 언어 %s.\n텍스트 글꼴: %s\n\n무료. 명령어: /nxp help"
+L["ABOUT_VERSION"] = "버전"
+L["ABOUT_CLIENT"] = "클라이언트"
+L["ABOUT_LANGUAGE"] = "언어"
+L["ABOUT_FONT"] = "텍스트 글꼴"
+L["ABOUT_COMMANDS"] = "명령어"
+L["ABOUT_SUPPORT"] = "문제 신고"
 
 L["GRID"] = "격자"
 L["SNAP"] = "맞춤"

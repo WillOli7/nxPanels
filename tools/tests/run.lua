@@ -646,6 +646,16 @@ elseif scenario == "options" then
 			check(ok and Options.current == key, "page " .. key .. ": " .. tostring(err))
 		end
 	end
+	-- Settings, About: one row per information, the font without its folder
+	Options:Show("settings")
+	local about = {}
+	for _, f in ipairs(M.frames) do
+		if f.label and f.value and f.label.textValue then about[f.label.textValue] = f.value.textValue end
+	end
+	check(about[L["ABOUT_VERSION"]] == ns.version and about[L["ABOUT_CLIENT"]] == L["CLIENT_RETAIL"] .. " 12.1.0.69933"
+		and about[L["ABOUT_LANGUAGE"]] == M.locale and about[L["ABOUT_COMMANDS"]] == "/nxp help", "about: version, client, language, commands")
+	check(about[L["ABOUT_FONT"]] and not about[L["ABOUT_FONT"]]:find("\\", 1, true) and about[L["ABOUT_SUPPORT"]]:find("issues", 1, true), "about: font file name, where to report a problem")
+
 	-- What's new: a page of the window (the pop-up is only for the startup)
 	check(Options.order[#Options.order] == "news" and Options.order[#Options.order - 1] == "editmode", "what's new entry after the edit mode")
 	Options:Show("news")
