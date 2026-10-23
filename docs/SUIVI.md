@@ -164,7 +164,7 @@ Fenêtre des nouveautés (`Core/News.lua`, cadre partagé avec la bienvenue dans
 Reste à faire avant la publication :
 1. ~~Numéro de version~~ : 1.1.0 (TOC, CHANGELOG). Ajuster la date du CHANGELOG le jour de la publication.
 2. Tests de migration (`migrate`, `original`, `real`) : verts à chaque commit ; test de mise à jour (`tools/update-test.sh`) si besoin.
-3. Forever : tests en jeu après la réouverture de la bêta (5 novembre).
+3. Forever : **exception décidée par le mainteneur le 2026-10-23** à la règle « rien sur CurseForge sans test en jeu sur Retail et Forever » : la 1.1.0 est publiée après les tests Retail et TBC Anniversary seulement (bêta de Forever fermée). Tests en jeu sur Forever à faire dès la réouverture (5 novembre) ; correctif 1.1.1 si besoin.
 4. Import réel depuis TBC Anniversary : créer quelques panneaux avec kgPanels sur ce client, puis importer (le fichier peut aussi servir au scénario `real`).
 5. Répondre sur CurseForge (Cnas, Shailay, moosetraxftw) et GitHub (#16, #17) une fois la version publiée.
 
