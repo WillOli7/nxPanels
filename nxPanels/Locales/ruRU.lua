@@ -318,6 +318,7 @@ L["ABOUT_LANGUAGE"] = "Язык"
 L["ABOUT_FONT"] = "Шрифт текста"
 L["ABOUT_COMMANDS"] = "Команды"
 L["ABOUT_SUPPORT"] = "Сообщить о проблеме"
+L["ABOUT_DETAILS"] = "Подробный отчёт"
 
 L["GRID"] = "Сетка"
 L["SNAP"] = "Привязка"

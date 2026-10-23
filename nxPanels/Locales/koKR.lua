@@ -318,6 +318,7 @@ L["ABOUT_LANGUAGE"] = "언어"
 L["ABOUT_FONT"] = "텍스트 글꼴"
 L["ABOUT_COMMANDS"] = "명령어"
 L["ABOUT_SUPPORT"] = "문제 신고"
+L["ABOUT_DETAILS"] = "자세한 보고"
 
 L["GRID"] = "격자"
 L["SNAP"] = "맞춤"

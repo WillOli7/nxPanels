@@ -318,6 +318,7 @@ L["ABOUT_LANGUAGE"] = "Sprache"
 L["ABOUT_FONT"] = "Textschrift"
 L["ABOUT_COMMANDS"] = "Befehle"
 L["ABOUT_SUPPORT"] = "Problem melden"
+L["ABOUT_DETAILS"] = "Ausführlicher Bericht"
 
 L["GRID"] = "Raster"
 L["SNAP"] = "Einrasten"

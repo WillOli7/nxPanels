@@ -318,6 +318,7 @@ L["ABOUT_LANGUAGE"] = "語言"
 L["ABOUT_FONT"] = "文字字型"
 L["ABOUT_COMMANDS"] = "指令"
 L["ABOUT_SUPPORT"] = "回報問題"
+L["ABOUT_DETAILS"] = "詳細回報"
 
 L["GRID"] = "格線"
 L["SNAP"] = "吸附"

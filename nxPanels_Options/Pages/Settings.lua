@@ -6,8 +6,10 @@ local core = O.core
 -- General settings, edit mode settings, information
 local function edit() return core.db.global.editMode end
 
--- Where players report a problem
-local SUPPORT_URL = "github.com/WillOli7/nxPanels/issues"
+-- Where players report a problem: CurseForge (where they already are), GitHub for a
+-- detailed report (form with version, client, Lua error)
+local SUPPORT_URL = "curseforge.com/wow/addons/nxpanels"
+local DETAILS_URL = "github.com/WillOli7/nxPanels/issues"
 
 
 local function build(page, width)
@@ -77,6 +79,7 @@ local function build(page, width)
 	end)
 	W.InfoRow(form, L["ABOUT_COMMANDS"], function() return "/nxp help" end)
 	W.InfoRow(form, L["ABOUT_SUPPORT"], function() return SUPPORT_URL end)
+	W.InfoRow(form, L["ABOUT_DETAILS"], function() return DETAILS_URL end)
 end
 
 Options:RegisterPage({

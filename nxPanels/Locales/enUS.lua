@@ -317,6 +317,7 @@ L["ABOUT_LANGUAGE"] = "Language"
 L["ABOUT_FONT"] = "Text font"
 L["ABOUT_COMMANDS"] = "Commands"
 L["ABOUT_SUPPORT"] = "Report a problem"
+L["ABOUT_DETAILS"] = "Detailed report"
 
 L["GRID"] = "Grid"
 L["SNAP"] = "Snap"

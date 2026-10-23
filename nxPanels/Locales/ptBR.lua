@@ -318,6 +318,7 @@ L["ABOUT_LANGUAGE"] = "Idioma"
 L["ABOUT_FONT"] = "Fonte do texto"
 L["ABOUT_COMMANDS"] = "Comandos"
 L["ABOUT_SUPPORT"] = "Relatar um problema"
+L["ABOUT_DETAILS"] = "Relatório detalhado"
 
 L["GRID"] = "Grade"
 L["SNAP"] = "Encaixe"
