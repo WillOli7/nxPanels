@@ -41,6 +41,7 @@ L["NEWS_1_1_0"] = "• 支持|cffffd100燃烧的远征周年纪念版|r。\n• 
 L["NEWS_DONT_SHOW"] = "启动时不再显示更新内容"
 L["NEWS_SHOW_SETTING"] = "启动时显示更新内容"
 L["PAGE_NEWS"] = "更新内容"
+L["PAGE_NEWS_DESC"] = "nxPanels 每个版本的更新内容。"
 L["IMPORT_INVALID"] = "这段文字不是有效的布局字符串。"
 L["IMPORT_NEWER"] = "此布局由更新版本的 nxPanels 创建。请更新插件后再导入。"
 L["IMPORT_EMPTY"] = "请先粘贴布局字符串。"

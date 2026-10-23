@@ -41,6 +41,7 @@ L["NEWS_1_1_0"] = "• |cffffd100TBC Anniversary|r é compatível.\n• O nxPane
 L["NEWS_DONT_SHOW"] = "Não mostrar as novidades ao iniciar"
 L["NEWS_SHOW_SETTING"] = "Mostrar as novidades ao iniciar"
 L["PAGE_NEWS"] = "Novidades"
+L["PAGE_NEWS_DESC"] = "As mudanças de cada versão do nxPanels."
 L["IMPORT_INVALID"] = "Este texto não é um código de layout válido."
 L["IMPORT_NEWER"] = "Este layout foi criado com uma versão mais recente do nxPanels. Atualize o addon para importá-lo."
 L["IMPORT_EMPTY"] = "Cole primeiro um código de layout."

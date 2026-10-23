@@ -18,6 +18,26 @@ News.NOTES = {
 
 local WIDTH, HEIGHT = 560, 470
 
+-- "1.10.0" after "1.9.2": numbers compared one by one
+local function newer(a, b)
+	local pa, pb = {}, {}
+	for n in a:gmatch("%d+") do pa[#pa + 1] = tonumber(n) end
+	for n in b:gmatch("%d+") do pb[#pb + 1] = tonumber(n) end
+	for i = 1, math.max(#pa, #pb) do
+		local x, y = pa[i] or 0, pb[i] or 0
+		if x ~= y then return x > y end
+	end
+	return false
+end
+
+-- Versions with notes, the most recent first
+function News:Versions()
+	local list = {}
+	for version in pairs(self.NOTES) do list[#list + 1] = version end
+	table.sort(list, newer)
+	return list
+end
+
 local function create()
 	local f = ns.Splash:Create("nxPanelsNews", WIDTH, HEIGHT)
 	f.body:SetJustifyH("LEFT")

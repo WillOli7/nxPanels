@@ -41,6 +41,7 @@ L["NEWS_1_1_0"] = "• |cffffd100TBC Anniversary|r를 지원합니다.\n• nxPa
 L["NEWS_DONT_SHOW"] = "시작할 때 새로운 기능 표시 안 함"
 L["NEWS_SHOW_SETTING"] = "시작할 때 새로운 기능 표시"
 L["PAGE_NEWS"] = "새로운 기능"
+L["PAGE_NEWS_DESC"] = "nxPanels 각 버전의 변경 사항."
 L["IMPORT_INVALID"] = "이 텍스트는 올바른 레이아웃 문자열이 아닙니다."
 L["IMPORT_NEWER"] = "이 레이아웃은 더 최신 버전의 nxPanels로 만들어졌습니다. 가져오려면 애드온을 업데이트하세요."
 L["IMPORT_EMPTY"] = "먼저 레이아웃 문자열을 붙여넣으세요."

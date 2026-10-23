@@ -646,14 +646,19 @@ elseif scenario == "options" then
 			check(ok and Options.current == key, "page " .. key .. ": " .. tostring(err))
 		end
 	end
-	-- What's new: entry of the sidebar, after the edit mode
-	local current, version = Options.current, ns.version
-	ns.version = "1.1.0"
+	-- What's new: a page of the window (the pop-up is only for the startup)
 	check(Options.order[#Options.order] == "news" and Options.order[#Options.order - 1] == "editmode", "what's new entry after the edit mode")
 	Options:Show("news")
-	check(nxPanelsNews and nxPanelsNews:IsShown() and Options.current == current, "what's new opened from the sidebar, page kept")
-	nxPanelsNews:Hide()
-	ns.version = version
+	check(Options.current == "news" and not (nxPanelsNews and nxPanelsNews:IsShown()), "what's new is a page, no pop-up")
+	local newsPage, notesShown = Options.pages.news.frame, false
+	for _, f in ipairs(M.frames) do
+		if f.text and f.text.textValue == L["NEWS_1_1_0"] and f.parent == newsPage.scroll.content then notesShown = true end
+	end
+	check(notesShown, "notes of 1.1.0 on the page")
+	local NOTES = ns.News.NOTES
+	ns.News.NOTES = { ["1.9.2"] = "x", ["1.10.0"] = "x", ["1.1.0"] = "x", ["2.0"] = "x" }
+	check(table.concat(ns.News:Versions(), " ") == "2.0 1.10.0 1.9.2 1.1.0", "versions sorted, the most recent first")
+	ns.News.NOTES = NOTES
 
 	check(Options.game.textValue == L["CLIENT_RETAIL"] .. " 12.1.0.69933", "client and build of the game in the sidebar")
 
