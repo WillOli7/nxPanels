@@ -12,7 +12,7 @@
 ## Notes-ptBR: Janela de configuração do nxPanels, carregada ao abrir.
 ## Notes-ruRU: Окно настроек nxPanels, загружается при открытии.
 ## Author: Adna
-## Version: 1.0.1
+## Version: 1.1.0
 ## X-License: All Rights Reserved
 ## RequiredDeps: nxPanels
 ## LoadOnDemand: 1

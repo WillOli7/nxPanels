@@ -132,9 +132,20 @@ function Region:SetHeight(h) self.h = h end
 function Region:GetWidth() return self.w end
 function Region:GetHeight() return self.h end
 function Region:GetSize() return self.w, self.h end
-function Region:Show() self.shown = true end
-function Region:Hide() self.shown = false end
-function Region:SetShown(v) self.shown = not not v end
+-- OnShow / OnHide run when the state changes, like the game
+function Region:Show()
+	if self.shown then return end
+	self.shown = true
+	if self.scripts.OnShow then self.scripts.OnShow(self) end
+end
+function Region:Hide()
+	if not self.shown then return end
+	self.shown = false
+	if self.scripts.OnHide then self.scripts.OnHide(self) end
+end
+function Region:SetShown(v) if v then self:Show() else self:Hide() end end
+function Region:SetChecked(v) self.checked = not not v end
+function Region:GetChecked() return self.checked or false end
 function Region:IsShown() return self.shown end
 function Region:GetParent() return self.parent end
 function Region:SetParent(p) assert(type(p) == "table", "SetParent: nil parent") self.parent = p end

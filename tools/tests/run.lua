@@ -247,6 +247,47 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 	check(welcome:IsShown() and welcome.body:GetText() == L["WELCOME_BODY"], "no count when nothing was imported")
 	welcome.close:GetScript("OnClick")(welcome.close)
 	migration.layouts, migration.panels = imported[1], imported[2]
+
+	-- What's new: not right after an import (the welcome window is enough)
+	for _, fn in ipairs(M.timers or {}) do fn() end
+	M.timers = {}
+	local News = ns.News
+	check(not nxPanelsNews and db.global.newsSeen == ns.version, "no news right after an import, version recorded")
+	-- A player updating from 1.0.0 (imported earlier): shown once, after the welcome window
+	local version = ns.version
+	ns.version = "1.1.0"
+	db.global.newsSeen, migration.date, migration.welcomed = "1.0.0", 1, nil
+	I.Import:Finish()
+	check(welcome:IsShown(), "welcome window of an older import")
+	News:Check()
+	check(not nxPanelsNews or not nxPanelsNews:IsShown(), "news waits for the welcome window")
+	welcome.close:GetScript("OnClick")(welcome.close)
+	local news = nxPanelsNews
+	check(news and news:IsShown() and news.title:GetText() == L["NEWS_TITLE"]:format("1.1.0") and news.body:GetText() == L["NEWS_1_1_0"], "news shown once the welcome window is closed")
+	check(db.global.newsSeen == "1.1.0", "news recorded")
+	news.close:GetScript("OnClick")(news.close)
+	News:Check()
+	check(not news:IsShown(), "news shown only once")
+	-- Turned off from the window: not shown for the next version, still available by hand
+	News:Show()
+	news.dontShow:SetChecked(true)
+	news.dontShow:GetScript("OnClick")(news.dontShow)
+	news:Hide()
+	check(db.global.showNews == false, "news turned off from the window")
+	db.global.newsSeen = "1.0.0"
+	News:Check()
+	check(not news:IsShown() and db.global.newsSeen == "1.1.0", "turned off: not shown at startup")
+	check(News:Show() and news:IsShown() and news.dontShow:GetChecked(), "turned off: still opened by hand, box checked")
+	news:Hide()
+	db.global.showNews = true
+	check(not News:Show("0.9.0"), "no window for a version without notes")
+	-- New player: nothing to announce
+	local savedMigration, savedLayouts = db.global.migration, db.global.layouts
+	db.global.migration, db.global.layouts, db.global.newsSeen = nil, {}, nil
+	News:Check()
+	check(not news:IsShown() and db.global.newsSeen == "1.1.0", "new player: no news")
+	db.global.migration, db.global.layouts = savedMigration, savedLayouts
+	ns.version = version
 	check(printed(L["MIGRATED"]:format(2, 8, "kgPanels_Reloaded"):gsub("%p", "%%%0")), "migration message")
 
 	-- A game frame wins over a panel of the same name, a panel never references itself

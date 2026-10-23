@@ -15,6 +15,8 @@ nxPanelsDB (AceDB)
 	global.optionsTheme      look of the options window: { style = "...", accent = "..." }
 	global.editMode          grid and snapping of the edit mode
 	global.newCharacters     profile of the characters that have none yet: "default", "class", "faction"
+	global.newsSeen          last version whose "what's new" window was shown or skipped
+	global.showNews          false: no "what's new" window at startup
 	profile.layout           id of the default layout of the profile
 	profile.specLayouts      [spec key] = layout id, replaces the default layout for that spec (see Specs)
 	profile.enabled          panels shown or hidden
@@ -36,6 +38,7 @@ local DEFAULTS = {
 			bigStep = 10,
 		},
 		newCharacters = "default",
+		showNews = true,
 	},
 	profile = {
 		enabled = true,

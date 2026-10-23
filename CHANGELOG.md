@@ -2,12 +2,25 @@
 
 All notable changes to nxPanels. Versions follow [Semantic Versioning](https://semver.org/).
 
-## 1.0.1 — 2026-09-29
-- **Welcome window** after the import of your kgPanels / kgPanels Reloaded layouts, shown once: what changed, and how to open nxPanels (`/nxp`, `/nxp edit`). Players who already updated to 1.0.0 see it once too.
+## 1.1.0 — 2026-10-23
+
+New:
 - **TBC Anniversary** support (interface 20505 and 20506): layouts per talent group, like on WoW Forever.
-- **Library**: add all the files of a folder at once (paste the paths copied from the file explorer); the texture browser has a "My library" tab; your files work even when the game does not index them, and a full Windows path is reduced to the game path.
-- The sidebar of the window shows the client and the exact version of the game, for troubleshooting.
 - **Every language of the game**: German, Spanish (Spain and Mexico), Italian, Brazilian Portuguese, Russian and Korean, in addition to English, French and Chinese. Reviews by native speakers welcome.
+- **Library**: add all the files of a folder at once (paste the paths copied from the file explorer); the texture browser has a "My library" tab; your files work even when the game does not index them yet, and a full Windows path is reduced to the game path.
+- **What's new window**, shown once at the first start of a new version; it can be turned off, and opened again from the settings.
+- **Welcome window** after the import of your kgPanels / kgPanels Reloaded layouts, shown once: what changed, and how to open nxPanels. Players who already updated to 1.0.0 see it once too.
+- The sidebar of the window shows the client and the exact version of the game, for troubleshooting.
+
+Fixed:
+- A script hiding its panel (`self:Hide()`) no longer sees it shown again by the addon (on target change, Shift, combat…).
+- Borders are drawn exactly like the borders of the game (they were 1 pixel off).
+- Import: a panel named like the frame it follows (for example "Minimap") follows that frame again; layouts already imported are repaired.
+- A duplicated panel keeps the exact position of the original.
+- No more Lua error from LibSharedMedia when a library file is not found by the game yet.
+- When kgPanels is installed but not loaded by the game (made for another client), a message explains how to import its layouts.
+- Clearer warning about scripts when importing a layout.
+- Updated libraries: LibSharedMedia, LibSerialize, LibDBIcon.
 
 ## 1.0.0 — 2026-09-29
 

@@ -13,8 +13,6 @@ if L then
 	L["WELCOME_TITLE"] = "%s is now nxPanels!"
 	L["WELCOME_COUNT"] = "Your %d layout(s) and %d panel(s) have been imported."
 	L["WELCOME_BODY"] = "Your old data was not modified.\n\nType /nxp to open the settings, /nxp edit for the edit mode."
-	L["WELCOME_OPEN"] = "Open nxPanels"
-	L["WELCOME_CLOSE"] = "OK"
 	L["FORMAT_LEGACY"] = "kgPanels (old format)"
 end
 
@@ -30,8 +28,6 @@ if L then
 	L["WELCOME_TITLE"] = "%s devient nxPanels !"
 	L["WELCOME_COUNT"] = "Vos %d layout(s) et %d panneau(x) ont été importés."
 	L["WELCOME_BODY"] = "Vos anciennes données n'ont pas été modifiées.\n\nTapez /nxp pour ouvrir les réglages, /nxp edit pour le mode édition."
-	L["WELCOME_OPEN"] = "Ouvrir nxPanels"
-	L["WELCOME_CLOSE"] = "OK"
 	L["FORMAT_LEGACY"] = "kgPanels (ancien format)"
 end
 
@@ -48,8 +44,6 @@ if L then
 	L["WELCOME_TITLE"] = "%s 现已更名为 nxPanels！"
 	L["WELCOME_COUNT"] = "已导入你的 %d 个布局和 %d 个面板。"
 	L["WELCOME_BODY"] = "原有数据未被修改。\n\n输入 /nxp 打开设置，输入 /nxp edit 进入编辑模式。"
-	L["WELCOME_OPEN"] = "打开 nxPanels"
-	L["WELCOME_CLOSE"] = "确定"
 	L["FORMAT_LEGACY"] = "kgPanels（旧格式）"
 end
 
@@ -66,8 +60,6 @@ if L then
 	L["WELCOME_TITLE"] = "%s 現已更名為 nxPanels！"
 	L["WELCOME_COUNT"] = "已匯入你的 %d 個版面和 %d 個面板。"
 	L["WELCOME_BODY"] = "原本的資料沒有被修改。\n\n輸入 /nxp 開啟設定，輸入 /nxp edit 進入編輯模式。"
-	L["WELCOME_OPEN"] = "開啟 nxPanels"
-	L["WELCOME_CLOSE"] = "確定"
 	L["FORMAT_LEGACY"] = "kgPanels（舊格式）"
 end
 
@@ -84,8 +76,6 @@ if L then
 	L["WELCOME_TITLE"] = "%s ist jetzt nxPanels!"
 	L["WELCOME_COUNT"] = "Deine %d Layout(s) und %d Panel(s) wurden importiert."
 	L["WELCOME_BODY"] = "Deine alten Daten wurden nicht verändert.\n\nGib /nxp ein, um die Einstellungen zu öffnen, /nxp edit für den Bearbeitungsmodus."
-	L["WELCOME_OPEN"] = "nxPanels öffnen"
-	L["WELCOME_CLOSE"] = "OK"
 	L["FORMAT_LEGACY"] = "kgPanels (altes Format)"
 end
 
@@ -101,8 +91,6 @@ if L then
 	L["WELCOME_TITLE"] = "¡%s ahora es nxPanels!"
 	L["WELCOME_COUNT"] = "Se han importado tus %d diseño(s) y %d panel(es)."
 	L["WELCOME_BODY"] = "Tus datos antiguos no se han modificado.\n\nEscribe /nxp para abrir los ajustes y /nxp edit para el modo de edición."
-	L["WELCOME_OPEN"] = "Abrir nxPanels"
-	L["WELCOME_CLOSE"] = "Aceptar"
 	L["FORMAT_LEGACY"] = "kgPanels (formato antiguo)"
 end
 
@@ -118,8 +106,6 @@ if L then
 	L["WELCOME_TITLE"] = "%s ora è nxPanels!"
 	L["WELCOME_COUNT"] = "I tuoi %d layout e %d pannello/i sono stati importati."
 	L["WELCOME_BODY"] = "I tuoi vecchi dati non sono stati modificati.\n\nDigita /nxp per aprire le impostazioni, /nxp edit per la modalità modifica."
-	L["WELCOME_OPEN"] = "Apri nxPanels"
-	L["WELCOME_CLOSE"] = "OK"
 	L["FORMAT_LEGACY"] = "kgPanels (vecchio formato)"
 end
 
@@ -135,8 +121,6 @@ if L then
 	L["WELCOME_TITLE"] = "%s agora é nxPanels!"
 	L["WELCOME_COUNT"] = "Seus %d layout(s) e %d painel(éis) foram importados."
 	L["WELCOME_BODY"] = "Seus dados antigos não foram modificados.\n\nDigite /nxp para abrir as configurações, /nxp edit para o modo de edição."
-	L["WELCOME_OPEN"] = "Abrir o nxPanels"
-	L["WELCOME_CLOSE"] = "OK"
 	L["FORMAT_LEGACY"] = "kgPanels (formato antigo)"
 end
 
@@ -152,8 +136,6 @@ if L then
 	L["WELCOME_TITLE"] = "%s теперь называется nxPanels!"
 	L["WELCOME_COUNT"] = "Импортировано макетов: %d, панелей: %d."
 	L["WELCOME_BODY"] = "Ваши старые данные не изменены.\n\nВведите /nxp, чтобы открыть настройки, /nxp edit для режима редактирования."
-	L["WELCOME_OPEN"] = "Открыть nxPanels"
-	L["WELCOME_CLOSE"] = "ОК"
 	L["FORMAT_LEGACY"] = "kgPanels (старый формат)"
 end
 
@@ -169,7 +151,5 @@ if L then
 	L["WELCOME_TITLE"] = "%s은(는) 이제 nxPanels입니다!"
 	L["WELCOME_COUNT"] = "레이아웃 %d개와 패널 %d개를 가져왔습니다."
 	L["WELCOME_BODY"] = "이전 데이터는 수정되지 않았습니다.\n\n/nxp로 설정을 열고, /nxp edit로 편집 모드를 시작하세요."
-	L["WELCOME_OPEN"] = "nxPanels 열기"
-	L["WELCOME_CLOSE"] = "확인"
 	L["FORMAT_LEGACY"] = "kgPanels (이전 형식)"
 end

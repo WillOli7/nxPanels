@@ -164,86 +164,12 @@ end
 ---------------------------------------------------------------------------
 -- Welcome window, shown once after an import (also to players who imported before it existed)
 ---------------------------------------------------------------------------
-local WHITE = "Interface\\Buttons\\WHITE8X8"
-local BANNER = "Interface\\AddOns\\nxPanels_Import\\Media\\banner"
-local WIDTH, HEIGHT = 520, 400
-
-local function fill(parent, layer, r, g, b)
-	local tex = parent:CreateTexture(nil, layer)
-	tex:SetTexture(WHITE)
-	tex:SetVertexColor(r, g, b, 1)
-	return tex
-end
-
-local function button(parent, text, onClick)
-	local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
-	b:SetSize(170, 28)
-	b:SetText(text)
-	b:SetScript("OnClick", onClick)
-	return b
-end
-
-local function createWelcome()
-	local f = CreateFrame("Frame", "nxPanelsWelcome", UIParent)
-	f:SetSize(WIDTH, HEIGHT)
-	f:SetPoint("CENTER", 0, 60)
-	f:SetFrameStrata("DIALOG")
-	f:SetClampedToScreen(true)
-	f:EnableMouse(true)
-	f:SetMovable(true)
-	f:RegisterForDrag("LeftButton")
-	f:SetScript("OnDragStart", f.StartMoving)
-	f:SetScript("OnDragStop", f.StopMovingOrSizing)
-	tinsert(UISpecialFrames, "nxPanelsWelcome")
-
-	-- Same dark background as the banner, gold frame
-	fill(f, "BACKGROUND", 0.07, 0.063, 0.059):SetAllPoints()
-	for _, side in ipairs({ { "TOPLEFT", "TOPRIGHT", 0, 2 }, { "BOTTOMLEFT", "BOTTOMRIGHT", 0, 2 },
-		{ "TOPLEFT", "BOTTOMLEFT", 2, 0 }, { "TOPRIGHT", "BOTTOMRIGHT", 2, 0 } }) do
-		local edge = fill(f, "BORDER", 1, 0.76, 0.33)
-		edge:SetPoint(side[1])
-		edge:SetPoint(side[2])
-		if side[3] > 0 then edge:SetWidth(side[3]) else edge:SetHeight(side[4]) end
-	end
-
-	-- Banner: 512x128 texture, logo and name
-	local banner = f:CreateTexture(nil, "ARTWORK")
-	banner:SetTexture(BANNER)
-	banner:SetSize(480, 120)
-	banner:SetPoint("TOP", 0, -14)
-
-	f.title = f:CreateFontString(nil, "OVERLAY")
-	f.title:SetFont(STANDARD_TEXT_FONT, 20, "")
-	f.title:SetTextColor(1, 0.76, 0.33)
-	f.title:SetPoint("TOP", banner, "BOTTOM", 0, -14)
-	f.title:SetWidth(WIDTH - 60)
-
-	f.body = f:CreateFontString(nil, "OVERLAY")
-	f.body:SetFont(STANDARD_TEXT_FONT, 15, "")
-	f.body:SetTextColor(0.96, 0.93, 0.87)
-	f.body:SetJustifyH("CENTER")
-	f.body:SetJustifyV("TOP")
-	f.body:SetSpacing(4)
-	f.body:SetPoint("TOPLEFT", f.title, "BOTTOMLEFT", 0, -16)
-	f.body:SetPoint("TOPRIGHT", f.title, "BOTTOMRIGHT", 0, -16)
-	f.body:SetPoint("BOTTOM", 0, 64)
-
-	f.open = button(f, L["WELCOME_OPEN"], function()
-		f:Hide()
-		ns.Commands:OpenOptions(nil, true)
-	end)
-	f.open:SetPoint("BOTTOMRIGHT", f, "BOTTOM", -8, 22)
-	f.close = button(f, L["WELCOME_CLOSE"], function() f:Hide() end)
-	f.close:SetPoint("BOTTOMLEFT", f, "BOTTOM", 8, 22)
-	return f
-end
-
 function Import:Welcome()
 	-- No database when a library is missing
 	if not ns.db then return end
 	local done = ns.db.global.migration
 	if type(done) ~= "table" or done.welcomed then return end
-	local f = self.welcomeFrame or createWelcome()
+	local f = self.welcomeFrame or ns.Splash:Create("nxPanelsWelcome", 520, 400)
 	self.welcomeFrame = f
 	f.title:SetText(L["WELCOME_TITLE"]:format(done.source == ORIGINAL and "kgPanels" or "kgPanels Reloaded"))
 	local body = L["WELCOME_BODY"]

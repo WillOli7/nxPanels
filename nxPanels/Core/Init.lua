@@ -5,6 +5,8 @@ local ADDON, ns = ...
 
 ns.name = ADDON
 ns.version = C_AddOns.GetAddOnMetadata(ADDON, "Version") or "dev"
+-- Start of this session: tells an import made now from an older one
+ns.startTime = time()
 
 local L = LibStub("AceLocale-3.0"):GetLocale(ADDON)
 ns.L = L
@@ -127,6 +129,7 @@ ns:RegisterEvent("ADDON_LOADED", function(_, name)
 	ns.Colors:Init()
 	ns.Visibility:Init()
 	ns.Commands:Init()
+	ns.News:Init()
 end)
 
 ns:RegisterEvent("PLAYER_LOGIN", function()

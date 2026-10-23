@@ -12,7 +12,7 @@
 ## Notes-ptBR: Painéis artísticos para sua interface: fundos, bordas, texto e scripts.
 ## Notes-ruRU: Художественные панели для интерфейса: фоны, рамки, текст и скрипты.
 ## Author: Adna
-## Version: 1.0.1
+## Version: 1.1.0
 ## X-License: All Rights Reserved
 ## X-Curse-Project-ID: 1444518
 ## SavedVariables: nxPanelsDB
@@ -60,3 +60,5 @@ Engine\Layouts.lua
 Core\Share.lua
 Core\API.lua
 Core\Commands.lua
+Core\Splash.lua
+Core\News.lua

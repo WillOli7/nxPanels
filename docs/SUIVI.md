@@ -13,7 +13,7 @@ Dernière mise à jour : 2026-10-23
 | Élément | État |
 |---|---|
 | Version | **`1.0.0` publiée en release le 2026-09-29** (tous les TOC alignés). Avant : `1.0.0-alpha.2` (archivé sur CurseForge ; pré-version sur GitHub) |
-| Branche de travail | **`release/1.0.1`** : corrections des retours joueurs + nouveautés (section 7 bis). TOC encore en `1.0.1` ; numéro de la prochaine version à fixer (le mainteneur pense à 1.1.x) |
+| Branche de travail | **`release/1.0.1`** : corrections des retours joueurs + nouveautés (section 7 bis). Prochaine version : **`1.1.0`** (TOC et CHANGELOG à jour, date du CHANGELOG à ajuster le jour de la publication) |
 | Pull request | PR #1 à #15 fusionnées dans `main` ; aucune PR ouverte |
 | `main` | = tag `1.0.0` + mises à jour du suivi |
 | Logo | ✅ 2026-09-28 (PR #4) : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7. Icône vérifiée en jeu (Retail et Forever) le 2026-09-29. Reste : image sociale à envoyer à la main (Settings → Social preview) |
@@ -159,8 +159,10 @@ Retours traités, dans l'ordre chronologique (commentaires CurseForge et issues 
 
 Autres nouveautés : support **TBC Anniversary** (interfaces 20505, 20506 ; ✅ chargé en jeu), **7 langues** de plus, client et version du jeu dans le panneau latéral, fenêtre de bienvenue après l'import (une fois), icône et groupe des dossiers de pont, librairies à jour (LibSharedMedia r185, LibSerialize v1.2.3, LibDBIcon 57), avertissement des scripts sur deux lignes, `/nxp status` sans double point.
 
+Fenêtre des nouveautés (`Core/News.lua`, cadre partagé avec la bienvenue dans `Core/Splash.lua`) : une fois au premier démarrage d'une nouvelle version (`global.newsSeen`), pas pour un nouveau joueur ni juste après un import, après la fenêtre de bienvenue si elle est ouverte ; case « Ne plus afficher » (`global.showNews`), réglage et bouton « Voir les nouveautés » dans Réglages. **À chaque nouvelle version** : ajouter ses notes dans `News.NOTES` et la clé `NEWS_x_y_z` dans les 10 langues (sinon pas de fenêtre).
+
 Reste à faire avant la publication :
-1. Fixer le numéro de version et mettre à jour les 5 TOC et le CHANGELOG (daté).
+1. ~~Numéro de version~~ : 1.1.0 (TOC, CHANGELOG). Ajuster la date du CHANGELOG le jour de la publication.
 2. Tests de migration (`migrate`, `original`, `real`) : verts à chaque commit ; test de mise à jour (`tools/update-test.sh`) si besoin.
 3. Forever : tests en jeu après la réouverture de la bêta (5 novembre).
 4. Import réel depuis TBC Anniversary : créer quelques panneaux avec kgPanels sur ce client, puis importer (le fichier peut aussi servir au scénario `real`).
