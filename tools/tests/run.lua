@@ -381,6 +381,21 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 	M.ticker.fn()
 	check(waiting.shown and waiting.parent == target and not ns.Layouts.waiting[waitingId], "panel shown once its frame exists")
 	check(M.ticker.cancelled, "retry timer stopped")
+	-- After its last try the retry timer can start again: a panel can wait later on
+	local waitingPanel = main.panels[waitingId]
+	local waitingParent = waitingPanel.parent
+	waitingPanel.parent = "LaterAddonFrame"
+	ns.Layouts:PanelChanged(waitingId, "anchors")
+	local retry = M.ticker
+	check(not retry.cancelled and ns.Layouts.waiting[waitingId], "retry timer started for a panel waiting later on")
+	for _ = 1, 60 do retry.fn() end
+	check(retry.cancelled, "retry timer stopped after its last try")
+	ns.Layouts:PanelChanged(waitingId, "anchors")
+	check(M.ticker ~= retry and not M.ticker.cancelled, "retry timer started again after its last try")
+	waitingPanel.parent = waitingParent
+	ns.Layouts:PanelChanged(waitingId, "anchors")
+	M.ticker.fn()
+	check(M.ticker.cancelled and not ns.Layouts.waiting[waitingId], "retry timer stopped once nothing waits")
 
 	-- Scripts wait for their dependency
 	local s = frameOf(main, "Scripted")
