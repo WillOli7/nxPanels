@@ -258,7 +258,7 @@ Tests en jeu à faire avant de fusionner (`/console scriptErrors 1` ou BugSack),
 
 À faire pour la 1.1.2 : `CHANGELOG.md` (section « Unreleased » prête), version dans les TOC, notes de la fenêtre des nouveautés (`News.NOTES` + clé `NEWS_1_1_2` dans les 10 langues, ou décider de ne pas en avoir) ; surveiller la réaction d'Aur0r4 aux points 5 et 8.
 
-Incident 2026-10-25 : les brouillons `docs/publication/REDDIT.md` et `REPLIES-1.1.0.md` (non suivis) ont été ajoutés par erreur au commit `e7d6c47`, poussé sur la branche, puis retirés du suivi au commit suivant (fichiers gardés sur le disque). Ils restent dans l'historique de `feature/code-review` : à réécrire si le mainteneur le souhaite, et à écarter de la PR (squash).
+Incident 2026-10-25 : les brouillons `docs/publication/REDDIT.md` et `REPLIES-1.1.0.md` (non suivis, à garder hors du dépôt) avaient été ajoutés par erreur à un commit poussé ; l'historique de `feature/code-review` a été réécrit pour les retirer (force-push accepté par le mainteneur). Les fichiers restent sur le disque, non suivis. Ne jamais faire `git add docs` : ajouter les fichiers un par un.
 
 ## 8. Reprendre le travail
 
