@@ -248,6 +248,8 @@ Résultats en jeu, Retail, 2026-10-25 (captures du mainteneur) : démarrage sans
 - passer une taille de px à % gardait le nombre (350 px → 350 %, panneau plus grand que l'écran) : la valeur est maintenant convertie pour garder la taille à l'écran (`setUnit`, `Pages/Panels.lua`) ;
 - avec une image Blizzard (atlas « QuestBG-Horde »), « Répéter la texture » ne faisait rien (un atlas ne se répète pas) mais masquait la rotation : options de répétition masquées et phrase d'explication (`TILE_ATLAS`, 10 langues).
 
+Deuxième passage en jeu (Retail, 2026-10-25) : répétition « Horizontal seulement » ✅, atlas sans option de répétition ✅ mais phrase tronquée ; conversion px → % faite mais la valeur « sautait » : les curseurs de taille avançaient par pas de 1 et affichaient des entiers (7,98 % → « 8 », puis 8 dès la validation ; plus de 40 px par pas sur l'écran très large du mainteneur). Corrigé : en %, pas de 0,01 et décimales affichées (`SliderRow` accepte un pas variable) ; phrases d'explication sur deux lignes.
+
 À refaire en jeu après réinstallation : changer l'unité d'un panneau en px vers % puis vers px (même taille à l'écran) ; fond en atlas (pas d'option de répétition, phrase affichée) ; fond en fichier (« Répéter » avec « Horizontal seulement » / « Vertical seulement » : le motif ne se répète que dans un sens) ; TBC Anniversary : démarrage sans erreur.
 
 Tests en jeu à faire avant de fusionner (`/console scriptErrors 1` ou BugSack), sur Retail, Forever (dès le 5 novembre) et TBC Anniversary :
