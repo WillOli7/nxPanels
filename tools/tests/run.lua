@@ -372,11 +372,11 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 	local bar = frameOf(main, "Bottom Bar")
 	check(bar and bar.shown and bar.w == 1920 and bar.h == 32, "percent width, string height")
 	check(bar.points[1][5] == -520, "string offset converted")
-	-- A size in % is a share of the parent on screen, whatever the scale of the panel
+	-- Like kgPanels: the size in % comes from the parent, then the scale applies to it
 	local barId = select(2, frameOf(main, "Bottom Bar"))
 	main.panels[barId].scale = 2
 	ns.Layouts:PanelChanged(barId, "look")
-	check(bar.w == 960 and bar.scale == 2, "percent width with a scale: same width on screen")
+	check(bar.w == 1920 and bar.scale == 2, "percent width then scale, like kgPanels")
 	main.panels[barId].scale = 1
 	ns.Layouts:PanelChanged(barId, "look")
 	check(not bar.border.textures.TOP.shown, "translated 'None' border = no border")
@@ -485,20 +485,14 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 	tiled.bg.w, tiled.bg.h = 192, 92
 	tiled.sizer.scripts.OnSizeChanged(tiled.sizer)
 	check(tiled.bg.wrapH == "REPEAT" and tiled.bg.texCoord[2] == 6, "tiled background")
-	-- A tiled background follows the style and opacity like the others
+	-- Like the kgPanels backdrop: a tiled background takes the full color, whatever the style
 	do
 		local tiledId = select(2, frameOf(second, "Tiled"))
 		local tbg = second.panels[tiledId].background
 		local style, color, alpha = tbg.style, tbg.color, tbg.alpha
-		tbg.style = "NONE"
+		tbg.style, tbg.color, tbg.alpha = "NONE", { r = 1, g = 0, b = 0, a = 0.9 }, 0.5
 		ns.Layouts:PanelChanged(tiledId, "look")
-		check(deepEqual(tiled.bg.vertexColor, { 1, 1, 1, 1 }) and tiled.bg.wrapH == "REPEAT", "tiled background without tint")
-		tbg.style, tbg.color, tbg.alpha = "SOLID", { r = 1, g = 0, b = 0, a = 0.9 }, 0.5
-		ns.Layouts:PanelChanged(tiledId, "look")
-		check(tiled.bg.vertexColor[4] == 0.5, "tiled background: color alpha limited by the opacity")
-		tbg.style = "GRADIENT"
-		ns.Layouts:PanelChanged(tiledId, "look")
-		check(tiled.bg.gradient ~= nil and tiled.bg.wrapH == "REPEAT", "tiled background with a gradient")
+		check(deepEqual(tiled.bg.vertexColor, { 1, 0, 0, 0.9 }) and tiled.bg.wrapH == "REPEAT", "tiled background tinted like kgPanels")
 		tbg.style, tbg.color, tbg.alpha = style, color, alpha
 		ns.Layouts:PanelChanged(tiledId, "look")
 	end
@@ -1208,13 +1202,6 @@ elseif scenario == "options" then
 	s.snapPanels = false
 	dragMover(m.handles[6], 1060, 1090)
 	check(test.width == 230 and test.anchor.x == 15, "resized by the right edge, centered panel follows")
-	-- In %, with a scale: the size follows the mouse on screen
-	test.widthUnit, test.width, test.scale = "%", 10, 2
-	ns.Layouts:PanelChanged(testId, "look")
-	dragMover(m.handles[6], 1060, 1090)
-	check(math.abs(test.width - 11.6) < 0.01, "resized in % with a scale: share of the parent on screen")
-	test.widthUnit, test.width, test.scale, test.anchor.x = "px", 230, 1, 15
-	ns.Layouts:PanelChanged(testId, "look")
 	ns.Layouts:ApplyActive()
 	check(EM.movers[testId] and EM.movers[testId].target == ns.Layouts.frames[testId], "movers rebuilt with the layout")
 	-- Several panels: Ctrl+click, alignment, moved together

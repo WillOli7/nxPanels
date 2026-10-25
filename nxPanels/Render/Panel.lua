@@ -126,9 +126,9 @@ function Panel:ApplyGeometry(frame, panel, parent, anchor)
 	local scale = panel.scale and panel.scale > 0 and panel.scale or 1
 	frame:SetScale(scale)
 
-	-- A size in % is a share of the parent on screen, whatever the scale of the panel
-	local width = panel.widthUnit == "%" and parent:GetWidth() * panel.width / 100 / scale or panel.width
-	local height = panel.heightUnit == "%" and parent:GetHeight() * panel.height / 100 / scale or panel.height
+	-- Like kgPanels: a size in % is taken from the parent, then the panel scale applies to it
+	local width = panel.widthUnit == "%" and parent:GetWidth() * panel.width / 100 or panel.width
+	local height = panel.heightUnit == "%" and parent:GetHeight() * panel.height / 100 or panel.height
 	frame:SetSize(math.max(width, 0), math.max(height, 0))
 
 	local a = panel.anchor
@@ -196,16 +196,20 @@ function Panel:ApplyBackground(frame, panel)
 	local r, g, b, a = ns.Colors:Get(bg.colorMode, bg.color)
 	local c2 = bg.color2
 	-- An atlas is a part of a bigger sheet: it cannot be repeated
-	local tiled = bg.tile and not atlasFile
-	if tiled then
+	-- A repeated background is tinted by the full color, whatever the style, like the
+	-- backdrop kgPanels used for it
+	if bg.tile and not atlasFile then
 		tex:SetTexture(path, "REPEAT", "REPEAT")
-	else
-		tex:SetTexture(path)
-		tex:SetHorizTile(false)
-		tex:SetVertTile(false)
+		tex:SetVertexColor(r, g, b, a)
+		frame.tileSize = bg.tileSize
+		self:UpdateTiling(frame)
+		return
 	end
-	-- Same tint repeated or not. The color alpha never exceeds the background
-	-- opacity (legacy behavior)
+
+	tex:SetTexture(path)
+	tex:SetHorizTile(false)
+	tex:SetVertTile(false)
+	-- The color alpha never exceeds the background opacity (legacy behavior)
 	if bg.style == "SOLID" then
 		tex:SetVertexColor(r, g, b, math.min(a, bg.alpha))
 	elseif bg.style == "GRADIENT" then
@@ -214,11 +218,6 @@ function Panel:ApplyBackground(frame, panel)
 			CreateColor(c2.r, c2.g, c2.b, math.min(c2.a, bg.alpha)))
 	else
 		tex:SetVertexColor(1, 1, 1, 1)
-	end
-	if tiled then
-		frame.tileSize = bg.tileSize
-		self:UpdateTiling(frame)
-		return
 	end
 	local c = texCoords(bg)
 	if atlasFile then
