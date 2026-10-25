@@ -417,6 +417,15 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 	M.ticker.fn()
 	check(M.ticker.cancelled and not ns.Layouts.waiting[waitingId], "retry timer stopped once nothing waits")
 
+	-- A legacy anchor written like a reference of ours is converted without error
+	do
+		local g = { layouts = {}, media = { background = {}, border = {} }, nextId = 1 }
+		local ok, layouts = pcall(I.Convert.Layouts, { layouts = { T = { A = { anchor = "panel:zz", parent = "panel:zz" } } } }, g)
+		local _, converted = next(g.layouts)
+		local _, panel = next(converted and converted.panels or {})
+		check(ok and layouts == 1 and panel and panel.anchor.relativeTo == "panel:zz", "legacy 'panel:' anchor converted without error")
+	end
+
 	-- An error in one event handler does not stop the next ones
 	do
 		local errors, ran = {}, false

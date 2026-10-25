@@ -98,7 +98,8 @@ local function convertPanel(old, name, refToId, dependency)
 	-- (a panel named "Minimap" anchored to "Minimap" follows the minimap)
 	local function ref(value)
 		if type(value) ~= "string" or value == "" then return "UIParent" end
-		if value == name or ns.Anchors:Resolve(value) then return value end
+		-- No panel frames here: a legacy value written "panel:..." is not one of ours
+		if value == name or ns.Anchors:Resolve(value, {}) then return value end
 		if refToId[value] then return "panel:" .. refToId[value] end
 		return value
 	end
