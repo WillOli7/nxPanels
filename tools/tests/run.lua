@@ -854,6 +854,11 @@ elseif scenario == "options" then
 	check(choose(findRow(general, L["WIDTH_UNIT"]), "%") and chatPanel.widthUnit == "%", "unit dropdown")
 	-- The unit change keeps the size on screen: 321 px of 1920 = 16.72 %
 	check(chatPanel.width == 16.72 and math.abs(chat.w - 321) < 0.5, "px to %: same size on screen")
+	-- The decimals are shown and kept: validating the box does not round the size
+	local widthRow = findRow(general, L["WIDTH"])
+	check(widthRow.valueBox.edit:GetText() == "16.72", "size in % shown with its decimals")
+	setSlider(widthRow, widthRow.valueBox.edit:GetText())
+	check(chatPanel.width == 16.72, "size in % kept when the box is validated")
 	choose(findRow(general, L["WIDTH_UNIT"]), "px")
 	check(chatPanel.width == 321, "% to px: same size on screen")
 	chatPanel.scale = 2

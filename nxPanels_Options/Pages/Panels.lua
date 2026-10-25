@@ -439,11 +439,13 @@ local function buildGeneral(form)
 	form:Section(L["SECTION_SIZE"])
 	local units = { { value = "px", text = L["UNIT_PX"] }, { value = "%", text = L["UNIT_PERCENT"] } }
 	local function maxSize(key) return function() return P()[key] == "%" and 100 or 2000 end end
-	W.SliderRow(form, L["WIDTH"], 0, maxSize("widthUnit"), 1, function() return P().width end,
+	-- In %, 1 step is too coarse on a wide screen (more than 40 pixels at 4000): hundredths
+	local function sizeStep(key) return function() return P()[key] == "%" and 0.01 or 1 end end
+	W.SliderRow(form, L["WIDTH"], 0, maxSize("widthUnit"), sizeStep("widthUnit"), function() return P().width end,
 		function(v) P().width = v changed("look") end, { free = true })
 	W.DropdownRow(form, L["WIDTH_UNIT"], units, function() return P().widthUnit end,
 		setUnit("width", "widthUnit", function() return parentFrame():GetWidth() end))
-	W.SliderRow(form, L["HEIGHT"], 0, maxSize("heightUnit"), 1, function() return P().height end,
+	W.SliderRow(form, L["HEIGHT"], 0, maxSize("heightUnit"), sizeStep("heightUnit"), function() return P().height end,
 		function(v) P().height = v changed("look") end, { free = true })
 	W.DropdownRow(form, L["HEIGHT_UNIT"], units, function() return P().heightUnit end,
 		setUnit("height", "heightUnit", function() return parentFrame():GetHeight() end))
