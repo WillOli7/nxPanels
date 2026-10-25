@@ -10,9 +10,9 @@ Périmètre : `nxPanels/`, `nxPanels_Options/`, `nxPanels_Import/` (sans `Libs/`
 4. **Important** : les textures, textes et frames créés par les scripts (`self:CreateTexture()`…) restent sur le cadre recyclé et apparaissent sur un autre panneau après un changement de layout.
 5. **Mineur** : `/nxp layout <nom>` avec les panneaux désactivés provoque une erreur Lua (`format` reçoit `nil`).
 6. **Mineur** : une chaîne d'import abîmée ou piégée peut provoquer une erreur Lua et laisser un layout à moitié créé (types non vérifiés).
-7. Quelques points mineurs ou d'amélioration (taille en % et échelle, événements sans protection, OnUpdate permanent, double validation des champs).
+7. Quelques points mineurs ou d'amélioration (événements sans protection, OnUpdate permanent, double validation des champs). Les anciens points 5 et 8 (taille en % avec une échelle, fond répété) sont en fait le comportement de kgPanels : écartés.
 8. Valeurs secrètes de Midnight : rien à corriger (seulement `"player"`, et `UnitCanAttack` / `UnitIsFriend` / `UnitExists` sans drapeau en 12.1.5).
-9. Points 1 à 8 corrigés et vérifiés par des tests (section 6).
+9. Points 1, 2, 3, 4, 6 et 7 corrigés et vérifiés par des tests (section 6).
 
 ## 1. État des lieux automatique
 
@@ -29,10 +29,8 @@ Périmètre : `nxPanels/`, `nxPanels_Options/`, `nxPanels_Import/` (sans `Libs/`
 | 2 | `nxPanels/Render/Panel.lua:82-103` | Important | Tous | `Release` efface les clés posées par les scripts, mais pas les régions et frames enfants qu'ils ont créées, ni l'état des widgets (`SetMovable`, `RegisterForDrag`, ombre du texte, `SetDesaturated` du fond, `HookScript`). Au `ApplyActive` suivant (changement de layout, de profil, de spé, import), le cadre peut servir à un autre panneau : la texture créée par le script de A s'affiche sur B ; sur le même panneau, `LOAD` en recrée une de plus | Noter les régions / enfants à la création (`GetRegions`, `GetChildren`) ; à la libération, si le cadre en a d'autres (ou si le panneau avait des scripts), ne pas le remettre dans la réserve : le cacher et l'abandonner. Test : un script `LOAD` qui crée une texture, puis réactivation du layout | Haute sur le mécanisme, moyenne sur la fréquence |
 | 3 | `nxPanels/Core/Commands.lua:33-39` | Mineur | Tous | Avec les panneaux désactivés (`/nxp off`), `ApplyActive` ne fixe pas `activeId` : `GetActiveLayout()` renvoie `nil` et `L["LAYOUT_ACTIVE"]:format(nil)` lève une erreur Lua 5.1 (`%s` attend une chaîne) | Utiliser le nom du layout trouvé par `FindLayout` (ou `activeName()`). Test : `/nxp off` puis `/nxp layout X` | Haute |
 | 4 | `nxPanels/Core/Share.lua:67-97, 141-168` | Mineur | Tous | Le contenu décodé n'est pas vérifié : un panneau qui n'est pas une table, `anchor` / `background` / `text` d'un mauvais type, ou un nom non textuel font une erreur Lua pendant `addPanels`, après `CreateLayout` (layout vide laissé). Les chemins de `payload.media` ne sont pas vérifiés non plus | Nettoyer le contenu dans `decodeNative` : ignorer les panneaux non-table, remplacer les sous-tables de mauvais type par les valeurs par défaut, `tostring` sur les noms, ne garder que les chemins texte ou nombre. Test : chaînes forgées | Haute |
-| 5 | `nxPanels/Render/Panel.lua:114-116` | Mineur | Tous | Une taille en `%` est calculée dans les unités du parent puis appliquée au cadre mis à l'échelle (`SetScale`) : 100 % avec une échelle de 0,5 donne la moitié du parent. Peut être voulu | Diviser par `scale` pour les tailles en %, si le mainteneur confirme que « % du parent » doit être visuel | Moyenne (choix possible) |
 | 6 | `nxPanels/Core/Init.lua:75-81` | Mineur | Tous | Les gestionnaires d'un même événement sont appelés sans protection : une erreur dans l'un (données abîmées dans `ApplyActive` au `PLAYER_LOGIN`) empêche les suivants (`News`, `Import:Finish`) | Appeler chaque gestionnaire avec `xpcall(fn, geterrorhandler(), ...)` | Haute |
 | 7 | `nxPanels_Import/Convert.lua:101` | Mineur | Tous | `ns.Anchors:Resolve(value)` sans table `frames` : une ancienne valeur commençant par `panel:` ferait une erreur (`frames[id]` sur `nil`). Très improbable avec des données kgPanels | Passer `{}` comme deuxième argument | Haute (cas rare) |
-| 8 | `nxPanels/Render/Panel.lua:183-189` | Mineur | Tous | Fond répété (`tile`) : le style (`NONE`, `GRADIENT`) est ignoré et l'alpha de la couleur n'est pas limité par l'opacité, contrairement au fond simple | Appliquer la même règle de couleur dans les deux chemins | Moyenne (comportement hérité possible) |
 
 ## 3. Améliorations (sans changer le comportement)
 
@@ -47,6 +45,9 @@ Périmètre : `nxPanels/`, `nxPanels_Options/`, `nxPanels_Import/` (sans `Libs/`
 | A7 | `nxPanels_Options/EditMode/EditMode.lua:792` | La grille n'est pas redessinée sur `UI_SCALE_CHANGED` |
 
 ## 4. Faux positifs écartés
+
+- **Ancien point 5, taille en % avec une échelle** (`Render/Panel.lua`, `ApplyGeometry`) : kgPanels Reloaded fait pareil (`frame:SetWidth(pWidth * pct / 100)` puis `frame:SetScale(scale)`, `kgPanels_Reloaded.lua` l. 867-884 de la v0.4.0). Corrigé par erreur puis annulé : le changer décalerait les layouts importés. Un test fige ce rendu.
+- **Ancien point 8, fond répété** : kgPanels dessine un fond répété avec un backdrop teinté par la couleur entière (`SetBackdropColor(bg_color...)`, sans le style ni la limite d'opacité, l. 968-987). nxPanels fait la même chose. Corrigé par erreur puis annulé ; un test fige ce rendu.
 
 - `UnitClass` / `UnitName` (audit, `SecretWhenUnitIdentityRestricted`) : appelés seulement sur `"player"`.
 - `UnitCanAttack`, `UnitIsFriend`, `UnitExists` sur `"target"` : aucun drapeau de restriction (12.1.5.70575).
@@ -70,6 +71,6 @@ Périmètre : `nxPanels/`, `nxPanels_Options/`, `nxPanels_Import/` (sans `Libs/`
 
 ## 6. Corrections (2026-10-25)
 
-Les points 1 à 8 sont corrigés sur `feature/code-review`, un commit par point. Chaque point a sa vérification dans `tools/tests/run.lua`, qui échoue sans le correctif (vérifié en retirant le correctif). Les améliorations A1 à A7 ne sont pas faites. Tests en jeu : `docs/SUIVI.md` section 7 sexies.
+Les points 1, 2, 3, 4, 6 et 7 sont corrigés sur `feature/code-review`, un commit par point. Les points 5 et 8 ont été corrigés puis annulés après comparaison avec le code de kgPanels Reloaded v0.4.0 (sauvegarde `AddOns-backup-kgPanels`) : c'était le rendu de kgPanels (voir section 4). Leçon : toute correction qui touche au rendu se compare d'abord au code de kgPanels. Chaque point a sa vérification dans `tools/tests/run.lua`, qui échoue sans le correctif (vérifié en retirant le correctif). Les améliorations A1 à A7 ne sont pas faites. Tests en jeu : `docs/SUIVI.md` section 7 sexies.
 
 Remarque sur le point 3 : les tests ne voyaient pas l'erreur, car LuaJIT accepte `nil` pour `%s` alors que Lua 5.1 (le jeu) le refuse. Le `string.format` des tests est maintenant strict, comme Lua 5.1. À reporter dans le skill (mock ou conseil de test).

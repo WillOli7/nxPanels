@@ -13,7 +13,7 @@ Dernière mise à jour : 2026-10-25 (revue du code)
 | Élément | État |
 |---|---|
 | Version | **`1.1.1` publiée en release le 2026-10-23** (PR #20, tag `1.1.1`, compatibilité Retail 12.1.5 seulement : interface 120105, pas de fenêtre des nouveautés ; envoyée sur CurseForge pour Retail 12.0.0–12.1.5, TBC Anniversary 2.5.5 / 2.5.6 et Forever 1.60.1). Avant : `1.1.0` (2026-10-23, PR #18), `1.0.0` (2026-09-29) |
-| Branche de travail | **`feature/code-review`** (revue du code et 8 correctifs, section 7 sexies, PR pas encore ouverte). Avant : `feature/spec-icon` fusionnée (PR #27, 2026-10-25) |
+| Branche de travail | **`feature/code-review`** (revue du code et 6 correctifs, section 7 sexies, PR pas encore ouverte). Avant : `feature/spec-icon` fusionnée (PR #27, 2026-10-25) |
 | Pull request | PR #1 à #27 fusionnées dans `main` ; aucune ouverte. #24 (Dependabot, 2026-10-25) : `actions/checkout` v4 → v7 et `actions/upload-artifact` v4 → v7, vérifiées par une construction de test de la release (run 40201091009 : vert, zip produit) |
 | `main` | **en avance sur le tag `1.1.1`** : contient les correctifs de l'audit (PR #22, future **1.1.2**, pas encore publiée) et les outils de contrôle (PR #23). Ne pas présenter `main` comme la version publiée |
 | Logo | ✅ 2026-09-28 (PR #4) : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7. Icône vérifiée en jeu (Retail et Forever) le 2026-09-29. Reste : image sociale à envoyer à la main (Settings → Social preview) |
@@ -230,7 +230,7 @@ Tests en jeu : `{specicon}` ✅ Retail et TBC Anniversary (2026-10-25). `{talent
 
 ## 7 sexies. Revue du code (2026-10-25, branche `feature/code-review`)
 
-Rapport complet : `docs/REVUE-CODE.md` (vrais problèmes, faux positifs écartés, remarques sur les outils). Aucun problème critique ; migration et `kgPanelsDB` intacts. Un commit par correctif, chacun avec sa vérification dans `tools/tests/run.lua` (le test échoue sans le correctif) ; `run-all.sh` vert à chaque commit, `real` vert.
+Rapport complet : `docs/REVUE-CODE.md` (vrais problèmes, faux positifs écartés, remarques sur les outils). Aucun problème critique ; migration et `kgPanelsDB` intacts. Aucun changement de rendu : les points 5 et 8, qui changeaient l'aspect des layouts importés, ont été annulés après comparaison avec le code de kgPanels Reloaded v0.4.0 (c'était son comportement). Un commit par correctif, chacun avec sa vérification dans `tools/tests/run.lua` (le test échoue sans le correctif) ; `run-all.sh` vert à chaque commit, `real` vert.
 
 | # | Correctif | Fichiers |
 |---|---|---|
@@ -238,10 +238,10 @@ Rapport complet : `docs/REVUE-CODE.md` (vrais problèmes, faux positifs écarté
 | 2 | Un cadre où les scripts ont créé des textures ou des frames n'est plus réutilisé pour un autre panneau ; déplaçable / glisser / limité à l'écran / désaturation remis à zéro | `Render/Panel.lua` |
 | 3 | `/nxp layout <nom>` avec les panneaux désactivés : plus d'erreur Lua. Les tests refusent maintenant `nil` pour `%s`, comme Lua 5.1 | `Core/Commands.lua`, `tools/tests/run.lua` |
 | 4 | Chaîne d'import abîmée ou piégée : valeurs du mauvais type ignorées (valeurs par défaut), plus d'erreur ni de layout vide | `Core/Share.lua` |
-| 5 | Taille en % = part du parent à l'écran, quelle que soit l'échelle du panneau (aussi en mode édition). **Change l'affichage** des panneaux en % avec une échelle ≠ 1 (aucun dans les vraies données) | `Render/Panel.lua`, `EditMode/EditMode.lua` |
+| 5 | ~~Taille en % et échelle~~ : **annulé**, c'est le rendu de kgPanels (taille en % prise du parent, puis échelle). Un test le fige | `Render/Panel.lua` |
 | 6 | Une erreur dans un gestionnaire d'événement n'empêche plus les suivants | `Core/Init.lua` |
 | 7 | Import : ancienne ancre écrite `panel:...` sans erreur | `nxPanels_Import/Convert.lua` |
-| 8 | Fond répété : suit le style (sans teinte, dégradé) et l'opacité comme les autres. **Change l'affichage** des fonds répétés en style « aucun » ou « dégradé » (aucun dans les vraies données) | `Render/Panel.lua` |
+| 8 | ~~Fond répété~~ : **annulé**, c'est le rendu du backdrop de kgPanels (couleur entière, sans style). Un test le fige | `Render/Panel.lua` |
 
 Tests en jeu à faire avant de fusionner (`/console scriptErrors 1` ou BugSack), sur Retail, Forever (dès le 5 novembre) et TBC Anniversary :
 1. `/reload` sans erreur ; `/nxp status`.
@@ -249,9 +249,8 @@ Tests en jeu à faire avant de fusionner (`/console scriptErrors 1` ou BugSack),
 3. Point 2 : script `LOAD` `self.t = self:CreateTexture() self.t:SetAllPoints() self.t:SetColorTexture(1,0,0,0.5)` sur un panneau ; changer de layout puis revenir, ou changer de spé : aucun carré rouge sur un autre panneau, un seul sur le bon.
 4. Point 3 : `/nxp off`, `/nxp layout <nom>` (message sans erreur), `/nxp on`.
 5. Point 4 : importer une chaîne `!NXP1!` normale (exportée d'un layout) : identique à avant.
-6. Point 5 : panneau 100 % de largeur, échelle 0,5 puis 2 : toujours toute la largeur de l'écran ; le redimensionner en mode édition suit la souris.
-7. Point 8 : fond répété (« Répéter ») en style « Aucun », puis « Dégradé », puis opacité 0,5.
-8. Migration : scénarios `migrate`, `original`, `real` verts (fait le 2026-10-25) ; pas de test de mise à jour en jeu nécessaire (import inchangé sauf le point 7).
+6. Rendu inchangé : un layout importé (yuluUI d'Aur0r4 par exemple, issue #16) a exactement le même aspect qu'avant la branche (comparer deux captures).
+7. Migration : scénarios `migrate`, `original`, `real` verts (fait le 2026-10-25) ; pas de test de mise à jour en jeu nécessaire (import inchangé sauf le point 7).
 
 ## 8. Reprendre le travail
 
