@@ -219,7 +219,7 @@ But : des contrôles automatiques, les mêmes sur le Mac, le PC et GitHub, et un
 
 Reste à faire :
 1. ~~Vérifier la publication~~ ✅ 2026-10-25 : Tests verts sur GitHub (empreinte de lua-language-server OK, lint sans remarque, tous les scénarios) et construction de test du workflow Release sur la branche (run 40194588046 : zip construit, rien envoyé).
-2. Réglage GitHub à décider par le mainteneur : rendre le check « Tests » obligatoire pour fusionner dans `main` (ruleset).
+2. ~~Check « Tests » obligatoire~~ ✅ 2026-10-25 (accord du mainteneur) : ruleset « Protect main » = pas de suppression, pas de réécriture, PR obligatoire, et check `offline-tests` (workflow Tests) vert obligatoire pour fusionner. Pas de contournement possible.
 3. ~~Mac : `brew install lua-language-server`~~ ✅ 2026-10-25 (installé par le mainteneur). Plugin `wow` mis à jour sur le PC en `8665677` (correctif Windows, plus besoin de `PYTHONIOENCODING`) via `~/.local/bin/claude.exe plugin update wow@willoli7-skills`.
 
 ## 8. Reprendre le travail
