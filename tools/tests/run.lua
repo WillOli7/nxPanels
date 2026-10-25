@@ -372,11 +372,11 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 	local bar = frameOf(main, "Bottom Bar")
 	check(bar and bar.shown and bar.w == 1920 and bar.h == 32, "percent width, string height")
 	check(bar.points[1][5] == -520, "string offset converted")
-	-- Like kgPanels: the size in % comes from the parent, then the scale applies to it
+	-- A size in % is a share of the parent on screen, whatever the scale of the panel
 	local barId = select(2, frameOf(main, "Bottom Bar"))
 	main.panels[barId].scale = 2
 	ns.Layouts:PanelChanged(barId, "look")
-	check(bar.w == 1920 and bar.scale == 2, "percent width then scale, like kgPanels")
+	check(bar.w == 960 and bar.scale == 2, "percent width with a scale: same width on screen")
 	main.panels[barId].scale = 1
 	ns.Layouts:PanelChanged(barId, "look")
 	check(not bar.border.textures.TOP.shown, "translated 'None' border = no border")
@@ -1202,6 +1202,13 @@ elseif scenario == "options" then
 	s.snapPanels = false
 	dragMover(m.handles[6], 1060, 1090)
 	check(test.width == 230 and test.anchor.x == 15, "resized by the right edge, centered panel follows")
+	-- In %, with a scale: the size follows the mouse on screen
+	test.widthUnit, test.width, test.scale = "%", 10, 2
+	ns.Layouts:PanelChanged(testId, "look")
+	dragMover(m.handles[6], 1060, 1090)
+	check(math.abs(test.width - 11.6) < 0.01, "resized in % with a scale: share of the parent on screen")
+	test.widthUnit, test.width, test.scale, test.anchor.x = "px", 230, 1, 15
+	ns.Layouts:PanelChanged(testId, "look")
 	ns.Layouts:ApplyActive()
 	check(EM.movers[testId] and EM.movers[testId].target == ns.Layouts.frames[testId], "movers rebuilt with the layout")
 	-- Several panels: Ctrl+click, alignment, moved together

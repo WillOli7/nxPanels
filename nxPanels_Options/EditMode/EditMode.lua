@@ -370,15 +370,16 @@ function EditMode:StartDrag(id, mode, edges)
 		local ip = panelOf(itemId)
 		items[#items + 1] = { id = itemId, x = ip.anchor.x, y = ip.anchor.y, toParent = toParent(itemId) }
 	end
-	-- UIParent units -> panel data units
+	-- UIParent units -> panel data units (a size in % is a share of the parent on screen)
 	local toFrame = ui / frame:GetEffectiveScale()
+	local toParentUnits = ui / parent:GetEffectiveScale()
 	drag = {
 		id = id, mode = mode, edges = edges or {}, items = items,
 		cx = cx, cy = cy, rect = { l, b, r, t },
 		x = p.anchor.x, y = p.anchor.y, width = p.width, height = p.height,
-		toParent = ui / parent:GetEffectiveScale(),
-		toWidth = p.widthUnit == "%" and toFrame * 100 / math.max(1, parent:GetWidth()) or toFrame,
-		toHeight = p.heightUnit == "%" and toFrame * 100 / math.max(1, parent:GetHeight()) or toFrame,
+		toParent = toParentUnits,
+		toWidth = p.widthUnit == "%" and toParentUnits * 100 / math.max(1, parent:GetWidth()) or toFrame,
+		toHeight = p.heightUnit == "%" and toParentUnits * 100 / math.max(1, parent:GetHeight()) or toFrame,
 		xs = xs, ys = ys,
 		before = snapshots(ids),
 	}
