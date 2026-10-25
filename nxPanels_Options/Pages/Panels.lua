@@ -529,7 +529,7 @@ local function buildBackground(form)
 	W.ToggleRow(form, L["FLIP_H"], function() return bg().flipH end, function(v) bg().flipH = v changed("look") end).isShown = notTiled
 	W.ToggleRow(form, L["FLIP_V"], function() return bg().flipV end, function(v) bg().flipV = v changed("look") end).isShown = notTiled
 	W.ToggleRow(form, L["TILE"], function() return bg().tile end, function(v) bg().tile = v changed("look") end, L["TILE_DESC"]).isShown = function() return not isAtlas() end
-	W.TextRow(form, L["TILE_ATLAS"], 40).isShown = isAtlas
+	W.TextRow(form, L["TILE_ATLAS"], 56).isShown = isAtlas
 	W.SliderRow(form, L["TILE_SIZE"], 0, 512, 1, function() return bg().tileSize end,
 		function(v) bg().tileSize = math.max(0, v) changed("look") end, { free = true }).isShown = tiled
 	W.DropdownRow(form, L["TILE_DIRECTION"], Options:Choices({ "BOTH", "HORIZONTAL", "VERTICAL" }, "TILE_DIR_"),
@@ -752,7 +752,7 @@ local function buildScripts(form)
 			changed("scripts")
 		end
 	end, { width = 200 })
-	W.TextRow(form, L["SCRIPT_DEPENDENCY_DESC"], 40)
+	W.TextRow(form, L["SCRIPT_DEPENDENCY_DESC"], 56)
 end
 
 local function buildDisplay(form)

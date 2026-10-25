@@ -913,6 +913,7 @@ elseif scenario == "options" then
 		for _, r in ipairs(bgForm.rows) do
 			if r.text and r.text.textValue == L["TILE_ATLAS"] then atlasNote = r end
 		end
+		check(atlasNote and atlasNote.fixedHeight >= 56, "atlas explanation: room for two lines")
 		check(atlasNote and atlasNote.shown and not tileRow.shown and not findRow(bgForm, L["TILE_DIRECTION"]).shown
 			and findRow(bgForm, L["ROTATION"]).shown, "atlas: no tiling options, explanation shown, rotation kept")
 		chatPanel.background.texture, chatPanel.background.tile = texture, false
