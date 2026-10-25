@@ -196,18 +196,16 @@ function Panel:ApplyBackground(frame, panel)
 	local r, g, b, a = ns.Colors:Get(bg.colorMode, bg.color)
 	local c2 = bg.color2
 	-- An atlas is a part of a bigger sheet: it cannot be repeated
-	if bg.tile and not atlasFile then
+	local tiled = bg.tile and not atlasFile
+	if tiled then
 		tex:SetTexture(path, "REPEAT", "REPEAT")
-		tex:SetVertexColor(r, g, b, a)
-		frame.tileSize = bg.tileSize
-		self:UpdateTiling(frame)
-		return
+	else
+		tex:SetTexture(path)
+		tex:SetHorizTile(false)
+		tex:SetVertTile(false)
 	end
-
-	tex:SetTexture(path)
-	tex:SetHorizTile(false)
-	tex:SetVertTile(false)
-	-- The color alpha never exceeds the background opacity (legacy behavior)
+	-- Same tint repeated or not. The color alpha never exceeds the background
+	-- opacity (legacy behavior)
 	if bg.style == "SOLID" then
 		tex:SetVertexColor(r, g, b, math.min(a, bg.alpha))
 	elseif bg.style == "GRADIENT" then
@@ -216,6 +214,11 @@ function Panel:ApplyBackground(frame, panel)
 			CreateColor(c2.r, c2.g, c2.b, math.min(c2.a, bg.alpha)))
 	else
 		tex:SetVertexColor(1, 1, 1, 1)
+	end
+	if tiled then
+		frame.tileSize = bg.tileSize
+		self:UpdateTiling(frame)
+		return
 	end
 	local c = texCoords(bg)
 	if atlasFile then
