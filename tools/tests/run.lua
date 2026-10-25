@@ -868,12 +868,53 @@ elseif scenario == "options" then
 	check(percentHeight > 0 and math.abs(chatPanel.height * 2 / 1080 * 100 - percentHeight) < 0.01, "unit change with a scale: same size on screen")
 	chatPanel.scale = 1
 	ns.Layouts:PanelChanged(chatId, "look")
-	choose(findRow(general, L["ANCHORED_TO"]), "__custom")
-	M.lastPopup.data.onAccept("MissingFrame")
-	check(chatPanel.anchor.relativeTo == "MissingFrame" and ns.Layouts.waiting[chatId] and not chat.shown, "anchored to a frame by name")
-	check(findRow(general, L["ANCHORED_TO"]).button.text.textValue == "MissingFrame", "custom frame name shown")
-	choose(findRow(general, L["ANCHORED_TO"]), "panel:" .. barId)
-	check(chatPanel.anchor.relativeTo == "panel:" .. barId and chat.shown and chat.points[1][2] == ns.Layouts.frames[barId], "anchored back to a panel")
+	-- Frame typed by its name (validated with Enter), the list next to it
+	do
+		local anchorRow, parentRow = findRow(general, L["ANCHORED_TO"]), findRow(general, L["PARENT"])
+		local edit = anchorRow.box.edit
+		local function typeName(r, text)
+			r.box.edit:SetFocus()
+			r.box.edit:SetText(text)
+			r.box.edit.scripts.OnEnterPressed(r.box.edit)
+		end
+		check(edit:GetText() == "Bottom Bar" and anchorRow.statusColor == O.Theme.colors.success and parentRow.box.edit:GetText() == L["SCREEN"], "panel name and screen shown, green light")
+		typeName(anchorRow, "MissingFrame")
+		check(chatPanel.anchor.relativeTo == "MissingFrame" and ns.Layouts.waiting[chatId] and not chat.shown, "anchored to a frame by its typed name")
+		check(edit:GetText() == "MissingFrame" and anchorRow.statusColor == O.Theme.colors.warning and anchorRow.statusText == L["FRAME_MISSING"], "missing frame: orange light")
+		-- Typed without Enter: nothing saved, the box shows the saved value again
+		edit:SetFocus()
+		edit:SetText("Half")
+		edit:ClearFocus()
+		check(chatPanel.anchor.relativeTo == "MissingFrame" and edit:GetText() == "MissingFrame", "only Enter saves the name")
+		-- The frame appears (addon loaded): green light
+		CreateFrame("Frame", "MissingFrame", UIParent)
+		ns.Layouts:PanelChanged(chatId, "anchors")
+		P:RefreshEditor()
+		check(anchorRow.statusColor == O.Theme.colors.success and chat.shown, "frame created: green light, panel shown")
+		-- Raid frames (issue #17): the name changed by hand
+		CreateFrame("Frame", "RaidFrame2", UIParent)
+		typeName(parentRow, " RaidFrame2 ")
+		check(chatPanel.parent == "RaidFrame2" and chat.parent == _G.RaidFrame2, "parent typed, spaces removed")
+		-- A panel by its name, a frame of the game first
+		typeName(anchorRow, "Bottom Bar")
+		check(chatPanel.anchor.relativeTo == "panel:" .. barId and edit:GetText() == "Bottom Bar", "panel typed by its name")
+		typeName(anchorRow, "Bottom Bar")
+		check(chatPanel.anchor.relativeTo == "panel:" .. barId, "unchanged name keeps the panel")
+		typeName(parentRow, L["SCREEN"])
+		check(chatPanel.parent == "UIParent" and parentRow.box.edit:GetText() == L["SCREEN"], "screen typed")
+		typeName(parentRow, "")
+		check(chatPanel.parent == "UIParent", "empty name: the screen")
+		-- The list: screen and other panels, no prompt any more
+		anchorRow.button.scripts.OnClick(anchorRow.button)
+		local values = {}
+		for _, b in ipairs(O.Dropdown.popup.buttons) do if b.shown then values[#values + 1] = b.item.value end end
+		O.Dropdown:Close()
+		check(values[1] == "UIParent" and not table.concat(values, " "):find("__custom") and not table.concat(values, " "):find(chatId .. "$"), "list: screen and the other panels")
+		check(choose(anchorRow, "UIParent") and chatPanel.anchor.relativeTo == "UIParent" and edit:GetText() == L["SCREEN"], "screen chosen in the list")
+		check(choose(anchorRow, "panel:" .. barId) and chatPanel.anchor.relativeTo == "panel:" .. barId and chat.shown
+			and chat.points[1][2] == ns.Layouts.frames[barId] and anchorRow.statusColor == O.Theme.colors.success, "anchored back to a panel")
+		MissingFrame, RaidFrame2 = nil, nil
+	end
 
 	-- Texture rows open the browser
 	local function browse(r, value)

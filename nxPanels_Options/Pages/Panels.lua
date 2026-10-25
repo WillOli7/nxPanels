@@ -79,7 +79,8 @@ local function folderItems()
 	return items
 end
 
--- Frames a panel can be attached to: the screen, the other panels, any frame by name
+-- Frames a panel can be attached to: the screen and the other panels (any other
+-- frame is typed by its name)
 local function frameItems()
 	local _, id, layout = current()
 	local items = { { value = "UIParent", text = L["SCREEN"] } }
@@ -90,7 +91,6 @@ local function frameItems()
 			end
 		end
 	end
-	items[#items + 1] = { value = "__custom", text = L["OTHER_FRAME"] }
 	return items
 end
 
@@ -98,20 +98,59 @@ local function frameRef(ref)
 	return (ref == nil or ref == "") and "UIParent" or ref
 end
 
--- Setter of a parent / anchor reference; "__custom" asks for a frame name
-local function setFrameRef(apply)
-	return function(value)
-		if value ~= "__custom" then
-			apply(value)
-			changed("anchors")
-			return
-		end
-		Options:Prompt(L["PROMPT_FRAME_NAME"], "", function(text)
-			text = strtrim(text or "")
-			apply(text == "" and "UIParent" or text)
-			changed("anchors")
-		end)
+-- Text of a reference in its box: "Screen", the name of the panel, or the frame name
+local function frameRefText(ref)
+	ref = frameRef(ref)
+	if ref == "UIParent" then return L["SCREEN"] end
+	local id = ref:match("^panel:(.+)$")
+	if id then
+		local _, _, layout = current()
+		local panel = layout and layout.panels[id]
+		return panel and panel.name or ref
 	end
+	return ref
+end
+
+-- Reference of a typed name. A frame of the game comes before a panel of the same
+-- name (like the import); a name nothing has yet stays a frame name: the panel
+-- waits for it
+local function parseFrameRef(ref, text)
+	if text == "" or text == "UIParent" or text == L["SCREEN"] then return "UIParent" end
+	if text == frameRefText(ref) then return frameRef(ref) end
+	if core.Anchors:Resolve(text, {}) then return text end
+	local _, id, layout = current()
+	for otherId, panel in pairs(layout and layout.panels or {}) do
+		if otherId ~= id and panel.name == text then return "panel:" .. otherId end
+	end
+	return text
+end
+
+-- Light of a reference: green when the frame exists, orange while the panel waits for it
+local function frameRefStatus(ref)
+	ref = frameRef(ref)
+	if core.Anchors:Resolve(ref, core.Layouts.frames, Panels.selected) then
+		return C.success, L["FRAME_FOUND"]
+	end
+	return C.warning, L["FRAME_MISSING"]
+end
+
+-- Row of a parent / anchor reference: typed name or item of the list
+local function frameRefRow(form, label, key)
+	local function get()
+		local panel = P()
+		return key == "parent" and panel.parent or panel.anchor.relativeTo
+	end
+	W.ComboRow(form, label, frameItems, function() return frameRef(get()) end, function(value)
+		local panel = P()
+		if key == "parent" then panel.parent = value else panel.anchor.relativeTo = value end
+		changed("anchors")
+	end, {
+		width = 186,
+		text = frameRefText,
+		parse = function(text) return parseFrameRef(get(), text) end,
+		status = frameRefStatus,
+		hint = L["FRAME_NAME_HINT"],
+	})
 end
 
 ---------------------------------------------------------------------------
@@ -456,16 +495,14 @@ local function buildGeneral(form)
 	local points = Options:Choices(POINTS, "POINT_")
 	W.DropdownRow(form, L["POINT"], points, function() return P().anchor.point end,
 		function(v) P().anchor.point = v changed("look") end)
-	W.DropdownRow(form, L["ANCHORED_TO"], frameItems, function() return frameRef(P().anchor.relativeTo) end,
-		setFrameRef(function(v) P().anchor.relativeTo = v end), { width = 220 })
+	frameRefRow(form, L["ANCHORED_TO"], "anchor")
 	W.DropdownRow(form, L["RELATIVE_POINT"], points, function() return P().anchor.relativePoint end,
 		function(v) P().anchor.relativePoint = v changed("look") end)
 	W.SliderRow(form, L["OFFSET_X"], -1500, 1500, 1, function() return P().anchor.x end,
 		function(v) P().anchor.x = v changed("geometry") end, { free = true })
 	W.SliderRow(form, L["OFFSET_Y"], -1000, 1000, 1, function() return P().anchor.y end,
 		function(v) P().anchor.y = v changed("geometry") end, { free = true })
-	W.DropdownRow(form, L["PARENT"], frameItems, function() return frameRef(P().parent) end,
-		setFrameRef(function(v) P().parent = v end), { width = 220 })
+	frameRefRow(form, L["PARENT"], "parent")
 	local status = W.TextRow(form, "", 44)
 	status.text:SetTextColor(unpack(C.danger))
 	status.isShown = function()
