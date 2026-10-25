@@ -983,6 +983,32 @@ elseif scenario == "options" then
 	check(browse(findRow(editor.tabs.border.form, L["TEXTURE"]), false) and chatPanel.border.texture == false and not chat.border.textures.TOP.shown, "no border (false)")
 	local fontRow = findRow(editor.tabs.text.form, L["FONT"])
 	check(choose(fontRow, nil) and chatPanel.text.font == nil and chat.text.font[1] == STANDARD_TEXT_FONT, "language default font")
+	-- Text area: the same scrollbar
+	do
+		local area = editor.tabs.text.form.rows[1].area
+		local sc, e = area.scroll, area.edit
+		sc.h, e.h = 100, 400
+		sc:UpdateBar()
+		local thumb = sc.bar.thumb
+		check(sc.bar.shown and thumb.h == 25, "text area: scrollbar shown")
+		-- Released out of the game window (no OnMouseUp): the drag stops anyway
+		thumb.scripts.OnMouseDown(thumb, "LeftButton")
+		M.mouseReleased = true
+		thumb.scripts.OnUpdate(thumb, 0.01)
+		M.mouseReleased = nil
+		check(not thumb.scripts.OnUpdate and sc:GetVerticalScroll() == 0, "button released elsewhere: drag stopped")
+		local s0 = sc.bar:GetEffectiveScale()
+		M.cursor = { 0, 300 * s0 }
+		thumb.scripts.OnMouseDown(thumb, "LeftButton")
+		M.cursor = { 0, 290 * s0 }
+		thumb.scripts.OnUpdate(thumb, 0.01)
+		thumb.scripts.OnMouseUp(thumb, "LeftButton")
+		check(math.abs(sc:GetVerticalScroll() - 40) < 0.01, "text area: thumb dragged, text follows")
+		sc.scripts.OnMouseWheel(sc, 1)
+		check(sc:GetVerticalScroll() == 0, "text area: wheel still works")
+		sc.h, e.h = 0, 0
+		sc:SetVerticalScroll(0)
+	end
 	typeIn(editor.tabs.text.form.rows[1].area.edit, "Hello ||cffff0000red||r")
 	check(chatPanel.text.value == "Hello ||cffff0000red||r" and chat.text.textValue == "Hello |cffff0000red|r", "text typed live")
 
@@ -1028,6 +1054,51 @@ elseif scenario == "options" then
 	browser.scroll.w, browser.scroll.h = 720, 440
 	O.Browser:FillIcons()
 	check(browser.count.textValue == L["ICON_COUNT"]:format(500) and browser.scroll.content.h == math.ceil(500 / 16) * 44, "500 icons in the grid")
+	-- Scrollbar dragged: the grid is drawn again while it moves, the cursor read with the scale
+	do
+		local sc = browser.scroll
+		local bar, thumb = sc.bar, sc.bar.thumb
+		local function firstIcon()
+			local first
+			for _, c in ipairs(sc.content.children) do
+				if c.shown and c.icon and (not first or c.icon < first) then first = c.icon end
+			end
+			return first
+		end
+		check(bar.shown and thumb.h == 440 * 440 / 1408, "scrollbar shown, thumb in proportion")
+		check(-(bar.hitInsets[1] + bar.hitInsets[2]) == 10 and -(thumb.hitInsets[1] + thumb.hitInsets[2]) == 10, "mouse zone 10 pixels wider than the line")
+		browser.scale = 0.8
+		M.cursor = { 0, 500 }
+		thumb.scripts.OnMouseDown(thumb, "LeftButton")
+		check(thumb.tex.w == 8, "dragged thumb wider")
+		M.cursor = { 0, 450 }
+		thumb.scripts.OnUpdate(thumb, 0.01)
+		-- 50 pixels at scale 0.8 = 62.5 units; content (1408 - 440) / free track (440 - 137.5) = 3.2 per unit
+		check(math.abs(sc:GetVerticalScroll() - 200) < 0.01, "content follows the thumb, cursor converted with the scale")
+		check(firstIcon() == 100000 + 4 * 16 + 1, "icon grid drawn again while dragging")
+		M.cursor = { 0, -2000 }
+		thumb.scripts.OnUpdate(thumb, 0.01)
+		check(sc:GetVerticalScroll() == 1408 - 440 and firstIcon() == 100000 + 22 * 16 + 1, "dragged to the end: last icons")
+		thumb.scripts.OnMouseUp(thumb, "LeftButton")
+		check(not thumb.scripts.OnUpdate and thumb.tex.w == 4, "released: no more updates, thin again")
+		-- Click on the line: one page up or down
+		sc:ScrollTo(0)
+		thumb.rect = { 0, 300, 4, 137.5 }
+		M.cursor = { 0, 100 * 0.8 }
+		bar.scripts.OnMouseDown(bar, "LeftButton")
+		check(sc:GetVerticalScroll() == 440 and firstIcon() == 100000 + 10 * 16 + 1, "click below the thumb: one page down")
+		M.cursor = { 0, 460 * 0.8 }
+		bar.scripts.OnMouseDown(bar, "LeftButton")
+		check(sc:GetVerticalScroll() == 0, "click above the thumb: one page up")
+		M.cursor = { 0, 350 * 0.8 }
+		bar.scripts.OnMouseDown(bar, "LeftButton")
+		check(sc:GetVerticalScroll() == 0, "click on the thumb: no page")
+		thumb.scripts.OnEnter(thumb)
+		check(thumb.tex.w == 8 and thumb.tex.vertexColor[1] == O.Theme.colors.accent[1], "thumb wider under the mouse")
+		thumb.scripts.OnLeave(thumb)
+		check(thumb.tex.w == 4, "thin again when the mouse leaves")
+		browser.scale, thumb.rect, M.cursor = 1, nil, { 0, 0 }
+	end
 	browser.scroll:SetVerticalScroll(44 * 20)
 	browser.scroll.scripts.OnMouseWheel(browser.scroll, 0)
 	O.Browser:Choose(100000 + 16 * 20 + 1)
@@ -1281,6 +1352,25 @@ elseif scenario == "options" then
 	M.lastPopup.data()
 	check(M.reloaded, "interface reloaded")
 	check(findRow(settings, L["THEME_ACCENT"]).button.text.textValue == L["ACCENT_GOLD"], "accent shown")
+
+	-- Every scroll area of the window (pages, lists, text areas) has the draggable bar
+	do
+		local n, ok = 0, true
+		for _, f in ipairs(M.frames) do
+			if f.kind == "ScrollFrame" then
+				n = n + 1
+				local done = pcall(function()
+					local h = f.h
+					f.h = math.max(f.h, 10)
+					f:ScrollTo(1e6)
+					f:ScrollTo(0)
+					f.h = h
+				end)
+				ok = ok and done and f.bar and f.bar.thumb and f.bar.hitInsets and f:GetVerticalScroll() == 0
+			end
+		end
+		check(n >= 10 and ok, "draggable scrollbar on every scroll area (" .. n .. ")")
+	end
 
 	-- Edit mode
 	ns.Layouts:Activate(mainId)

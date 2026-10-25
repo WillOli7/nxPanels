@@ -237,6 +237,9 @@ function Region:GetRect()
 	if self.rect then return unpack(self.rect) end
 	return 0, 0, self.w, self.h
 end
+function Region:GetTop() local _, b, _, h = self:GetRect() return b + h end
+function Region:GetBottom() return (select(2, self:GetRect())) end
+function Region:SetHitRectInsets(l, r, t, b) self.hitInsets = { l, r, t, b } end
 for _, name in ipairs({
 	"EnableKeyboard", "EnableMouseWheel", "RegisterForClicks", "RegisterForDrag", "SetAtlas", "SetAutoFocus",
 	"SetDesaturated", "SetMaxLetters", "SetMovable", "SetMultiLine", "SetObeyStepOnDrag", "SetOrientation",
@@ -288,6 +291,7 @@ M.cursor = { 0, 0 }
 function GetCursorPosition() return M.cursor[1], M.cursor[2] end
 function IsShiftKeyDown() return M.shift end
 function IsControlKeyDown() return M.ctrl end
+function IsMouseButtonDown() return not M.mouseReleased end
 function InCombatLockdown() return M.combat end
 function GetCurrentKeyBoardFocus() return M.focus end
 -- Retail 12 "secret values": M.SECRET stands for one
