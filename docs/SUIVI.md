@@ -222,11 +222,11 @@ Reste à faire :
 2. ~~Check « Tests » obligatoire~~ ✅ 2026-10-25 (accord du mainteneur) : ruleset « Protect main » = pas de suppression, pas de réécriture, PR obligatoire, et check `offline-tests` (workflow Tests) vert obligatoire pour fusionner. Pas de contournement possible.
 3. ~~Mac : `brew install lua-language-server`~~ ✅ 2026-10-25 (installé par le mainteneur). Plugin `wow` mis à jour sur le PC en `8665677` (correctif Windows, plus besoin de `PYTHONIOENCODING`) via `~/.local/bin/claude.exe plugin update wow@willoli7-skills`.
 
-## 7 quinquies. Variable `{specicon}` (2026-10-25, branche `feature/spec-icon`)
+## 7 quinquies. Variables `{specicon}` et `{talents}` (2026-10-25, branche `feature/spec-icon`)
 
-Demande du mainteneur : afficher l'icône de la spécialisation. `Specs:CurrentIcon()` : Retail = icône de la spé active (`C_SpecializationInfo.GetSpecializationInfo`, 4e valeur) ; WoW Forever et TBC Anniversary = icône de l'arbre de talents qui a le plus de points dans le groupe actif (même fonction, avec `groupIndex`, comme le module de compatibilité de Blizzard), rien sans points. Rendu `|T<icône>:0|t` (taille du texte), à combiner : `{specicon} {spec}`. Ajoutée à « Insérer une variable » (clé `VAR_SPECICON` dans les 10 langues). Tests : icône Retail, arbre avec le plus de points, aucun point.
+Demandes du mainteneur : l'icône de la spécialisation, puis le nom des talents actifs. `Specs:CurrentTalents()` (nom et icône) : Retail = icône de la spé active (`C_SpecializationInfo.GetSpecializationInfo`, 4e valeur) ; WoW Forever et TBC Anniversary = icône de l'arbre de talents qui a le plus de points dans le groupe actif (même fonction, avec `groupIndex`, comme le module de compatibilité de Blizzard), rien sans points. Rendu `|T<icône>:0|t` (taille du texte), à combiner : `{specicon} {spec}`. `{talents}` = nom de l'arbre avec le plus de points (Retail : nom de la spé, comme `{spec}` ; sur Classic, `{spec}` reste le groupe « Talents principaux / secondaires »). Ajoutées à « Insérer une variable » (clés `VAR_SPECICON` et `VAR_TALENTS` dans les 10 langues). Tests : Retail, arbre avec le plus de points, aucun point.
 
-À tester en jeu : Retail (icône de la spé, change avec la spé) ; TBC Anniversary (icône de l'arbre principal ; vérifier que le nombre d'arbres renvoyé par `GetNumSpecializationsForClassID` est bon, sinon 3 par défaut) ; Forever le 5 novembre.
+Tests en jeu : `{specicon}` ✅ Retail et TBC Anniversary (2026-10-25). Reste : `{talents}` sur TBC Anniversary (nom de l'arbre principal) et Retail ; Forever le 5 novembre.
 
 ## 8. Reprendre le travail
 

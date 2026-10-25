@@ -66,9 +66,10 @@ function Specs:CurrentName()
 	end
 end
 
--- Icon (file id) of the current specialization. WoW Forever, TBC Anniversary: the
--- talent tree with the most points in the active group. nil while unknown
-function Specs:CurrentIcon()
+-- Name and icon (file id) of the active talents. Retail: the current specialization.
+-- WoW Forever, TBC Anniversary: the talent tree with the most points in the active
+-- group. nil while unknown or without points
+function Specs:CurrentTalents()
 	local info = C_SpecializationInfo and C_SpecializationInfo.GetSpecializationInfo
 	if not info then return nil end
 	if ns.usesTalentGroups then
@@ -77,14 +78,15 @@ function Specs:CurrentIcon()
 		local count = C_SpecializationInfo.GetNumSpecializationsForClassID
 			and C_SpecializationInfo.GetNumSpecializationsForClassID(classId)
 		if not count or count < 1 then count = 3 end
-		local best, bestPoints = nil, 0
+		local bestName, bestIcon, bestPoints = nil, nil, 0
 		for i = 1, count do
-			local _, _, _, icon, _, _, points = info(i, false, false, nil, nil, group)
-			if icon and points and points > bestPoints then best, bestPoints = icon, points end
+			local _, name, _, icon, _, _, points = info(i, false, false, nil, nil, group)
+			if points and points > bestPoints then bestName, bestIcon, bestPoints = name, icon, points end
 		end
-		return best
+		return bestName, bestIcon
 	end
 	local index = C_SpecializationInfo.GetSpecialization and C_SpecializationInfo.GetSpecialization()
 	if not index or index < 1 then return nil end
-	return (select(4, info(index)))
+	local _, name, _, icon = info(index)
+	return name, icon
 end

@@ -599,12 +599,14 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 	check(ns.Specs:Current() == specs[2].key, "current specialization read with the C_ functions")
 	check(ns.Layouts.activeId == secondId, "layout of the specialization shown")
 	if talentGroups then
-		check(ns.TextVars:Render("{specicon}") == "", "no spec icon without talent points")
+		check(ns.TextVars:Render("{specicon}{talents}") == "", "no spec icon nor talents without talent points")
 		M.points = { 0, 5, 3 }
 		check(ns.TextVars:Render("{specicon}") == "|T1002:0|t", "spec icon: talent tree with the most points")
+		check(ns.TextVars:Render("{talents}") == "Spec2", "active talents: name of the tree with the most points")
 		M.points = nil
 	else
 		check(ns.TextVars:Render("{specicon} {spec}") == "|T1002:0|t Spec2", "spec icon of the current specialization")
+		check(ns.TextVars:Render("{talents}") == "Spec2", "active talents: the current specialization")
 	end
 	ns.Layouts:Activate(mainId)
 	check(db.profiles.Default.specLayouts[specs[2].key] == mainId and ns.Layouts.activeId == mainId, "activating by hand changes the layout of the spec")
