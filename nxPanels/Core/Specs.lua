@@ -19,7 +19,8 @@ function Specs:Current()
 	local getSpec = C_SpecializationInfo and C_SpecializationInfo.GetSpecialization or GetSpecialization
 	local index = getSpec and getSpec()
 	if not index or index < 1 then return nil end
-	local id = GetSpecializationInfo and GetSpecializationInfo(index)
+	local getInfo = C_SpecializationInfo and C_SpecializationInfo.GetSpecializationInfo or GetSpecializationInfo
+	local id = getInfo and getInfo(index)
 	return id and ("S" .. id) or nil
 end
 

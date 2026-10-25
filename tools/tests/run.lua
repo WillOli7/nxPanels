@@ -557,6 +557,11 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 	chatP.text.value = "{zone} {fps} {unknown}"
 	ns.Layouts:PanelChanged(chatId, "look")
 	check(chat.text.textValue == "Valdrakken 60 {unknown}" and chat.textTemplate, "text variables replaced")
+	check(ns.TextVars:Render("{gold}") == "coins:1234567:0", "gold with the C_ coin function, no global left, as big as the text")
+	local coins = C_CurrencyInfo.GetCoinTextureString
+	C_CurrencyInfo.GetCoinTextureString, GetCoinTextureString = nil, function(money) return "old:" .. money end
+	check(ns.TextVars:Render("{gold}") == "old:1234567", "gold with the old global when the C_ function is missing")
+	C_CurrencyInfo.GetCoinTextureString, GetCoinTextureString = coins, nil
 	local textTicker = M.ticker
 	chatP.text.value = "plain"
 	ns.Layouts:PanelChanged(chatId, "look")
@@ -591,6 +596,7 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 	end
 	ns.Layouts:Activate(mainId)
 	setSpec(2)
+	check(ns.Specs:Current() == specs[2].key, "current specialization read with the C_ functions")
 	check(ns.Layouts.activeId == secondId, "layout of the specialization shown")
 	ns.Layouts:Activate(mainId)
 	check(db.profiles.Default.specLayouts[specs[2].key] == mainId and ns.Layouts.activeId == mainId, "activating by hand changes the layout of the spec")

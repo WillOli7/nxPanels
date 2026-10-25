@@ -24,8 +24,9 @@ C_SpecializationInfo = {
 	GetSpecialization = function() return M.spec end,
 	GetNumSpecializationsForClassID = function() return 3 end,
 	GetActiveSpecGroup = function() return M.specGroup end,
+	-- Only the C_ function: the deprecated global alias may disappear
+	GetSpecializationInfo = function(i) return 61 + i, "Spec" .. i end,
 }
-function GetSpecializationInfo(i) return 61 + i, "Spec" .. i end
 function GetSpecializationInfoForClassID(_, i) return 61 + i, "Spec" .. i end
 function UnitRace() return "Humain", "Human" end
 function UnitFactionGroup() return "Alliance", "Alliance" end
@@ -317,6 +318,8 @@ M.atlases = {
 C_Texture = { GetAtlasInfo = function(name) return M.atlases[name] end }
 -- One currency (under a header of the currency tab), one item, 500 macro icons
 C_CurrencyInfo = {
+	-- No global GetCoinTextureString, as on Retail and WoW Forever
+	GetCoinTextureString = function(money, height) return "coins:" .. money .. ":" .. tostring(height) end,
 	GetCurrencyInfo = function(id) if id == 3008 then return { name = "Valorstone", quantity = 12345, iconFileID = 5868902 } end end,
 	GetCurrencyListSize = function() return 2 end,
 	GetCurrencyListInfo = function(i)
