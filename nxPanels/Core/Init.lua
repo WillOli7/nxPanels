@@ -72,11 +72,13 @@ end
 local eventFrame = CreateFrame("Frame")
 local handlers = {}
 
+-- An error in one handler is reported without stopping the next ones
 eventFrame:SetScript("OnEvent", function(_, event, ...)
 	local list = handlers[event]
 	if not list then return end
 	for i = 1, #list do
-		list[i](event, ...)
+		local ok, err = pcall(list[i], event, ...)
+		if not ok then geterrorhandler()(err) end
 	end
 end)
 

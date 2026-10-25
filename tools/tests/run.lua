@@ -417,6 +417,18 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 	M.ticker.fn()
 	check(M.ticker.cancelled and not ns.Layouts.waiting[waitingId], "retry timer stopped once nothing waits")
 
+	-- An error in one event handler does not stop the next ones
+	do
+		local errors, ran = {}, false
+		local handler = geterrorhandler
+		geterrorhandler = function() return function(e) errors[#errors + 1] = e end end
+		ns:RegisterEvent("PLAYER_LEVEL_UP", function() error("first handler") end)
+		ns:RegisterEvent("PLAYER_LEVEL_UP", function() ran = true end)
+		local ok = pcall(M.Fire, "PLAYER_LEVEL_UP")
+		geterrorhandler = handler
+		check(ok and ran and #errors == 1 and errors[1]:find("first handler"), "event handler error reported, next handlers run")
+	end
+
 	-- Scripts wait for their dependency
 	local s = frameOf(main, "Scripted")
 	check(s.level == 0, "negative frame level clamped")
