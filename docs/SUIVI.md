@@ -128,8 +128,8 @@ Invariants à garder :
 | 14 | Modèles | ✅ | — |
 | 15 | Export / import d'un panneau | ✅ | — |
 | 17-18 | Icônes du jeu, monnaies, polices des listes | ✅ | — |
-| 19 | `{gold}` en icônes or / argent / cuivre, à la taille du texte (`feature/api-audit`) ; avant : `/dump GetCoinTextureString` sur Retail (`nil` attendu) | ⏳ | ⏳ (TBC Anniversary aussi) |
-| 20 | Layout par spécialisation via `C_SpecializationInfo` (`feature/api-audit`) | ⏳ | ⏳ talents principaux / secondaires (TBC Anniversary aussi) |
+| 19 | `{gold}` en icônes or / argent / cuivre, à la taille du texte (correctif de l'audit) | ✅ 2026-10-25 | ⏳ (TBC Anniversary ✅ 2026-10-25) |
+| 20 | Spécialisation lue via `C_SpecializationInfo` (`{spec}` = « Maître brasseur ») | ✅ 2026-10-25 | ⏳ talents principaux / secondaires (TBC Anniversary : « Talents principaux » ✅) |
 
 Reste à tester : layout par spécialisation sur Forever (talents principaux / secondaires) quand le personnage aura les talents ; points 19 et 20 sur les trois clients (détails section 7 ter).
 
@@ -202,7 +202,7 @@ Tests : mock sans les noms globaux (`GetSpecializationInfo` seulement dans `C_Sp
 - **Forever** (dès la réouverture du 5 novembre) : mêmes points pour `{gold}` ; layout par groupe de talents (principal / secondaire) ; `/reload`.
 - **TBC Anniversary** : `{gold}` toujours en icônes ; changement de groupe de talents ; `/reload`.
 
-Reste à faire : tests en jeu ci-dessus, puis commit, push et PR (avec l'accord du mainteneur).
+Résultat (2026-10-25, captures du mainteneur) : Retail ✅ (`{gold}` = « 257475 or 79 argent 49 cuivre » en icônes, `{spec}` = « Maître brasseur », pas d'erreur) ; TBC Anniversary ✅ (`{gold}` en icônes, « Talents principaux ») ; Forever ⏳ 5 novembre. Fusion dans `main` validée par le mainteneur ; la publication 1.1.2 attend le test Forever.
 
 ## 7 quater. Outils de développement (2026-10-25, branche `feature/dev-tooling`)
 
