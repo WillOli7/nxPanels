@@ -5,18 +5,31 @@
 local scenario = arg[1] or "migrate"
 local M = dofile("tools/tests/wowmock.lua")
 
--- WoW's string.format supports positional arguments (%2$s), LuaJIT's does not
+-- WoW's string.format supports positional arguments (%2$s), LuaJIT's does not.
+-- Like Lua 5.1 (and unlike LuaJIT), %s refuses nil and other non-string values.
 do
 	local rawformat = string.format
+	local function strict(fmt, ...)
+		local i = 0
+		for spec in (fmt:gsub("%%%%", "")):gmatch("%%[%-%+ #0]*%d*%.?%d*(%a)") do
+			i = i + 1
+			local v = select(i, ...)
+			if spec == "s" and type(v) ~= "string" and type(v) ~= "number" then
+				error(("bad argument #%d to 'format' (string expected, got %s)"):format(i + 1, type(v)), 3)
+			end
+		end
+		return rawformat(fmt, ...)
+	end
 	string.format = function(fmt, ...)
 		if type(fmt) == "string" and fmt:find("%%%d+%$") then
 			local args, order = { ... }, {}
 			fmt = fmt:gsub("%%(%d+)%$", function(n) order[#order + 1] = tonumber(n) return "%" end)
 			local ordered = {}
 			for i, n in ipairs(order) do ordered[i] = args[n] end
-			return rawformat(fmt, unpack(ordered, 1, #order))
+			return strict(fmt, unpack(ordered, 1, #order))
 		end
-		return rawformat(fmt, ...)
+		if type(fmt) ~= "string" then return rawformat(fmt, ...) end
+		return strict(fmt, ...)
 	end
 	getmetatable("").__index.format = string.format
 end
@@ -359,6 +372,13 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 	local bar = frameOf(main, "Bottom Bar")
 	check(bar and bar.shown and bar.w == 1920 and bar.h == 32, "percent width, string height")
 	check(bar.points[1][5] == -520, "string offset converted")
+	-- A size in % is a share of the parent on screen, whatever the scale of the panel
+	local barId = select(2, frameOf(main, "Bottom Bar"))
+	main.panels[barId].scale = 2
+	ns.Layouts:PanelChanged(barId, "look")
+	check(bar.w == 960 and bar.scale == 2, "percent width with a scale: same width on screen")
+	main.panels[barId].scale = 1
+	ns.Layouts:PanelChanged(barId, "look")
 	check(not bar.border.textures.TOP.shown, "translated 'None' border = no border")
 
 	local chat = frameOf(main, "Chat BG")
@@ -381,6 +401,52 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 	M.ticker.fn()
 	check(waiting.shown and waiting.parent == target and not ns.Layouts.waiting[waitingId], "panel shown once its frame exists")
 	check(M.ticker.cancelled, "retry timer stopped")
+	-- After its last try the retry timer can start again: a panel can wait later on
+	local waitingPanel = main.panels[waitingId]
+	local waitingParent = waitingPanel.parent
+	waitingPanel.parent = "LaterAddonFrame"
+	ns.Layouts:PanelChanged(waitingId, "anchors")
+	local retry = M.ticker
+	check(not retry.cancelled and ns.Layouts.waiting[waitingId], "retry timer started for a panel waiting later on")
+	for _ = 1, 60 do retry.fn() end
+	check(retry.cancelled, "retry timer stopped after its last try")
+	ns.Layouts:PanelChanged(waitingId, "anchors")
+	check(M.ticker ~= retry and not M.ticker.cancelled, "retry timer started again after its last try")
+	waitingPanel.parent = waitingParent
+	ns.Layouts:PanelChanged(waitingId, "anchors")
+	M.ticker.fn()
+	check(M.ticker.cancelled and not ns.Layouts.waiting[waitingId], "retry timer stopped once nothing waits")
+
+	-- A legacy anchor written like a reference of ours is converted without error
+	do
+		local g = { layouts = {}, media = { background = {}, border = {} }, nextId = 1 }
+		local ok, layouts = pcall(I.Convert.Layouts, { layouts = { T = { A = { anchor = "panel:zz", parent = "panel:zz" } } } }, g)
+		local _, converted = next(g.layouts)
+		local _, panel = next(converted and converted.panels or {})
+		check(ok and layouts == 1 and panel and panel.anchor.relativeTo == "panel:zz", "legacy 'panel:' anchor converted without error")
+		-- Direction of the legacy tiling: "horizontal only" wins, like in kgPanels
+		local function direction(old)
+			local out = { layouts = {}, media = { background = {}, border = {} }, nextId = 1 }
+			I.Convert.Layouts({ layouts = { T = { A = old } } }, out)
+			local _, l = next(out.layouts)
+			local _, p = next(l.panels)
+			return p.background.tileDirection
+		end
+		check(direction({ tiling = true, vert_tile = true }) == "VERTICAL" and direction({ tiling = true, vert_tile = true, horz_tile = true }) == "HORIZONTAL"
+			and direction({ tiling = true }) == "BOTH", "legacy tiling direction imported")
+	end
+
+	-- An error in one event handler does not stop the next ones
+	do
+		local errors, ran = {}, false
+		local handler = geterrorhandler
+		geterrorhandler = function() return function(e) errors[#errors + 1] = e end end
+		ns:RegisterEvent("PLAYER_LEVEL_UP", function() error("first handler") end)
+		ns:RegisterEvent("PLAYER_LEVEL_UP", function() ran = true end)
+		local ok = pcall(M.Fire, "PLAYER_LEVEL_UP")
+		geterrorhandler = handler
+		check(ok and ran and #errors == 1 and errors[1]:find("first handler"), "event handler error reported, next handlers run")
+	end
 
 	-- Scripts wait for their dependency
 	local s = frameOf(main, "Scripted")
@@ -429,9 +495,37 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 	tiled.bg.w, tiled.bg.h = 192, 92
 	tiled.sizer.scripts.OnSizeChanged(tiled.sizer)
 	check(tiled.bg.wrapH == "REPEAT" and tiled.bg.texCoord[2] == 6, "tiled background")
+	-- A tiled background follows the style and opacity like the others
+	do
+		local tiledId = select(2, frameOf(second, "Tiled"))
+		local tbg = second.panels[tiledId].background
+		local style, color, alpha = tbg.style, tbg.color, tbg.alpha
+		tbg.style = "NONE"
+		ns.Layouts:PanelChanged(tiledId, "look")
+		check(deepEqual(tiled.bg.vertexColor, { 1, 1, 1, 1 }) and tiled.bg.wrapH == "REPEAT", "tiled background without tint")
+		tbg.style, tbg.color, tbg.alpha = "SOLID", { r = 1, g = 0, b = 0, a = 0.9 }, 0.5
+		ns.Layouts:PanelChanged(tiledId, "look")
+		check(tiled.bg.vertexColor[4] == 0.5, "tiled background: color alpha limited by the opacity")
+		tbg.style = "GRADIENT"
+		ns.Layouts:PanelChanged(tiledId, "look")
+		check(tiled.bg.gradient ~= nil and tiled.bg.wrapH == "REPEAT", "tiled background with a gradient")
+		-- Repeated in one direction only, stretched in the other one
+		tbg.style, tbg.tileDirection = "SOLID", "HORIZONTAL"
+		ns.Layouts:PanelChanged(tiledId, "look")
+		tiled.bg.w, tiled.bg.h = 192, 92
+		tiled.sizer.scripts.OnSizeChanged(tiled.sizer)
+		check(tiled.bg.wrapH == "REPEAT" and tiled.bg.wrapV == "CLAMP" and deepEqual(tiled.bg.texCoord, { 0, 6, 0, 1 }), "tiled horizontally only")
+		local tileSize = tbg.tileSize
+		tbg.tileDirection, tbg.tileSize = "VERTICAL", 0
+		ns.Layouts:PanelChanged(tiledId, "look")
+		check(tiled.bg.wrapH == "CLAMP" and tiled.bg.hTile == false and tiled.bg.vTile == true, "tiled vertically only, texture size")
+		tbg.style, tbg.color, tbg.alpha, tbg.tileDirection, tbg.tileSize = style, color, alpha, "BOTH", tileSize
+		ns.Layouts:PanelChanged(tiledId, "look")
+	end
 
 	-- Commands
-	for _, cmd in ipairs({ "", "layouts", "status", "toggle", "toggle", "minimap", "config", "layout nope" }) do
+	-- "layout" with the panels switched off: no layout shown, the name comes from the data
+	for _, cmd in ipairs({ "", "layouts", "status", "toggle", "toggle", "minimap", "config", "layout nope", "off", "layout second", "on" }) do
 		local ok, err = pcall(SlashCmdList.NXPANELS, cmd)
 		check(ok, "command '" .. cmd .. "': " .. tostring(err))
 	end
@@ -465,6 +559,32 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 	check(copy and copy.name == "Copy" and chatPanel.anchor.relativeTo == "panel:" .. barId, "imported copy keeps its anchors")
 	local bad, err = ns.Share:Decode("hello")
 	check(not bad and err == L["IMPORT_INVALID"], "invalid string rejected")
+	-- Damaged or forged string: wrong types are dropped before anything uses them
+	do
+		local LD = LibStub("LibDeflate")
+		local forged = "!NXP1!" .. LD:EncodeForPrint(LD:CompressDeflate(LibStub("LibSerialize"):Serialize({
+			kind = "layout", schema = 3,
+			layout = { name = 42, folders = { "Ok", 7 }, panels = {
+				P1 = "not a panel",
+				P2 = { name = 5, anchor = "bad", width = "120", height = {}, mouse = "yes", folder = {},
+					background = { color = 3, texture = false, texCoord = { 1, 2 } }, border = { texture = 9 },
+					text = { value = {}, font = {} }, display = "hidden", scripts = { LOAD = 7, SHOW = "x = 1" } },
+			} },
+			media = { background = { Art = {}, Ok = "Interface\\AddOns\\A\\ok.tga" }, border = "bad" },
+		}), { level = 9 }))
+		local forgedDecoded = ns.Share:Decode(forged)
+		check(forgedDecoded and forgedDecoded.count == 1 and forgedDecoded.scripted[1] == "5", "forged string decoded, wrong values left out")
+		local ok, forgedId = pcall(ns.Share.Import, ns.Share, forgedDecoded, "Forged")
+		local forgedLayout = ok and ns.Database:GetLayout(forgedId)
+		local _, p2 = ns.Database:FindPanel(forgedLayout, "5")
+		check(p2 and p2.width == 120 and p2.height == 100 and p2.anchor.point == "CENTER" and p2.mouse == false
+			and p2.background.color.r == 0.3 and p2.background.texture == false and p2.background.texCoord == nil
+			and p2.border.texture == "Blizzard Tooltip" and p2.text.value == "" and p2.text.font == nil
+			and p2.display.combat == "ANY" and p2.scripts.LOAD == nil and p2.folder == nil, "forged string imported with defaults: " .. tostring(forgedId))
+		check(ok and #forgedLayout.folders == 1 and db.global.media.background.Art == nil, "forged folders and media left out")
+		ns.Database:DeleteLayout(forgedId)
+		db.global.media.background.Ok = nil
+	end
 	local legacyString = LibStub("AceSerializer-3.0"):Serialize(fixture().global.layouts["Second"])
 	local old = ns.Share:Decode(legacyString)
 	check(old and old.count == 2 and old.format == L["FORMAT_LEGACY"], "old kgPanels string decoded by the import module")
@@ -572,6 +692,18 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 	recycled.done = true
 	ns.Panel:Release(recycled)
 	check(recycled.done == nil and recycled.bg and recycled.sizer and recycled.border, "script values cleared when a frame is recycled")
+	-- Textures and frames created by the scripts must not show on another panel
+	local withTexture = ns.Panel:Acquire("PY")
+	check(withTexture == recycled, "frame without script parts recycled")
+	withTexture.icon = withTexture:CreateTexture()
+	ns.Panel:Release(withTexture)
+	local other = ns.Panel:Acquire("PZ")
+	check(other ~= withTexture, "frame with a texture of its scripts not recycled")
+	CreateFrame("Frame", nil, other)
+	ns.Panel:Release(other)
+	local another = ns.Panel:Acquire("PV")
+	check(another ~= other, "frame with a child frame of its scripts not recycled")
+	ns.Panel:Release(another)
 
 	-- Script check, panel export, media packs
 	local scriptErr = ns.Scripts:Check("LOAD", "local x =")
@@ -720,7 +852,22 @@ elseif scenario == "options" then
 	setSlider(findRow(general, L["OFFSET_X"]), 2500)
 	check(chatPanel.anchor.x == 2500, "offset accepts values outside the slider range")
 	check(choose(findRow(general, L["WIDTH_UNIT"]), "%") and chatPanel.widthUnit == "%", "unit dropdown")
+	-- The unit change keeps the size on screen: 321 px of 1920 = 16.72 %
+	check(chatPanel.width == 16.72 and math.abs(chat.w - 321) < 0.5, "px to %: same size on screen")
+	-- The decimals are shown and kept: validating the box does not round the size
+	local widthRow = findRow(general, L["WIDTH"])
+	check(widthRow.valueBox.edit:GetText() == "16.72", "size in % shown with its decimals")
+	setSlider(widthRow, widthRow.valueBox.edit:GetText())
+	check(chatPanel.width == 16.72, "size in % kept when the box is validated")
 	choose(findRow(general, L["WIDTH_UNIT"]), "px")
+	check(chatPanel.width == 321, "% to px: same size on screen")
+	chatPanel.scale = 2
+	choose(findRow(general, L["HEIGHT_UNIT"]), "%")
+	local percentHeight = chatPanel.height
+	choose(findRow(general, L["HEIGHT_UNIT"]), "px")
+	check(percentHeight > 0 and math.abs(chatPanel.height * 2 / 1080 * 100 - percentHeight) < 0.01, "unit change with a scale: same size on screen")
+	chatPanel.scale = 1
+	ns.Layouts:PanelChanged(chatId, "look")
 	choose(findRow(general, L["ANCHORED_TO"]), "__custom")
 	M.lastPopup.data.onAccept("MissingFrame")
 	check(chatPanel.anchor.relativeTo == "MissingFrame" and ns.Layouts.waiting[chatId] and not chat.shown, "anchored to a frame by name")
@@ -746,6 +893,35 @@ elseif scenario == "options" then
 	browse(bgRow, "Solid")
 	choose(findRow(editor.tabs.background.form, L["STYLE"]), "GRADIENT")
 	check(chat.bg.gradient ~= nil and findRow(editor.tabs.background.form, L["COLOR_END"]).shown, "gradient shows its second color")
+	-- Tiled: direction shown; rotation and flips, which do not apply, hidden
+	do
+		local bgForm = editor.tabs.background.form
+		local tab = P.tab
+		P.tab = "background"
+		local tileRow = findRow(bgForm, L["TILE"])
+		click(tileRow.switch)
+		check(chatPanel.background.tile and findRow(bgForm, L["TILE_DIRECTION"]).shown and not findRow(bgForm, L["ROTATION"]).shown
+			and not findRow(bgForm, L["FLIP_H"]).shown, "tiled: direction shown, rotation and flips hidden")
+		check(choose(findRow(bgForm, L["TILE_DIRECTION"]), "VERTICAL") and chatPanel.background.tileDirection == "VERTICAL" and chat.bg.wrapH == "CLAMP", "tile direction chosen")
+		click(tileRow.switch)
+		check(not chatPanel.background.tile and findRow(bgForm, L["ROTATION"]).shown and not findRow(bgForm, L["TILE_DIRECTION"]).shown, "not tiled: rotation shown again")
+		-- A Blizzard atlas cannot be repeated: no tiling options, an explanation instead
+		local texture = chatPanel.background.texture
+		chatPanel.background.texture, chatPanel.background.tile = "atlas:test-atlas", true
+		P:RefreshEditor()
+		local atlasNote
+		for _, r in ipairs(bgForm.rows) do
+			if r.text and r.text.textValue == L["TILE_ATLAS"] then atlasNote = r end
+		end
+		check(atlasNote and atlasNote.fixedHeight >= 56, "atlas explanation: room for two lines")
+		check(atlasNote and atlasNote.shown and not tileRow.shown and not findRow(bgForm, L["TILE_DIRECTION"]).shown
+			and findRow(bgForm, L["ROTATION"]).shown, "atlas: no tiling options, explanation shown, rotation kept")
+		chatPanel.background.texture, chatPanel.background.tile = texture, false
+		P:RefreshEditor()
+		check(tileRow.shown and not atlasNote.shown, "texture file: tiling option back")
+		chatPanel.background.tileDirection = "BOTH"
+		P.tab = tab
+	end
 	check(browse(findRow(editor.tabs.border.form, L["TEXTURE"]), false) and chatPanel.border.texture == false and not chat.border.textures.TOP.shown, "no border (false)")
 	local fontRow = findRow(editor.tabs.text.form, L["FONT"])
 	check(choose(fontRow, nil) and chatPanel.text.font == nil and chat.text.font[1] == STANDARD_TEXT_FONT, "language default font")
@@ -1096,6 +1272,13 @@ elseif scenario == "options" then
 	s.snapPanels = false
 	dragMover(m.handles[6], 1060, 1090)
 	check(test.width == 230 and test.anchor.x == 15, "resized by the right edge, centered panel follows")
+	-- In %, with a scale: the size follows the mouse on screen
+	test.widthUnit, test.width, test.scale = "%", 10, 2
+	ns.Layouts:PanelChanged(testId, "look")
+	dragMover(m.handles[6], 1060, 1090)
+	check(math.abs(test.width - 11.6) < 0.01, "resized in % with a scale: share of the parent on screen")
+	test.widthUnit, test.width, test.scale, test.anchor.x = "px", 230, 1, 15
+	ns.Layouts:PanelChanged(testId, "look")
 	ns.Layouts:ApplyActive()
 	check(EM.movers[testId] and EM.movers[testId].target == ns.Layouts.frames[testId], "movers rebuilt with the layout")
 	-- Several panels: Ctrl+click, alignment, moved together

@@ -396,6 +396,34 @@ local function colorGetSet(path, key, what)
 		function(c) path()[key] = { r = c.r, g = c.g, b = c.b, a = c.a } changed(what or "look") end
 end
 
+-- Changing the unit keeps the size on screen: 350 px become 18.2 % of a 1920 px
+-- parent, not 350 %. A size in % is a share of the parent on screen, a size in
+-- pixels is multiplied by the scale (see Panel:ApplyGeometry)
+local function setUnit(sizeKey, unitKey, getParentSize)
+	return function(unit)
+		local panel = P()
+		if panel[unitKey] == unit then return end
+		local parentSize = getParentSize()
+		local scale = panel.scale and panel.scale > 0 and panel.scale or 1
+		-- An unknown parent size (hidden parent): only the unit changes, never a division by 0
+		if parentSize and parentSize > 0 then
+			if unit == "%" then
+				panel[sizeKey] = math.floor(panel[sizeKey] * scale / parentSize * 10000 + 0.5) / 100
+			else
+				panel[sizeKey] = math.floor(parentSize * panel[sizeKey] / 100 / scale * 10 + 0.5) / 10
+			end
+		end
+		panel[unitKey] = unit
+		changed("look")
+	end
+end
+
+-- Size of the frame the selected panel is attached to (the screen when it is not shown)
+local function parentFrame()
+	local frame = core.Layouts.frames[Panels.selected]
+	return frame and frame:GetParent() or UIParent
+end
+
 local function buildGeneral(form)
 	form:Section(L["SECTION_PANEL"])
 	W.InputRow(form, L["NAME"], function() return P().name end, function(text)
@@ -411,14 +439,16 @@ local function buildGeneral(form)
 	form:Section(L["SECTION_SIZE"])
 	local units = { { value = "px", text = L["UNIT_PX"] }, { value = "%", text = L["UNIT_PERCENT"] } }
 	local function maxSize(key) return function() return P()[key] == "%" and 100 or 2000 end end
-	W.SliderRow(form, L["WIDTH"], 0, maxSize("widthUnit"), 1, function() return P().width end,
+	-- In %, 1 step is too coarse on a wide screen (more than 40 pixels at 4000): hundredths
+	local function sizeStep(key) return function() return P()[key] == "%" and 0.01 or 1 end end
+	W.SliderRow(form, L["WIDTH"], 0, maxSize("widthUnit"), sizeStep("widthUnit"), function() return P().width end,
 		function(v) P().width = v changed("look") end, { free = true })
 	W.DropdownRow(form, L["WIDTH_UNIT"], units, function() return P().widthUnit end,
-		function(v) P().widthUnit = v changed("look") end)
-	W.SliderRow(form, L["HEIGHT"], 0, maxSize("heightUnit"), 1, function() return P().height end,
+		setUnit("width", "widthUnit", function() return parentFrame():GetWidth() end))
+	W.SliderRow(form, L["HEIGHT"], 0, maxSize("heightUnit"), sizeStep("heightUnit"), function() return P().height end,
 		function(v) P().height = v changed("look") end, { free = true })
 	W.DropdownRow(form, L["HEIGHT_UNIT"], units, function() return P().heightUnit end,
-		function(v) P().heightUnit = v changed("look") end)
+		setUnit("height", "heightUnit", function() return parentFrame():GetHeight() end))
 	W.SliderRow(form, L["SCALE"], 0.1, 3, 0.01, function() return P().scale end,
 		function(v) P().scale = math.max(0.01, v) changed("look") end, { free = true })
 
@@ -484,18 +514,26 @@ local function buildBackground(form)
 		function() return bg().blend end, function(v) bg().blend = v changed("look") end)
 
 	form:Section(L["SECTION_TRANSFORM"])
-	local custom = function() return bg().texCoord ~= nil end
+	-- Rotation, flips and custom coordinates do not apply to a repeated texture: hidden.
+	-- A Blizzard atlas is a part of a bigger sheet: it is never repeated
+	local isAtlas = function() return type(bg().texture) == "string" and bg().texture:find("^atlas:") ~= nil end
+	local tiled = function() return bg().tile and not isAtlas() end
+	local notTiled = function() return not tiled() end
+	local custom = function() return bg().texCoord ~= nil and notTiled() end
 	W.SliderRow(form, L["ROTATION"], 0, 359, 1, function() return bg().rotation end,
-		function(v) bg().rotation = math.floor(v) % 360 changed("look") end).isShown = function() return not custom() end
+		function(v) bg().rotation = math.floor(v) % 360 changed("look") end).isShown = function() return not custom() and notTiled() end
 	W.ButtonsRow(form, { { text = L["RESET_COORDS"], width = 180, onClick = function()
 		bg().texCoord = nil
 		changed("look")
 	end } }, L["CUSTOM_COORDS"]).isShown = custom
-	W.ToggleRow(form, L["FLIP_H"], function() return bg().flipH end, function(v) bg().flipH = v changed("look") end)
-	W.ToggleRow(form, L["FLIP_V"], function() return bg().flipV end, function(v) bg().flipV = v changed("look") end)
-	W.ToggleRow(form, L["TILE"], function() return bg().tile end, function(v) bg().tile = v changed("look") end, L["TILE_DESC"])
+	W.ToggleRow(form, L["FLIP_H"], function() return bg().flipH end, function(v) bg().flipH = v changed("look") end).isShown = notTiled
+	W.ToggleRow(form, L["FLIP_V"], function() return bg().flipV end, function(v) bg().flipV = v changed("look") end).isShown = notTiled
+	W.ToggleRow(form, L["TILE"], function() return bg().tile end, function(v) bg().tile = v changed("look") end, L["TILE_DESC"]).isShown = function() return not isAtlas() end
+	W.TextRow(form, L["TILE_ATLAS"], 56).isShown = isAtlas
 	W.SliderRow(form, L["TILE_SIZE"], 0, 512, 1, function() return bg().tileSize end,
-		function(v) bg().tileSize = math.max(0, v) changed("look") end, { free = true }).isShown = function() return bg().tile end
+		function(v) bg().tileSize = math.max(0, v) changed("look") end, { free = true }).isShown = tiled
+	W.DropdownRow(form, L["TILE_DIRECTION"], Options:Choices({ "BOTH", "HORIZONTAL", "VERTICAL" }, "TILE_DIR_"),
+		function() return bg().tileDirection end, function(v) bg().tileDirection = v changed("look") end).isShown = tiled
 	W.SliderRow(form, L["SUBLEVEL"], -8, 7, 1, function() return bg().subLevel end,
 		function(v) bg().subLevel = math.floor(v) changed("look") end)
 
@@ -714,7 +752,7 @@ local function buildScripts(form)
 			changed("scripts")
 		end
 	end, { width = 200 })
-	W.TextRow(form, L["SCRIPT_DEPENDENCY_DESC"], 40)
+	W.TextRow(form, L["SCRIPT_DEPENDENCY_DESC"], 56)
 end
 
 local function buildDisplay(form)

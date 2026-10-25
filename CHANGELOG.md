@@ -2,6 +2,26 @@
 
 All notable changes to nxPanels. Versions follow [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+New:
+- Text variables `{specicon}` (icon of the specialization or of the main talent tree) and `{talents}` (name of the active talents).
+- **Repeat direction** of a tiled background: both directions, horizontally only or vertically only (the kgPanels option, now imported).
+
+Changed:
+- A size in % is a share of the parent on screen, whatever the scale of the panel (the scale used to apply on top of it). Panels with a size in % and a scale other than 1 change size.
+- A tiled background follows the style (no tint, solid, gradient) and the opacity, like any other background. Rotation and flips, which do not apply to a repeated texture, are hidden while tiling.
+
+Fixed:
+- Retail: layouts per specialization and the `{gold}` variable no longer depend on deprecated game functions.
+- A panel waiting for the frame it is attached to is still retried every second after the first minute.
+- Textures or frames created by a panel script no longer show on another panel after a layout change.
+- `/nxp layout <name>` no longer raises a Lua error while the panels are switched off.
+- A damaged import string no longer raises a Lua error nor leaves an empty layout.
+- Switching a size between pixels and % keeps the size on screen (350 px no longer become 350 %), and a size in % is edited with decimals.
+- With a Blizzard image (atlas), the tiling options are hidden and explained: an atlas cannot be repeated.
+- An error in one part of the addon at startup no longer stops the others.
+
 ## 1.1.1 — 2026-10-23
 
 - Retail: compatible with patch 12.1.5 (interface 120105).

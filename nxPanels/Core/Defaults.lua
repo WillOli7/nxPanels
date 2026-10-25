@@ -1,7 +1,7 @@
 local _, ns = ...
 
 -- Data schema version of nxPanelsDB. Bump it and add a step in Database:Upgrade on changes.
-ns.SCHEMA = 3
+ns.SCHEMA = 4
 
 -- Every key here is neutral (never translated). Media are LibSharedMedia keys;
 -- false means "no texture", a nil font means "language default font".
@@ -35,6 +35,7 @@ ns.PanelDefaults = {
 		texCoord = nil,               -- { ULx, ULy, LLx, LLy, URx, URy, LRx, LRy }
 		tile = false,
 		tileSize = 0,
+		tileDirection = "BOTH",       -- BOTH, HORIZONTAL, VERTICAL: directions the texture repeats in
 		subLevel = 0,
 	},
 

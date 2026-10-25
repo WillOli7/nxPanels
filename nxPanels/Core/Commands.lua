@@ -31,8 +31,10 @@ function Commands:ListLayouts()
 end
 
 function Commands:Activate(key)
-	if ns.API.ActivateLayout(key) then
-		ns:Print(L["LAYOUT_ACTIVE"], (ns.API.GetActiveLayout()))
+	-- Name of the layout found: with the panels switched off, no layout is shown
+	local _, layout = ns.Database:FindLayout(key)
+	if layout and ns.API.ActivateLayout(key) then
+		ns:Print(L["LAYOUT_ACTIVE"], layout.name)
 	else
 		ns:Print(L["LAYOUT_NOT_FOUND"], key)
 	end

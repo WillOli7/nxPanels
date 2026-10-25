@@ -367,13 +367,16 @@ local function formatValue(value, step)
 	return tostring(math.floor(value + 0.5))
 end
 
--- min and max can be functions (range depending on another setting).
+-- min, max and step can be functions (range or precision depending on another setting).
 -- opts.free: the input box accepts values outside the slider range.
 function W.SliderRow(form, label, min, max, step, get, set, opts)
 	opts = opts or {}
 	local row = baseRow(label)
 	local function range()
 		return type(min) == "function" and min() or min, type(max) == "function" and max() or max
+	end
+	local function stepOf()
+		return type(step) == "function" and step() or step
 	end
 	local valueBox = W.EditBox(row, 52, 22)
 	valueBox:SetPoint("RIGHT", -PAD, 0)
@@ -384,8 +387,8 @@ function W.SliderRow(form, label, min, max, step, get, set, opts)
 	slider:SetOrientation("HORIZONTAL")
 	slider:SetSize(110, 16)
 	slider:SetPoint("RIGHT", valueBox, "LEFT", -10, 0)
-	-- The range is set by Refresh (it can depend on the edited panel)
-	slider:SetValueStep(step)
+	-- The range and the step are set by Refresh (they can depend on the edited panel)
+	slider:SetValueStep(type(step) == "number" and step or 1)
 	slider:SetObeyStepOnDrag(true)
 	local track = slider:CreateTexture(nil, "BACKGROUND")
 	track:SetTexture(T.WHITE)
@@ -407,7 +410,7 @@ function W.SliderRow(form, label, min, max, step, get, set, opts)
 
 	local updating = false
 	slider:SetScript("OnValueChanged", function(_, value, userInput)
-		valueBox.edit:SetText(formatValue(value, step))
+		valueBox.edit:SetText(formatValue(value, stepOf()))
 		if userInput and not updating then set(value) end
 	end)
 	-- opts.onRelease: called when the slider is released
@@ -430,10 +433,11 @@ function W.SliderRow(form, label, min, max, step, get, set, opts)
 	function row:Refresh()
 		updating = true
 		local lo, hi = range()
+		slider:SetValueStep(stepOf())
 		slider:SetMinMaxValues(lo, hi)
 		local v = get() or lo
 		slider:SetValue(math.min(hi, math.max(lo, v)))
-		valueBox.edit:SetText(formatValue(v, step))
+		valueBox.edit:SetText(formatValue(v, stepOf()))
 		updating = false
 	end
 	row.slider, row.valueBox = slider, valueBox

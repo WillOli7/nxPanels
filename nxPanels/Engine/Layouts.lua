@@ -126,15 +126,21 @@ function Layouts:RetryWaiting()
 	end
 end
 
+-- The tries are counted here: a ticker ended by its own count would stay in `ticker`
+-- and no panel could wait again before the next layout change
 function Layouts:StartRetry()
 	if ticker or not next(self.waiting) then return end
-	ticker = C_Timer.NewTicker(RETRY_INTERVAL, function()
+	local tries, own = 0, nil
+	own = C_Timer.NewTicker(RETRY_INTERVAL, function()
+		tries = tries + 1
 		self:RetryWaiting()
-		if not next(self.waiting) and ticker then
+		-- A script may have rebuilt the layout meanwhile (new ticker or none)
+		if ticker == own and (not next(self.waiting) or tries >= RETRY_COUNT) then
 			ticker:Cancel()
 			ticker = nil
 		end
-	end, RETRY_COUNT)
+	end)
+	ticker = own
 end
 
 function Layouts:OnAddonLoaded(addon)

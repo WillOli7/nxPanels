@@ -6,6 +6,12 @@ ns.Panel = Panel
 
 local pool = {}
 local ownKeys = setmetatable({}, { __mode = "k" })   -- [frame] = keys set by nxPanels
+local ownParts = setmetatable({}, { __mode = "k" })  -- [frame] = number of regions and child frames of nxPanels
+
+-- Textures, font strings and child frames of a frame
+local function partCount(frame)
+	return select("#", frame:GetRegions()) + select("#", frame:GetChildren())
+end
 
 ---------------------------------------------------------------------------
 -- Texture coordinates: rotation (cached per degree) and flips
@@ -67,9 +73,10 @@ function Panel:Acquire(panelId)
 		-- Keys of a new frame: everything else was added by the panel scripts
 		local keys = {}
 		for key in pairs(frame) do keys[key] = true end
-		keys.panelId, keys.tileSize, keys.textTemplate, keys.nxManaged = true, true, true, true
+		keys.panelId, keys.tileSize, keys.tileDirection, keys.textTemplate, keys.nxManaged = true, true, true, true, true
 		keys.nxShowPending, keys.nxShownBefore = true, true
 		ownKeys[frame] = keys
+		ownParts[frame] = partCount(frame)
 	end
 	frame.panelId = panelId
 	-- Shown once placed (then its scripts or display conditions decide)
@@ -90,7 +97,7 @@ function Panel:Release(frame)
 		_G["nxPanel_" .. frame.panelId] = nil
 	end
 	frame.panelId = nil
-	frame.tileSize = nil
+	frame.tileSize, frame.tileDirection = nil, nil
 	-- Values stored by the scripts (self.done = true...) must not follow the
 	-- frame to another panel
 	local keys = ownKeys[frame]
@@ -99,6 +106,14 @@ function Panel:Release(frame)
 			if not keys[key] then frame[key] = nil end
 		end
 	end
+	-- Widget settings the scripts often change
+	frame:SetMovable(false)
+	frame:RegisterForDrag()
+	frame:SetClampedToScreen(false)
+	frame.bg:SetDesaturated(false)
+	-- Textures or frames created by the scripts cannot be removed: such a frame is
+	-- left hidden instead of showing them on another panel
+	if partCount(frame) > (ownParts[frame] or 0) then return end
 	pool[#pool + 1] = frame
 end
 
@@ -111,8 +126,10 @@ function Panel:ApplyGeometry(frame, panel, parent, anchor)
 	local scale = panel.scale and panel.scale > 0 and panel.scale or 1
 	frame:SetScale(scale)
 
-	local width = panel.widthUnit == "%" and parent:GetWidth() * panel.width / 100 or panel.width
-	local height = panel.heightUnit == "%" and parent:GetHeight() * panel.height / 100 or panel.height
+	-- A size in % is a share of the parent on screen, whatever the scale of the panel
+	-- (kgPanels applied the scale on top of it); like the offsets, in parent units
+	local width = panel.widthUnit == "%" and parent:GetWidth() * panel.width / 100 / scale or panel.width
+	local height = panel.heightUnit == "%" and parent:GetHeight() * panel.height / 100 / scale or panel.height
 	frame:SetSize(math.max(width, 0), math.max(height, 0))
 
 	local a = panel.anchor
@@ -180,18 +197,17 @@ function Panel:ApplyBackground(frame, panel)
 	local r, g, b, a = ns.Colors:Get(bg.colorMode, bg.color)
 	local c2 = bg.color2
 	-- An atlas is a part of a bigger sheet: it cannot be repeated
-	if bg.tile and not atlasFile then
-		tex:SetTexture(path, "REPEAT", "REPEAT")
-		tex:SetVertexColor(r, g, b, a)
-		frame.tileSize = bg.tileSize
-		self:UpdateTiling(frame)
-		return
+	local tiled = bg.tile and not atlasFile
+	if tiled then
+		local direction = bg.tileDirection
+		tex:SetTexture(path, direction == "VERTICAL" and "CLAMP" or "REPEAT", direction == "HORIZONTAL" and "CLAMP" or "REPEAT")
+	else
+		tex:SetTexture(path)
+		tex:SetHorizTile(false)
+		tex:SetVertTile(false)
 	end
-
-	tex:SetTexture(path)
-	tex:SetHorizTile(false)
-	tex:SetVertTile(false)
-	-- The color alpha never exceeds the background opacity (legacy behavior)
+	-- Same tint repeated or not (kgPanels tinted a repeated background with the full
+	-- color whatever the style). The color alpha never exceeds the background opacity
 	if bg.style == "SOLID" then
 		tex:SetVertexColor(r, g, b, math.min(a, bg.alpha))
 	elseif bg.style == "GRADIENT" then
@@ -200,6 +216,11 @@ function Panel:ApplyBackground(frame, panel)
 			CreateColor(c2.r, c2.g, c2.b, math.min(c2.a, bg.alpha)))
 	else
 		tex:SetVertexColor(1, 1, 1, 1)
+	end
+	if tiled then
+		frame.tileSize, frame.tileDirection = bg.tileSize, bg.tileDirection
+		self:UpdateTiling(frame)
+		return
 	end
 	local c = texCoords(bg)
 	if atlasFile then
@@ -212,20 +233,22 @@ function Panel:ApplyBackground(frame, panel)
 	tex:SetTexCoord(unpack(c))
 end
 
--- Tiled backgrounds: fixed tile size, or the texture's own size when 0
+-- Tiled backgrounds: fixed tile size, or the texture's own size when 0. Repeated in
+-- both directions, or in one only (stretched in the other one)
 function Panel:UpdateTiling(frame)
 	local tileSize = frame.tileSize
 	if not tileSize then return end
 	local tex = frame.bg
+	local horizontal, vertical = frame.tileDirection ~= "VERTICAL", frame.tileDirection ~= "HORIZONTAL"
 	if tileSize > 0 then
 		tex:SetHorizTile(false)
 		tex:SetVertTile(false)
 		local width, height = tex:GetSize()
-		tex:SetTexCoord(0, width / tileSize, 0, height / tileSize)
+		tex:SetTexCoord(0, horizontal and width / tileSize or 1, 0, vertical and height / tileSize or 1)
 	else
 		tex:SetTexCoord(0, 1, 0, 1)
-		tex:SetHorizTile(true)
-		tex:SetVertTile(true)
+		tex:SetHorizTile(horizontal)
+		tex:SetVertTile(vertical)
 	end
 end
 
