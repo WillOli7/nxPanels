@@ -218,7 +218,7 @@ But : des contrôles automatiques, les mêmes sur le Mac, le PC et GitHub, et un
 | `CLAUDE.md` | Règles : fin de session = suivi + commit + push de la branche ; section « Two computers » (installation par machine) |
 
 Reste à faire :
-1. Après la fusion : vérifier que la publication marche toujours (construction de test « Run workflow » du workflow Release, sans envoi).
+1. ~~Vérifier la publication~~ ✅ 2026-10-25 : Tests verts sur GitHub (empreinte de lua-language-server OK, lint sans remarque, tous les scénarios) et construction de test du workflow Release sur la branche (run 40194588046 : zip construit, rien envoyé).
 2. Réglage GitHub à décider par le mainteneur : rendre le check « Tests » obligatoire pour fusionner dans `main` (ruleset).
 3. Mac : `brew install lua-language-server`.
 
