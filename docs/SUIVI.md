@@ -13,7 +13,7 @@ Dernière mise à jour : 2026-10-25
 | Élément | État |
 |---|---|
 | Version | **`1.1.1` publiée en release le 2026-10-23** (PR #20, tag `1.1.1`, compatibilité Retail 12.1.5 seulement : interface 120105, pas de fenêtre des nouveautés ; envoyée sur CurseForge pour Retail 12.0.0–12.1.5, TBC Anniversary 2.5.5 / 2.5.6 et Forever 1.60.1). Avant : `1.1.0` (2026-10-23, PR #18), `1.0.0` (2026-09-29) |
-| Branche de travail | `feature/api-audit` (2026-10-25, poussée, attend les tests en jeu, section 7 ter) puis **`feature/dev-tooling`** (partie de `feature/api-audit`, poussée : outils de contrôle, section 7 quater). Fusionner dans cet ordre |
+| Branche de travail | `feature/api-audit` fusionnée (PR #22, 2026-10-25) ; `feature/dev-tooling` (outils de contrôle, section 7 quater) en PR ; ensuite `feature/spec-icon` (variable `{specicon}`) |
 | Pull request | PR #1 à #20 fusionnées dans `main` (+ la PR de ce suivi) ; aucune autre ouverte |
 | `main` | = tag `1.1.1` + mises à jour du suivi |
 | Logo | ✅ 2026-09-28 (PR #4) : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7. Icône vérifiée en jeu (Retail et Forever) le 2026-09-29. Reste : image sociale à envoyer à la main (Settings → Social preview) |
