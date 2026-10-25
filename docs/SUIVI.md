@@ -14,7 +14,7 @@ Dernière mise à jour : 2026-10-25
 |---|---|
 | Version | **`1.1.1` publiée en release le 2026-10-23** (PR #20, tag `1.1.1`, compatibilité Retail 12.1.5 seulement : interface 120105, pas de fenêtre des nouveautés ; envoyée sur CurseForge pour Retail 12.0.0–12.1.5, TBC Anniversary 2.5.5 / 2.5.6 et Forever 1.60.1). Avant : `1.1.0` (2026-10-23, PR #18), `1.0.0` (2026-09-29) |
 | Branche de travail | aucune : `feature/api-audit` (PR #22) et `feature/dev-tooling` (PR #23) fusionnées le 2026-10-25 ; prochaine : `feature/spec-icon` (variable `{specicon}`) |
-| Pull request | PR #1 à #23 fusionnées dans `main` (+ la PR de ce suivi). Ouverte : **#24** (Dependabot, mise à jour de 2 actions GitHub), à fusionner si le check `offline-tests` est vert |
+| Pull request | PR #1 à #26 fusionnées dans `main` ; aucune ouverte. #24 (Dependabot, 2026-10-25) : `actions/checkout` v4 → v7 et `actions/upload-artifact` v4 → v7, vérifiées par une construction de test de la release (run 40201091009 : vert, zip produit) |
 | `main` | **en avance sur le tag `1.1.1`** : contient les correctifs de l'audit (PR #22, future **1.1.2**, pas encore publiée) et les outils de contrôle (PR #23). Ne pas présenter `main` comme la version publiée |
 | Logo | ✅ 2026-09-28 (PR #4) : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7. Icône vérifiée en jeu (Retail et Forever) le 2026-09-29. Reste : image sociale à envoyer à la main (Settings → Social preview) |
 | Installé sur Mac | Retail (`/Applications/World of Warcraft/_retail_`, compte DARKICE7, aucune donnée kgPanels : test de première installation) via `WOW_DIR="/Applications/World of Warcraft" bash tools/deploy.sh retail`. Forever pas encore lancé sur ce Mac. Test en jeu à faire |
@@ -178,7 +178,7 @@ Reste à faire :
 1. Forever : tests en jeu le 5 novembre (point 3).
 2. Import réel depuis TBC Anniversary : créer quelques panneaux avec kgPanels sur ce client, puis importer (le fichier peut aussi servir au scénario `real`).
 3. Surveiller les commentaires CurseForge (32 le 2026-10-23, un nouveau après les réponses) et les issues GitHub.
-4. Supprimer les branches distantes `release/1.1.0` et `release/1.1.1` (fusionnées).
+4. Supprimer les branches distantes fusionnées : `release/1.1.0`, `release/1.1.1`, `feature/suivi-etat`, `feature/suivi-dependabot` et la branche Dependabot de la #24 (bouton « Delete branch » de chaque PR ; les sessions Claude dans le cloud ne peuvent pas supprimer de branche).
 5. Version **1.1.2** (correctifs de l'audit, section 7 ter) : tests en jeu, commit sur `feature/api-audit`, PR vers `main`, `CHANGELOG.md` (« Retail: layouts per specialization and the {gold} variable no longer depend on deprecated game functions »), fenêtre des nouveautés (notes dans `News.NOTES` + clé `NEWS_1_1_2` dans les 10 langues, ou décider qu'une version de correction n'en a pas). Idéalement regroupée avec les correctifs des tests Forever du 5 novembre. Rien sur CurseForge avant les tests en jeu.
 6. Relecture des traductions par des joueurs natifs (toutes sauf le français).
 
