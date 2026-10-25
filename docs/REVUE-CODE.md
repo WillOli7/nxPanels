@@ -12,7 +12,7 @@ Périmètre : `nxPanels/`, `nxPanels_Options/`, `nxPanels_Import/` (sans `Libs/`
 6. **Mineur** : une chaîne d'import abîmée ou piégée peut provoquer une erreur Lua et laisser un layout à moitié créé (types non vérifiés).
 7. Quelques points mineurs ou d'amélioration (taille en % et échelle, événements sans protection, OnUpdate permanent, double validation des champs).
 8. Valeurs secrètes de Midnight : rien à corriger (seulement `"player"`, et `UnitCanAttack` / `UnitIsFriend` / `UnitExists` sans drapeau en 12.1.5).
-9. Revue non terminée : la partie « vérifier chaque point douteux par un test » reste à faire (voir « Suite »).
+9. Points 1 à 8 corrigés et vérifiés par des tests (section 6).
 
 ## 1. État des lieux automatique
 
@@ -68,6 +68,8 @@ Périmètre : `nxPanels/`, `nxPanels_Options/`, `nxPanels_Import/` (sans `Libs/`
 - `wowapi.py source 'function C_Timer.NewTicker'` ne trouve rien (fonction côté C) sans le dire : un message « défini côté C, voir `lookup` » aiderait.
 - `run-all.sh` ne lance pas le scénario `real` quand `.local/kgPanels_Reloaded.lua` existe : à ajouter (ou l'indiquer à la fin).
 
-## 6. Suite
+## 6. Corrections (2026-10-25)
 
-Revue arrêtée avant la fin (limite d'utilisation) : les points 1 à 8 sont tirés de la lecture du code, pas encore reproduits par un test. À l'étape 4 (après le feu vert), chaque correction commence par un test dans `tools/tests/run.lua` qui échoue.
+Les points 1 à 8 sont corrigés sur `feature/code-review`, un commit par point. Chaque point a sa vérification dans `tools/tests/run.lua`, qui échoue sans le correctif (vérifié en retirant le correctif). Les améliorations A1 à A7 ne sont pas faites. Tests en jeu : `docs/SUIVI.md` section 7 sexies.
+
+Remarque sur le point 3 : les tests ne voyaient pas l'erreur, car LuaJIT accepte `nil` pour `%s` alors que Lua 5.1 (le jeu) le refuse. Le `string.format` des tests est maintenant strict, comme Lua 5.1. À reporter dans le skill (mock ou conseil de test).

@@ -4,7 +4,7 @@ Document de reprise : l'état exact du projet, pour continuer dans une nouvelle 
 À lire avec `CLAUDE.md` (règles du projet) et `docs/ROADMAP.md` (idées et backlog).
 **Mettre ce fichier à jour à la fin de chaque session de travail.**
 
-Dernière mise à jour : 2026-10-25
+Dernière mise à jour : 2026-10-25 (revue du code)
 
 ---
 
@@ -13,7 +13,7 @@ Dernière mise à jour : 2026-10-25
 | Élément | État |
 |---|---|
 | Version | **`1.1.1` publiée en release le 2026-10-23** (PR #20, tag `1.1.1`, compatibilité Retail 12.1.5 seulement : interface 120105, pas de fenêtre des nouveautés ; envoyée sur CurseForge pour Retail 12.0.0–12.1.5, TBC Anniversary 2.5.5 / 2.5.6 et Forever 1.60.1). Avant : `1.1.0` (2026-10-23, PR #18), `1.0.0` (2026-09-29) |
-| Branche de travail | aucune : `feature/spec-icon` fusionnée (PR #27, 2026-10-25), après `feature/api-audit` (PR #22) et `feature/dev-tooling` (PR #23) |
+| Branche de travail | **`feature/code-review`** (revue du code et 8 correctifs, section 7 sexies, PR pas encore ouverte). Avant : `feature/spec-icon` fusionnée (PR #27, 2026-10-25) |
 | Pull request | PR #1 à #27 fusionnées dans `main` ; aucune ouverte. #24 (Dependabot, 2026-10-25) : `actions/checkout` v4 → v7 et `actions/upload-artifact` v4 → v7, vérifiées par une construction de test de la release (run 40201091009 : vert, zip produit) |
 | `main` | **en avance sur le tag `1.1.1`** : contient les correctifs de l'audit (PR #22, future **1.1.2**, pas encore publiée) et les outils de contrôle (PR #23). Ne pas présenter `main` comme la version publiée |
 | Logo | ✅ 2026-09-28 (PR #4) : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7. Icône vérifiée en jeu (Retail et Forever) le 2026-09-29. Reste : image sociale à envoyer à la main (Settings → Social preview) |
@@ -227,6 +227,31 @@ Reste à faire :
 Demandes du mainteneur : l'icône de la spécialisation, puis le nom des talents actifs. `Specs:CurrentTalents()` (nom et icône) : Retail = icône de la spé active (`C_SpecializationInfo.GetSpecializationInfo`, 4e valeur) ; WoW Forever et TBC Anniversary = icône de l'arbre de talents qui a le plus de points dans le groupe actif (même fonction, avec `groupIndex`, comme le module de compatibilité de Blizzard), rien sans points. Rendu `|T<icône>:0|t` (taille du texte), à combiner : `{specicon} {spec}`. `{talents}` = nom de l'arbre avec le plus de points (Retail : nom de la spé, comme `{spec}` ; sur Classic, `{spec}` reste le groupe « Talents principaux / secondaires »). Ajoutées à « Insérer une variable » (clés `VAR_SPECICON` et `VAR_TALENTS` dans les 10 langues). Tests : Retail, arbre avec le plus de points, aucun point.
 
 Tests en jeu : `{specicon}` ✅ Retail et TBC Anniversary (2026-10-25). `{talents}` fusionné sans test en jeu (même calcul que `{specicon}`, accord du mainteneur) : **à vérifier avec le test Forever du 5 novembre, avant la publication 1.1.2**, aussi sur TBC Anniversary et Retail.
+
+## 7 sexies. Revue du code (2026-10-25, branche `feature/code-review`)
+
+Rapport complet : `docs/REVUE-CODE.md` (vrais problèmes, faux positifs écartés, remarques sur les outils). Aucun problème critique ; migration et `kgPanelsDB` intacts. Un commit par correctif, chacun avec sa vérification dans `tools/tests/run.lua` (le test échoue sans le correctif) ; `run-all.sh` vert à chaque commit, `real` vert.
+
+| # | Correctif | Fichiers |
+|---|---|---|
+| 1 | Le minuteur des nouvelles tentatives (panneau qui attend sa frame) peut repartir après son 60e essai | `Engine/Layouts.lua` |
+| 2 | Un cadre où les scripts ont créé des textures ou des frames n'est plus réutilisé pour un autre panneau ; déplaçable / glisser / limité à l'écran / désaturation remis à zéro | `Render/Panel.lua` |
+| 3 | `/nxp layout <nom>` avec les panneaux désactivés : plus d'erreur Lua. Les tests refusent maintenant `nil` pour `%s`, comme Lua 5.1 | `Core/Commands.lua`, `tools/tests/run.lua` |
+| 4 | Chaîne d'import abîmée ou piégée : valeurs du mauvais type ignorées (valeurs par défaut), plus d'erreur ni de layout vide | `Core/Share.lua` |
+| 5 | Taille en % = part du parent à l'écran, quelle que soit l'échelle du panneau (aussi en mode édition). **Change l'affichage** des panneaux en % avec une échelle ≠ 1 (aucun dans les vraies données) | `Render/Panel.lua`, `EditMode/EditMode.lua` |
+| 6 | Une erreur dans un gestionnaire d'événement n'empêche plus les suivants | `Core/Init.lua` |
+| 7 | Import : ancienne ancre écrite `panel:...` sans erreur | `nxPanels_Import/Convert.lua` |
+| 8 | Fond répété : suit le style (sans teinte, dégradé) et l'opacité comme les autres. **Change l'affichage** des fonds répétés en style « aucun » ou « dégradé » (aucun dans les vraies données) | `Render/Panel.lua` |
+
+Tests en jeu à faire avant de fusionner (`/console scriptErrors 1` ou BugSack), sur Retail, Forever (dès le 5 novembre) et TBC Anniversary :
+1. `/reload` sans erreur ; `/nxp status`.
+2. Point 1 : panneau ancré à une frame qui n'existe pas encore (ex. `Autre frame…` → `DetailsBaseFrame1` avant d'ouvrir Details, ou un nom inventé), attendre plus d'une minute, changer son ancrage vers une autre frame absente puis la créer (ouvrir l'addon) : il doit apparaître dans la seconde.
+3. Point 2 : script `LOAD` `self.t = self:CreateTexture() self.t:SetAllPoints() self.t:SetColorTexture(1,0,0,0.5)` sur un panneau ; changer de layout puis revenir, ou changer de spé : aucun carré rouge sur un autre panneau, un seul sur le bon.
+4. Point 3 : `/nxp off`, `/nxp layout <nom>` (message sans erreur), `/nxp on`.
+5. Point 4 : importer une chaîne `!NXP1!` normale (exportée d'un layout) : identique à avant.
+6. Point 5 : panneau 100 % de largeur, échelle 0,5 puis 2 : toujours toute la largeur de l'écran ; le redimensionner en mode édition suit la souris.
+7. Point 8 : fond répété (« Répéter ») en style « Aucun », puis « Dégradé », puis opacité 0,5.
+8. Migration : scénarios `migrate`, `original`, `real` verts (fait le 2026-10-25) ; pas de test de mise à jour en jeu nécessaire (import inchangé sauf le point 7).
 
 ## 8. Reprendre le travail
 
