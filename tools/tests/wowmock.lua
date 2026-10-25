@@ -193,8 +193,16 @@ function Region:RegisterEvent(e)
 	self.events[e] = true
 end
 function Region:UnregisterAllEvents() self.events = {} end
-function Region:CreateTexture() local t = newRegion("Texture", self) return t end
-function Region:CreateFontString() local t = newRegion("FontString", self) return t end
+-- Regions and child frames are listed, like GetRegions / GetChildren
+local function addTo(list, parent, child)
+	parent[list] = parent[list] or {}
+	table.insert(parent[list], child)
+	return child
+end
+function Region:CreateTexture() return addTo("regions", self, newRegion("Texture", self)) end
+function Region:CreateFontString() return addTo("regions", self, newRegion("FontString", self)) end
+function Region:GetRegions() return unpack(self.regions or {}) end
+function Region:GetChildren() return unpack(self.children or {}) end
 function Region:SetScale(s) self.scale = s end
 function Region:GetScale() return self.scale end
 function Region:SetFrameStrata(s) self.strata = s end
@@ -248,6 +256,7 @@ end
 M.frames = {}
 function CreateFrame(kind, name, parent)
 	local f = newRegion(kind, parent)
+	if parent then addTo("children", parent, f) end
 	M.frames[#M.frames + 1] = f
 	if name then _G[name] = f f.name = name end
 	return f

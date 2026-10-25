@@ -587,6 +587,18 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 	recycled.done = true
 	ns.Panel:Release(recycled)
 	check(recycled.done == nil and recycled.bg and recycled.sizer and recycled.border, "script values cleared when a frame is recycled")
+	-- Textures and frames created by the scripts must not show on another panel
+	local withTexture = ns.Panel:Acquire("PY")
+	check(withTexture == recycled, "frame without script parts recycled")
+	withTexture.icon = withTexture:CreateTexture()
+	ns.Panel:Release(withTexture)
+	local other = ns.Panel:Acquire("PZ")
+	check(other ~= withTexture, "frame with a texture of its scripts not recycled")
+	CreateFrame("Frame", nil, other)
+	ns.Panel:Release(other)
+	local another = ns.Panel:Acquire("PV")
+	check(another ~= other, "frame with a child frame of its scripts not recycled")
+	ns.Panel:Release(another)
 
 	-- Script check, panel export, media packs
 	local scriptErr = ns.Scripts:Check("LOAD", "local x =")

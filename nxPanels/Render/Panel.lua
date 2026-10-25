@@ -6,6 +6,12 @@ ns.Panel = Panel
 
 local pool = {}
 local ownKeys = setmetatable({}, { __mode = "k" })   -- [frame] = keys set by nxPanels
+local ownParts = setmetatable({}, { __mode = "k" })  -- [frame] = number of regions and child frames of nxPanels
+
+-- Textures, font strings and child frames of a frame
+local function partCount(frame)
+	return select("#", frame:GetRegions()) + select("#", frame:GetChildren())
+end
 
 ---------------------------------------------------------------------------
 -- Texture coordinates: rotation (cached per degree) and flips
@@ -70,6 +76,7 @@ function Panel:Acquire(panelId)
 		keys.panelId, keys.tileSize, keys.textTemplate, keys.nxManaged = true, true, true, true
 		keys.nxShowPending, keys.nxShownBefore = true, true
 		ownKeys[frame] = keys
+		ownParts[frame] = partCount(frame)
 	end
 	frame.panelId = panelId
 	-- Shown once placed (then its scripts or display conditions decide)
@@ -99,6 +106,14 @@ function Panel:Release(frame)
 			if not keys[key] then frame[key] = nil end
 		end
 	end
+	-- Widget settings the scripts often change
+	frame:SetMovable(false)
+	frame:RegisterForDrag()
+	frame:SetClampedToScreen(false)
+	frame.bg:SetDesaturated(false)
+	-- Textures or frames created by the scripts cannot be removed: such a frame is
+	-- left hidden instead of showing them on another panel
+	if partCount(frame) > (ownParts[frame] or 0) then return end
 	pool[#pool + 1] = frame
 end
 
