@@ -424,6 +424,16 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 		local _, converted = next(g.layouts)
 		local _, panel = next(converted and converted.panels or {})
 		check(ok and layouts == 1 and panel and panel.anchor.relativeTo == "panel:zz", "legacy 'panel:' anchor converted without error")
+		-- Direction of the legacy tiling: "horizontal only" wins, like in kgPanels
+		local function direction(old)
+			local out = { layouts = {}, media = { background = {}, border = {} }, nextId = 1 }
+			I.Convert.Layouts({ layouts = { T = { A = old } } }, out)
+			local _, l = next(out.layouts)
+			local _, p = next(l.panels)
+			return p.background.tileDirection
+		end
+		check(direction({ tiling = true, vert_tile = true }) == "VERTICAL" and direction({ tiling = true, vert_tile = true, horz_tile = true }) == "HORIZONTAL"
+			and direction({ tiling = true }) == "BOTH", "legacy tiling direction imported")
 	end
 
 	-- An error in one event handler does not stop the next ones
@@ -499,7 +509,17 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 		tbg.style = "GRADIENT"
 		ns.Layouts:PanelChanged(tiledId, "look")
 		check(tiled.bg.gradient ~= nil and tiled.bg.wrapH == "REPEAT", "tiled background with a gradient")
-		tbg.style, tbg.color, tbg.alpha = style, color, alpha
+		-- Repeated in one direction only, stretched in the other one
+		tbg.style, tbg.tileDirection = "SOLID", "HORIZONTAL"
+		ns.Layouts:PanelChanged(tiledId, "look")
+		tiled.bg.w, tiled.bg.h = 192, 92
+		tiled.sizer.scripts.OnSizeChanged(tiled.sizer)
+		check(tiled.bg.wrapH == "REPEAT" and tiled.bg.wrapV == "CLAMP" and deepEqual(tiled.bg.texCoord, { 0, 6, 0, 1 }), "tiled horizontally only")
+		local tileSize = tbg.tileSize
+		tbg.tileDirection, tbg.tileSize = "VERTICAL", 0
+		ns.Layouts:PanelChanged(tiledId, "look")
+		check(tiled.bg.wrapH == "CLAMP" and tiled.bg.hTile == false and tiled.bg.vTile == true, "tiled vertically only, texture size")
+		tbg.style, tbg.color, tbg.alpha, tbg.tileDirection, tbg.tileSize = style, color, alpha, "BOTH", tileSize
 		ns.Layouts:PanelChanged(tiledId, "look")
 	end
 
@@ -858,6 +878,21 @@ elseif scenario == "options" then
 	browse(bgRow, "Solid")
 	choose(findRow(editor.tabs.background.form, L["STYLE"]), "GRADIENT")
 	check(chat.bg.gradient ~= nil and findRow(editor.tabs.background.form, L["COLOR_END"]).shown, "gradient shows its second color")
+	-- Tiled: direction shown; rotation and flips, which do not apply, hidden
+	do
+		local bgForm = editor.tabs.background.form
+		local tab = P.tab
+		P.tab = "background"
+		local tileRow = findRow(bgForm, L["TILE"])
+		click(tileRow.switch)
+		check(chatPanel.background.tile and findRow(bgForm, L["TILE_DIRECTION"]).shown and not findRow(bgForm, L["ROTATION"]).shown
+			and not findRow(bgForm, L["FLIP_H"]).shown, "tiled: direction shown, rotation and flips hidden")
+		check(choose(findRow(bgForm, L["TILE_DIRECTION"]), "VERTICAL") and chatPanel.background.tileDirection == "VERTICAL" and chat.bg.wrapH == "CLAMP", "tile direction chosen")
+		click(tileRow.switch)
+		check(not chatPanel.background.tile and findRow(bgForm, L["ROTATION"]).shown and not findRow(bgForm, L["TILE_DIRECTION"]).shown, "not tiled: rotation shown again")
+		chatPanel.background.tileDirection = "BOTH"
+		P.tab = tab
+	end
 	check(browse(findRow(editor.tabs.border.form, L["TEXTURE"]), false) and chatPanel.border.texture == false and not chat.border.textures.TOP.shown, "no border (false)")
 	local fontRow = findRow(editor.tabs.text.form, L["FONT"])
 	check(choose(fontRow, nil) and chatPanel.text.font == nil and chat.text.font[1] == STANDARD_TEXT_FONT, "language default font")

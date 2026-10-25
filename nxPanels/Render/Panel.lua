@@ -73,7 +73,7 @@ function Panel:Acquire(panelId)
 		-- Keys of a new frame: everything else was added by the panel scripts
 		local keys = {}
 		for key in pairs(frame) do keys[key] = true end
-		keys.panelId, keys.tileSize, keys.textTemplate, keys.nxManaged = true, true, true, true
+		keys.panelId, keys.tileSize, keys.tileDirection, keys.textTemplate, keys.nxManaged = true, true, true, true, true
 		keys.nxShowPending, keys.nxShownBefore = true, true
 		ownKeys[frame] = keys
 		ownParts[frame] = partCount(frame)
@@ -97,7 +97,7 @@ function Panel:Release(frame)
 		_G["nxPanel_" .. frame.panelId] = nil
 	end
 	frame.panelId = nil
-	frame.tileSize = nil
+	frame.tileSize, frame.tileDirection = nil, nil
 	-- Values stored by the scripts (self.done = true...) must not follow the
 	-- frame to another panel
 	local keys = ownKeys[frame]
@@ -199,7 +199,8 @@ function Panel:ApplyBackground(frame, panel)
 	-- An atlas is a part of a bigger sheet: it cannot be repeated
 	local tiled = bg.tile and not atlasFile
 	if tiled then
-		tex:SetTexture(path, "REPEAT", "REPEAT")
+		local direction = bg.tileDirection
+		tex:SetTexture(path, direction == "VERTICAL" and "CLAMP" or "REPEAT", direction == "HORIZONTAL" and "CLAMP" or "REPEAT")
 	else
 		tex:SetTexture(path)
 		tex:SetHorizTile(false)
@@ -217,7 +218,7 @@ function Panel:ApplyBackground(frame, panel)
 		tex:SetVertexColor(1, 1, 1, 1)
 	end
 	if tiled then
-		frame.tileSize = bg.tileSize
+		frame.tileSize, frame.tileDirection = bg.tileSize, bg.tileDirection
 		self:UpdateTiling(frame)
 		return
 	end
@@ -232,20 +233,22 @@ function Panel:ApplyBackground(frame, panel)
 	tex:SetTexCoord(unpack(c))
 end
 
--- Tiled backgrounds: fixed tile size, or the texture's own size when 0
+-- Tiled backgrounds: fixed tile size, or the texture's own size when 0. Repeated in
+-- both directions, or in one only (stretched in the other one)
 function Panel:UpdateTiling(frame)
 	local tileSize = frame.tileSize
 	if not tileSize then return end
 	local tex = frame.bg
+	local horizontal, vertical = frame.tileDirection ~= "VERTICAL", frame.tileDirection ~= "HORIZONTAL"
 	if tileSize > 0 then
 		tex:SetHorizTile(false)
 		tex:SetVertTile(false)
 		local width, height = tex:GetSize()
-		tex:SetTexCoord(0, width / tileSize, 0, height / tileSize)
+		tex:SetTexCoord(0, horizontal and width / tileSize or 1, 0, vertical and height / tileSize or 1)
 	else
 		tex:SetTexCoord(0, 1, 0, 1)
-		tex:SetHorizTile(true)
-		tex:SetVertTile(true)
+		tex:SetHorizTile(horizontal)
+		tex:SetVertTile(vertical)
 	end
 end
 

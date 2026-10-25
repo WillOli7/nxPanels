@@ -142,6 +142,8 @@ local function convertPanel(old, name, refToId, dependency)
 		texCoord = texCoord,
 		tile = bool(old.tiling),
 		tileSize = num(old.tileSize, 0),
+		-- Like the legacy addon: "horizontal only" wins when both were ticked
+		tileDirection = old.horz_tile == true and "HORIZONTAL" or old.vert_tile == true and "VERTICAL" or "BOTH",
 		subLevel = math.max(-8, math.min(7, num(old.sub_level, 0))),
 	}
 

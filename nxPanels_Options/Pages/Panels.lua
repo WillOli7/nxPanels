@@ -484,18 +484,23 @@ local function buildBackground(form)
 		function() return bg().blend end, function(v) bg().blend = v changed("look") end)
 
 	form:Section(L["SECTION_TRANSFORM"])
-	local custom = function() return bg().texCoord ~= nil end
+	-- Rotation, flips and custom coordinates do not apply to a repeated texture: hidden
+	local tiled = function() return bg().tile end
+	local notTiled = function() return not bg().tile end
+	local custom = function() return bg().texCoord ~= nil and not bg().tile end
 	W.SliderRow(form, L["ROTATION"], 0, 359, 1, function() return bg().rotation end,
-		function(v) bg().rotation = math.floor(v) % 360 changed("look") end).isShown = function() return not custom() end
+		function(v) bg().rotation = math.floor(v) % 360 changed("look") end).isShown = function() return not custom() and notTiled() end
 	W.ButtonsRow(form, { { text = L["RESET_COORDS"], width = 180, onClick = function()
 		bg().texCoord = nil
 		changed("look")
 	end } }, L["CUSTOM_COORDS"]).isShown = custom
-	W.ToggleRow(form, L["FLIP_H"], function() return bg().flipH end, function(v) bg().flipH = v changed("look") end)
-	W.ToggleRow(form, L["FLIP_V"], function() return bg().flipV end, function(v) bg().flipV = v changed("look") end)
+	W.ToggleRow(form, L["FLIP_H"], function() return bg().flipH end, function(v) bg().flipH = v changed("look") end).isShown = notTiled
+	W.ToggleRow(form, L["FLIP_V"], function() return bg().flipV end, function(v) bg().flipV = v changed("look") end).isShown = notTiled
 	W.ToggleRow(form, L["TILE"], function() return bg().tile end, function(v) bg().tile = v changed("look") end, L["TILE_DESC"])
 	W.SliderRow(form, L["TILE_SIZE"], 0, 512, 1, function() return bg().tileSize end,
-		function(v) bg().tileSize = math.max(0, v) changed("look") end, { free = true }).isShown = function() return bg().tile end
+		function(v) bg().tileSize = math.max(0, v) changed("look") end, { free = true }).isShown = tiled
+	W.DropdownRow(form, L["TILE_DIRECTION"], Options:Choices({ "BOTH", "HORIZONTAL", "VERTICAL" }, "TILE_DIR_"),
+		function() return bg().tileDirection end, function(v) bg().tileDirection = v changed("look") end).isShown = tiled
 	W.SliderRow(form, L["SUBLEVEL"], -8, 7, 1, function() return bg().subLevel end,
 		function(v) bg().subLevel = math.floor(v) changed("look") end)
 
