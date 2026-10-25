@@ -13,7 +13,7 @@ Dernière mise à jour : 2026-10-25
 | Élément | État |
 |---|---|
 | Version | **`1.1.1` publiée en release le 2026-10-23** (PR #20, tag `1.1.1`, compatibilité Retail 12.1.5 seulement : interface 120105, pas de fenêtre des nouveautés ; envoyée sur CurseForge pour Retail 12.0.0–12.1.5, TBC Anniversary 2.5.5 / 2.5.6 et Forever 1.60.1). Avant : `1.1.0` (2026-10-23, PR #18), `1.0.0` (2026-09-29) |
-| Branche de travail | `feature/api-audit` fusionnée (PR #22, 2026-10-25) ; `feature/dev-tooling` (outils de contrôle, section 7 quater) en PR ; ensuite `feature/spec-icon` (variable `{specicon}`) |
+| Branche de travail | **`feature/spec-icon`** (2026-10-25, poussée, attend le test en jeu) : variable `{specicon}`. Fusionnées le 2026-10-25 : `feature/api-audit` (PR #22), `feature/dev-tooling` (PR #23) |
 | Pull request | PR #1 à #20 fusionnées dans `main` (+ la PR de ce suivi) ; aucune autre ouverte |
 | `main` | = tag `1.1.1` + mises à jour du suivi |
 | Logo | ✅ 2026-09-28 (PR #4) : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7. Icône vérifiée en jeu (Retail et Forever) le 2026-09-29. Reste : image sociale à envoyer à la main (Settings → Social preview) |
@@ -179,7 +179,7 @@ Reste à faire :
 2. Import réel depuis TBC Anniversary : créer quelques panneaux avec kgPanels sur ce client, puis importer (le fichier peut aussi servir au scénario `real`).
 3. Surveiller les commentaires CurseForge (32 le 2026-10-23, un nouveau après les réponses) et les issues GitHub.
 4. Supprimer les branches distantes `release/1.1.0` et `release/1.1.1` (fusionnées).
-5. Version **1.1.2** (correctifs de l'audit, section 7 ter) : tests en jeu, commit sur `feature/api-audit`, PR vers `main`, `CHANGELOG.md` (« Retail: layouts per specialization and the {gold} variable no longer depend on deprecated game functions »), fenêtre des nouveautés (notes dans `News.NOTES` + clé `NEWS_1_1_2` dans les 10 langues, ou décider qu'une version de correction n'en a pas). Idéalement regroupée avec les correctifs des tests Forever du 5 novembre. Rien sur CurseForge avant les tests en jeu.
+5. Version **1.1.2** (correctifs de l'audit, section 7 ter, fusionnés ; nouvelle variable `{specicon}`, branche `feature/spec-icon`) : `CHANGELOG.md` (« Retail: layouts per specialization and the {gold} variable no longer depend on deprecated game functions »), fenêtre des nouveautés (notes dans `News.NOTES` + clé `NEWS_1_1_2` dans les 10 langues, ou décider qu'une version de correction n'en a pas). Idéalement regroupée avec les correctifs des tests Forever du 5 novembre. Rien sur CurseForge avant les tests en jeu.
 6. Relecture des traductions par des joueurs natifs (toutes sauf le français).
 
 ## 7 ter. Audit de l'API (2026-10-25, branche `feature/api-audit`)
@@ -221,6 +221,12 @@ Reste à faire :
 1. ~~Vérifier la publication~~ ✅ 2026-10-25 : Tests verts sur GitHub (empreinte de lua-language-server OK, lint sans remarque, tous les scénarios) et construction de test du workflow Release sur la branche (run 40194588046 : zip construit, rien envoyé).
 2. ~~Check « Tests » obligatoire~~ ✅ 2026-10-25 (accord du mainteneur) : ruleset « Protect main » = pas de suppression, pas de réécriture, PR obligatoire, et check `offline-tests` (workflow Tests) vert obligatoire pour fusionner. Pas de contournement possible.
 3. ~~Mac : `brew install lua-language-server`~~ ✅ 2026-10-25 (installé par le mainteneur). Plugin `wow` mis à jour sur le PC en `8665677` (correctif Windows, plus besoin de `PYTHONIOENCODING`) via `~/.local/bin/claude.exe plugin update wow@willoli7-skills`.
+
+## 7 quinquies. Variable `{specicon}` (2026-10-25, branche `feature/spec-icon`)
+
+Demande du mainteneur : afficher l'icône de la spécialisation. `Specs:CurrentIcon()` : Retail = icône de la spé active (`C_SpecializationInfo.GetSpecializationInfo`, 4e valeur) ; WoW Forever et TBC Anniversary = icône de l'arbre de talents qui a le plus de points dans le groupe actif (même fonction, avec `groupIndex`, comme le module de compatibilité de Blizzard), rien sans points. Rendu `|T<icône>:0|t` (taille du texte), à combiner : `{specicon} {spec}`. Ajoutée à « Insérer une variable » (clé `VAR_SPECICON` dans les 10 langues). Tests : icône Retail, arbre avec le plus de points, aucun point.
+
+À tester en jeu : Retail (icône de la spé, change avec la spé) ; TBC Anniversary (icône de l'arbre principal ; vérifier que le nombre d'arbres renvoyé par `GetNumSpecializationsForClassID` est bon, sinon 3 par défaut) ; Forever le 5 novembre.
 
 ## 8. Reprendre le travail
 

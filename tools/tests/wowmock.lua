@@ -25,7 +25,8 @@ C_SpecializationInfo = {
 	GetNumSpecializationsForClassID = function() return 3 end,
 	GetActiveSpecGroup = function() return M.specGroup end,
 	-- Only the C_ function: the deprecated global alias may disappear
-	GetSpecializationInfo = function(i) return 61 + i, "Spec" .. i end,
+	-- icon 1000 + i; points spent per talent tree in M.points (WoW Forever, TBC Anniversary)
+	GetSpecializationInfo = function(i) return 61 + i, "Spec" .. i, nil, 1000 + i, nil, nil, M.points and M.points[i] or 0 end,
 }
 function GetSpecializationInfoForClassID(_, i) return 61 + i, "Spec" .. i end
 function UnitRace() return "Humain", "Human" end

@@ -3,7 +3,7 @@ local L = ns.L
 
 --[[
 Variables in the text of a panel, replaced without any script:
-	{player} {realm} {class} {spec} {level} {guild} {ilvl}
+	{player} {realm} {class} {spec} {specicon} {level} {guild} {ilvl}
 	{zone} {subzone} {time} {date} {fps} {latency} {gold}
 	{currency:<id>} {item:<id>}   amount with its icon
 Unknown words between braces are left as they are. Texts using variables are
@@ -17,6 +17,10 @@ local VARS = {
 	realm = function() return GetRealmName() end,
 	class = function() return (UnitClass("player")) end,
 	spec = function() return ns.Specs:CurrentName() end,
+	specicon = function()
+		local file = ns.Specs:CurrentIcon()
+		return file and ("|T" .. file .. ":0|t")
+	end,
 	level = function() return UnitLevel("player") end,
 	guild = function() return GetGuildInfo("player") end,
 	ilvl = function()
@@ -43,7 +47,7 @@ local VARS = {
 		return math.floor(money / 10000) .. "g"
 	end,
 }
-TextVars.NAMES = { "player", "realm", "class", "spec", "level", "guild", "ilvl",
+TextVars.NAMES = { "player", "realm", "class", "spec", "specicon", "level", "guild", "ilvl",
 	"zone", "subzone", "time", "date", "fps", "latency", "gold" }
 
 local tracked = {}   -- [frame] = true: frames with variables in their text
