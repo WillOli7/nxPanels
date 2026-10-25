@@ -128,6 +128,7 @@ function Scripts:Check(hook, code)
 	if err then
 		-- An unfinished last line is reported on the line of the wrapper's "end"
 		local lines = select(2, code:gsub("\n", "")) + 1
+		---@diagnostic disable-next-line: param-type-mismatch -- %d+ always gives a number
 		err = err:gsub(":(%d+):", function(n) return ":" .. math.min(tonumber(n), lines) .. ":" end, 1)
 	end
 	return err

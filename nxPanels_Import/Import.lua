@@ -37,6 +37,7 @@ end
 
 -- Returns the legacy table and the name of its addon
 function Import:GetLegacyData()
+	---@diagnostic disable-next-line: undefined-field -- SavedVariables of the old addon
 	if isLoaded(ORIGINAL) and type(_G.kgPanelsDB) == "table" then
 		return _G.kgPanelsDB, ORIGINAL
 	end

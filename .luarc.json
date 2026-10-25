@@ -1,12 +1,17 @@
 {
 	"runtime.version": "Lua 5.1",
-	"workspace.library": [],
-	"workspace.ignoreDir": ["nxPanels/Libs", "tools/tests", ".git"],
-	"diagnostics.disable": ["lowercase-global"],
+	"workspace.library": ["~/.cache/wow-addon-dev/vscode-wow-api/Annotations"],
+	"workspace.ignoreDir": ["nxPanels/Libs", "tools", "docs", ".local", ".git"],
+	"workspace.checkThirdParty": false,
+	"diagnostics.disable": ["lowercase-global", "need-check-nil"],
 	"diagnostics.globals": [
 		"LibStub", "C_AddOns", "C_Timer", "GetBuildInfo", "WOW_PROJECT_ID", "WOW_PROJECT_MAINLINE",
 		"DEFAULT_CHAT_FRAME", "CreateFrame", "UIParent", "STANDARD_TEXT_FONT", "CreateColor", "wipe",
 		"strjoin", "tostringall", "StaticPopupDialogs", "StaticPopup_Show", "ReloadUI", "SlashCmdList",
-		"SLASH_NXPANELS1", "SLASH_NXPANELS2", "MenuUtil", "AddonCompartmentFrame", "time", "loadstring", "setfenv"
+		"SLASH_NXPANELS1", "SLASH_NXPANELS2", "MenuUtil", "AddonCompartmentFrame", "time", "loadstring", "setfenv",
+		"nxPanelsDB", "kgPanelsDB",
+		"Settings", "SettingsPanel", "UISpecialFrames", "RAID_CLASS_COLORS", "PixelUtil",
+		"ColorPickerFrame", "OpacitySliderFrame", "YES", "NO", "ACCEPT", "CANCEL", "CLOSE",
+		"TALENT_SPEC_PRIMARY", "TALENT_SPEC_SECONDARY", "GetActiveTalentGroup", "C_UIFileAsset"
 	]
 }

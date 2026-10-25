@@ -4,6 +4,8 @@
 *.xml text eol=lf
 *.md text eol=lf
 *.sh text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
 *.tga binary
 *.blp binary
 *.png binary
