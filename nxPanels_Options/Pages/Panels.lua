@@ -512,10 +512,12 @@ local function buildBackground(form)
 		function() return bg().blend end, function(v) bg().blend = v changed("look") end)
 
 	form:Section(L["SECTION_TRANSFORM"])
-	-- Rotation, flips and custom coordinates do not apply to a repeated texture: hidden
-	local tiled = function() return bg().tile end
-	local notTiled = function() return not bg().tile end
-	local custom = function() return bg().texCoord ~= nil and not bg().tile end
+	-- Rotation, flips and custom coordinates do not apply to a repeated texture: hidden.
+	-- A Blizzard atlas is a part of a bigger sheet: it is never repeated
+	local isAtlas = function() return type(bg().texture) == "string" and bg().texture:find("^atlas:") ~= nil end
+	local tiled = function() return bg().tile and not isAtlas() end
+	local notTiled = function() return not tiled() end
+	local custom = function() return bg().texCoord ~= nil and notTiled() end
 	W.SliderRow(form, L["ROTATION"], 0, 359, 1, function() return bg().rotation end,
 		function(v) bg().rotation = math.floor(v) % 360 changed("look") end).isShown = function() return not custom() and notTiled() end
 	W.ButtonsRow(form, { { text = L["RESET_COORDS"], width = 180, onClick = function()
@@ -524,7 +526,8 @@ local function buildBackground(form)
 	end } }, L["CUSTOM_COORDS"]).isShown = custom
 	W.ToggleRow(form, L["FLIP_H"], function() return bg().flipH end, function(v) bg().flipH = v changed("look") end).isShown = notTiled
 	W.ToggleRow(form, L["FLIP_V"], function() return bg().flipV end, function(v) bg().flipV = v changed("look") end).isShown = notTiled
-	W.ToggleRow(form, L["TILE"], function() return bg().tile end, function(v) bg().tile = v changed("look") end, L["TILE_DESC"])
+	W.ToggleRow(form, L["TILE"], function() return bg().tile end, function(v) bg().tile = v changed("look") end, L["TILE_DESC"]).isShown = function() return not isAtlas() end
+	W.TextRow(form, L["TILE_ATLAS"], 40).isShown = isAtlas
 	W.SliderRow(form, L["TILE_SIZE"], 0, 512, 1, function() return bg().tileSize end,
 		function(v) bg().tileSize = math.max(0, v) changed("look") end, { free = true }).isShown = tiled
 	W.DropdownRow(form, L["TILE_DIRECTION"], Options:Choices({ "BOTH", "HORIZONTAL", "VERTICAL" }, "TILE_DIR_"),

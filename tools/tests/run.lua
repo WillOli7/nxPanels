@@ -900,6 +900,19 @@ elseif scenario == "options" then
 		check(choose(findRow(bgForm, L["TILE_DIRECTION"]), "VERTICAL") and chatPanel.background.tileDirection == "VERTICAL" and chat.bg.wrapH == "CLAMP", "tile direction chosen")
 		click(tileRow.switch)
 		check(not chatPanel.background.tile and findRow(bgForm, L["ROTATION"]).shown and not findRow(bgForm, L["TILE_DIRECTION"]).shown, "not tiled: rotation shown again")
+		-- A Blizzard atlas cannot be repeated: no tiling options, an explanation instead
+		local texture = chatPanel.background.texture
+		chatPanel.background.texture, chatPanel.background.tile = "atlas:test-atlas", true
+		P:RefreshEditor()
+		local atlasNote
+		for _, r in ipairs(bgForm.rows) do
+			if r.text and r.text.textValue == L["TILE_ATLAS"] then atlasNote = r end
+		end
+		check(atlasNote and atlasNote.shown and not tileRow.shown and not findRow(bgForm, L["TILE_DIRECTION"]).shown
+			and findRow(bgForm, L["ROTATION"]).shown, "atlas: no tiling options, explanation shown, rotation kept")
+		chatPanel.background.texture, chatPanel.background.tile = texture, false
+		P:RefreshEditor()
+		check(tileRow.shown and not atlasNote.shown, "texture file: tiling option back")
 		chatPanel.background.tileDirection = "BOTH"
 		P.tab = tab
 	end
