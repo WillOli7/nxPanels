@@ -10,9 +10,9 @@ Périmètre : `nxPanels/`, `nxPanels_Options/`, `nxPanels_Import/` (sans `Libs/`
 4. **Important** : les textures, textes et frames créés par les scripts (`self:CreateTexture()`…) restent sur le cadre recyclé et apparaissent sur un autre panneau après un changement de layout.
 5. **Mineur** : `/nxp layout <nom>` avec les panneaux désactivés provoque une erreur Lua (`format` reçoit `nil`).
 6. **Mineur** : une chaîne d'import abîmée ou piégée peut provoquer une erreur Lua et laisser un layout à moitié créé (types non vérifiés).
-7. Quelques points mineurs ou d'amélioration (événements sans protection, OnUpdate permanent, double validation des champs). Les anciens points 5 et 8 (taille en % avec une échelle, fond répété) sont en fait le comportement de kgPanels : écartés.
+7. Quelques points mineurs ou d'amélioration (événements sans protection, OnUpdate permanent, double validation des champs). Les points 5 et 8 (taille en % avec une échelle, fond répété) sont le comportement de kgPanels : corrigés quand même, par choix du mainteneur (section 6).
 8. Valeurs secrètes de Midnight : rien à corriger (seulement `"player"`, et `UnitCanAttack` / `UnitIsFriend` / `UnitExists` sans drapeau en 12.1.5).
-9. Points 1, 2, 3, 4, 6 et 7 corrigés et vérifiés par des tests (section 6).
+9. Points 1 à 8 corrigés et vérifiés par des tests (section 6), plus une nouveauté : le sens de répétition des fonds.
 
 ## 1. État des lieux automatique
 
@@ -46,8 +46,8 @@ Périmètre : `nxPanels/`, `nxPanels_Options/`, `nxPanels_Import/` (sans `Libs/`
 
 ## 4. Faux positifs écartés
 
-- **Ancien point 5, taille en % avec une échelle** (`Render/Panel.lua`, `ApplyGeometry`) : kgPanels Reloaded fait pareil (`frame:SetWidth(pWidth * pct / 100)` puis `frame:SetScale(scale)`, `kgPanels_Reloaded.lua` l. 867-884 de la v0.4.0). Corrigé par erreur puis annulé : le changer décalerait les layouts importés. Un test fige ce rendu.
-- **Ancien point 8, fond répété** : kgPanels dessine un fond répété avec un backdrop teinté par la couleur entière (`SetBackdropColor(bg_color...)`, sans le style ni la limite d'opacité, l. 968-987). nxPanels fait la même chose. Corrigé par erreur puis annulé ; un test fige ce rendu.
+- **Point 5 (pas un faux positif au sens strict), taille en % avec une échelle** (`Render/Panel.lua`, `ApplyGeometry`) : kgPanels Reloaded fait pareil (`frame:SetWidth(pWidth * pct / 100)` puis `frame:SetScale(scale)`, `kgPanels_Reloaded.lua` l. 867-884 de la v0.4.0). D'abord annulé pour cette raison, puis corrigé par choix du mainteneur : le fonctionnement logique passe avant la copie de kgPanels (les layouts importés concernés changent de taille).
+- **Point 8 (idem), fond répété** : kgPanels dessine un fond répété avec un backdrop teinté par la couleur entière (`SetBackdropColor(bg_color...)`, sans le style ni la limite d'opacité, l. 968-987). nxPanels fait la même chose. D'abord annulé, puis corrigé par choix du mainteneur. Autres écarts déjà présents avant la revue pour les fonds répétés importés : kgPanels ignorait l'opacité et appliquait les marges avec des signes inversés ; nxPanels garde ses marges habituelles.
 
 - `UnitClass` / `UnitName` (audit, `SecretWhenUnitIdentityRestricted`) : appelés seulement sur `"player"`.
 - `UnitCanAttack`, `UnitIsFriend`, `UnitExists` sur `"target"` : aucun drapeau de restriction (12.1.5.70575).
@@ -71,6 +71,6 @@ Périmètre : `nxPanels/`, `nxPanels_Options/`, `nxPanels_Import/` (sans `Libs/`
 
 ## 6. Corrections (2026-10-25)
 
-Les points 1, 2, 3, 4, 6 et 7 sont corrigés sur `feature/code-review`, un commit par point. Les points 5 et 8 ont été corrigés puis annulés après comparaison avec le code de kgPanels Reloaded v0.4.0 (sauvegarde `AddOns-backup-kgPanels`) : c'était le rendu de kgPanels (voir section 4). Leçon : toute correction qui touche au rendu se compare d'abord au code de kgPanels. Chaque point a sa vérification dans `tools/tests/run.lua`, qui échoue sans le correctif (vérifié en retirant le correctif). Les améliorations A1 à A7 ne sont pas faites. Tests en jeu : `docs/SUIVI.md` section 7 sexies.
+Les points 1 à 8 sont corrigés sur `feature/code-review`, un commit par point. Les points 5 et 8 ont été annulés après comparaison avec le code de kgPanels Reloaded v0.4.0 (c'était son rendu), puis refaits par choix du mainteneur : le fonctionnement logique passe avant la copie de kgPanels, et on attend la réaction des joueurs. Nouveauté ajoutée au passage : le sens de répétition des fonds (option de kgPanels), schéma 4. Chaque point a sa vérification dans `tools/tests/run.lua`, qui échoue sans le correctif (vérifié en retirant le correctif). Les améliorations A1 à A7 ne sont pas faites. Tests en jeu : `docs/SUIVI.md` section 7 sexies.
 
 Remarque sur le point 3 : les tests ne voyaient pas l'erreur, car LuaJIT accepte `nil` pour `%s` alors que Lua 5.1 (le jeu) le refuse. Le `string.format` des tests est maintenant strict, comme Lua 5.1. À reporter dans le skill (mock ou conseil de test).
