@@ -1,6 +1,7 @@
 local _, O = ...
 local T = O.Theme
 local C = T.colors
+local L = O.L
 
 -- Controls of the options window. Row controls ("setting rows") share one API:
 -- row:Refresh() reads the value again, row.isShown() (optional) hides the row.
@@ -369,6 +370,8 @@ end
 
 -- min, max and step can be functions (range or precision depending on another setting).
 -- opts.free: the input box accepts values outside the slider range.
+-- opts.stepper: - and + buttons around the box, one step per click;
+-- opts.bigStep(): steps of a Shift+click (default 10)
 function W.SliderRow(form, label, min, max, step, get, set, opts)
 	opts = opts or {}
 	local row = baseRow(label)
@@ -379,14 +382,44 @@ function W.SliderRow(form, label, min, max, step, get, set, opts)
 		return type(step) == "function" and step() or step
 	end
 	local valueBox = W.EditBox(row, 52, 22)
-	valueBox:SetPoint("RIGHT", -PAD, 0)
 	valueBox.edit:SetJustifyH("CENTER")
 	valueBox.edit:SetTextInsets(2, 2, 0, 0)
+	local left = valueBox
+	if opts.stepper then
+		local function stepButton(text, sign, hint)
+			local b = W.Button(row, text, 20, "default", function()
+				local steps = IsShiftKeyDown() and (opts.bigStep and opts.bigStep() or 10) or 1
+				local v = (get() or 0) + sign * steps * stepOf()
+				local lo, hi = range()
+				if not opts.free then v = math.min(hi, math.max(lo, v)) end
+				set(v)
+				if opts.onRelease then opts.onRelease() end
+				row:Refresh()
+			end)
+			b:SetHeight(22)
+			b:HookScript("OnEnter", function(self)
+				GameTooltip:SetOwner(self, "ANCHOR_TOP")
+				GameTooltip:SetText(label, 1, 1, 1)
+				GameTooltip:AddLine(hint:format(opts.bigStep and opts.bigStep() or 10), nil, nil, nil, true)
+				GameTooltip:Show()
+			end)
+			b:HookScript("OnLeave", function() GameTooltip:Hide() end)
+			return b
+		end
+		row.plus = stepButton("+", 1, L["STEP_PLUS"])
+		row.plus:SetPoint("RIGHT", -PAD, 0)
+		valueBox:SetPoint("RIGHT", row.plus, "LEFT", -2, 0)
+		row.minus = stepButton("-", -1, L["STEP_MINUS"])
+		row.minus:SetPoint("RIGHT", valueBox, "LEFT", -2, 0)
+		left = row.minus
+	else
+		valueBox:SetPoint("RIGHT", -PAD, 0)
+	end
 
 	local slider = CreateFrame("Slider", nil, row)
 	slider:SetOrientation("HORIZONTAL")
-	slider:SetSize(110, 16)
-	slider:SetPoint("RIGHT", valueBox, "LEFT", -10, 0)
+	slider:SetSize(opts.stepper and 90 or 110, 16)
+	slider:SetPoint("RIGHT", left, "LEFT", -10, 0)
 	-- The range and the step are set by Refresh (they can depend on the edited panel)
 	slider:SetValueStep(type(step) == "number" and step or 1)
 	slider:SetObeyStepOnDrag(true)

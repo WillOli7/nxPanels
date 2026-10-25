@@ -498,10 +498,12 @@ local function buildGeneral(form)
 	frameRefRow(form, L["ANCHORED_TO"], "anchor")
 	W.DropdownRow(form, L["RELATIVE_POINT"], points, function() return P().anchor.relativePoint end,
 		function(v) P().anchor.relativePoint = v changed("look") end)
+	-- - and + move by 1 pixel, Shift+click by the big step of the edit mode
+	local offset = { free = true, stepper = true, bigStep = function() return core.db.global.editMode.bigStep end }
 	W.SliderRow(form, L["OFFSET_X"], -1500, 1500, 1, function() return P().anchor.x end,
-		function(v) P().anchor.x = v changed("geometry") end, { free = true })
+		function(v) P().anchor.x = v changed("geometry") end, offset)
 	W.SliderRow(form, L["OFFSET_Y"], -1000, 1000, 1, function() return P().anchor.y end,
-		function(v) P().anchor.y = v changed("geometry") end, { free = true })
+		function(v) P().anchor.y = v changed("geometry") end, offset)
 	frameRefRow(form, L["PARENT"], "parent")
 	local status = W.TextRow(form, "", 44)
 	status.text:SetTextColor(unpack(C.danger))

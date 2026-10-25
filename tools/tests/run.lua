@@ -915,6 +915,23 @@ elseif scenario == "options" then
 			and chat.points[1][2] == ns.Layouts.frames[barId] and anchorRow.statusColor == O.Theme.colors.success, "anchored back to a panel")
 		MissingFrame, RaidFrame2 = nil, nil
 	end
+	-- - and + next to X / Y: 1 pixel, Shift for the big step of the edit mode
+	do
+		local xRow, yRow = findRow(general, L["OFFSET_X"]), findRow(general, L["OFFSET_Y"])
+		local x, y = chatPanel.anchor.x, chatPanel.anchor.y
+		click(xRow.plus)
+		click(yRow.minus)
+		check(chatPanel.anchor.x == x + 1 and chatPanel.anchor.y == y - 1 and xRow.valueBox.edit:GetText() == tostring(x + 1), "- and + move by 1 pixel")
+		M.shift = true
+		click(xRow.minus)
+		M.shift = false
+		check(chatPanel.anchor.x == x + 1 - ns.db.global.editMode.bigStep, "Shift+click: big step")
+		chatPanel.anchor.x, chatPanel.anchor.y = x, y
+		ns.Layouts:PanelChanged(chatId, "geometry")
+		check(not findRow(general, L["WIDTH"]).plus, "no - and + on the other sliders")
+		xRow.plus.scripts.OnEnter(xRow.plus)
+		check(M.tooltip[1] == L["OFFSET_X"] and M.tooltip[2] == L["STEP_PLUS"]:format(ns.db.global.editMode.bigStep), "- and + tooltip")
+	end
 
 	-- Texture rows open the browser
 	local function browse(r, value)
@@ -1302,6 +1319,29 @@ elseif scenario == "options" then
 	M.shift = false
 	check(test.anchor.x == 1 and test.anchor.y == 10, "arrow keys, Shift for a bigger step")
 	test.anchor.x, test.anchor.y = 0, 0
+	-- Arrows of the toolbar: same steps, undone by Ctrl+Z, a texture of the game (no character)
+	do
+		local nudge = EM.frame.bar.nudge
+		check(nudge.shown and nudge.buttons.LEFT.icon.texture:find("ScrollUpButton", 1, true) and nudge.buttons.LEFT.label.textValue == ""
+			and #nudge.buttons.LEFT.icon.texCoord == 8, "arrow buttons shown with a game texture")
+		local function press(key) nudge.buttons[key].scripts.OnClick(nudge.buttons[key], "LeftButton") end
+		press("LEFT")
+		press("DOWN")
+		M.shift = true
+		press("RIGHT")
+		M.shift = false
+		check(test.anchor.x == 9 and test.anchor.y == -1, "arrow buttons: 1 pixel, Shift for the big step")
+		check(EM.frame.bar.undo.alpha == 1, "arrow buttons can be undone")
+		M.ctrl = true
+		for _ = 1, 3 do EM.frame.scripts.OnKeyDown(EM.frame, "Z") end
+		M.ctrl = false
+		check(test.anchor.x == 0 and test.anchor.y == 0, "arrow buttons undone by Ctrl+Z")
+		nudge.buttons.UP.scripts.OnEnter(nudge.buttons.UP)
+		check(M.tooltip and M.tooltip[1] == L["NUDGE_UP"] and M.tooltip[2] == L["NUDGE_HINT"]:format(s.bigStep), "arrow tooltip reminds the keys")
+		EM:Select(nil)
+		check(not nudge.shown, "no arrows without a selected panel")
+		EM:Select(testId)
+	end
 	s.snapPanels, s.snapGrid = true, false
 	local guide = dragMover(m, 1000, 1005)
 	check(test.anchor.x == 0 and guide, "snapped to the screen center, guide shown")

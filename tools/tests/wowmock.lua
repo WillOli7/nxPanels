@@ -278,6 +278,10 @@ function CreateFont(name)
 	return f
 end
 GameTooltip = newRegion("GameTooltip")
+-- Lines of the last tooltip shown: M.tooltip = { title, line, ... }
+function GameTooltip:SetOwner() M.tooltip = {} end
+function GameTooltip:SetText(text) M.tooltip = M.tooltip or {} M.tooltip[1] = text end
+function GameTooltip:AddLine(text) M.tooltip = M.tooltip or {} M.tooltip[#M.tooltip + 1] = text end
 UISpecialFrames = {}
 YES, NO, ACCEPT, CANCEL, CLOSE, DELETE = "Yes", "No", "Accept", "Cancel", "Close", "Delete"
 M.cursor = { 0, 0 }
