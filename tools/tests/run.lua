@@ -485,14 +485,20 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 	tiled.bg.w, tiled.bg.h = 192, 92
 	tiled.sizer.scripts.OnSizeChanged(tiled.sizer)
 	check(tiled.bg.wrapH == "REPEAT" and tiled.bg.texCoord[2] == 6, "tiled background")
-	-- Like the kgPanels backdrop: a tiled background takes the full color, whatever the style
+	-- A tiled background follows the style and opacity like the others
 	do
 		local tiledId = select(2, frameOf(second, "Tiled"))
 		local tbg = second.panels[tiledId].background
 		local style, color, alpha = tbg.style, tbg.color, tbg.alpha
-		tbg.style, tbg.color, tbg.alpha = "NONE", { r = 1, g = 0, b = 0, a = 0.9 }, 0.5
+		tbg.style = "NONE"
 		ns.Layouts:PanelChanged(tiledId, "look")
-		check(deepEqual(tiled.bg.vertexColor, { 1, 0, 0, 0.9 }) and tiled.bg.wrapH == "REPEAT", "tiled background tinted like kgPanels")
+		check(deepEqual(tiled.bg.vertexColor, { 1, 1, 1, 1 }) and tiled.bg.wrapH == "REPEAT", "tiled background without tint")
+		tbg.style, tbg.color, tbg.alpha = "SOLID", { r = 1, g = 0, b = 0, a = 0.9 }, 0.5
+		ns.Layouts:PanelChanged(tiledId, "look")
+		check(tiled.bg.vertexColor[4] == 0.5, "tiled background: color alpha limited by the opacity")
+		tbg.style = "GRADIENT"
+		ns.Layouts:PanelChanged(tiledId, "look")
+		check(tiled.bg.gradient ~= nil and tiled.bg.wrapH == "REPEAT", "tiled background with a gradient")
 		tbg.style, tbg.color, tbg.alpha = style, color, alpha
 		ns.Layouts:PanelChanged(tiledId, "look")
 	end
