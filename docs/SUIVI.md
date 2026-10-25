@@ -13,12 +13,12 @@ Dernière mise à jour : 2026-10-25
 | Élément | État |
 |---|---|
 | Version | **`1.1.1` publiée en release le 2026-10-23** (PR #20, tag `1.1.1`, compatibilité Retail 12.1.5 seulement : interface 120105, pas de fenêtre des nouveautés ; envoyée sur CurseForge pour Retail 12.0.0–12.1.5, TBC Anniversary 2.5.5 / 2.5.6 et Forever 1.60.1). Avant : `1.1.0` (2026-10-23, PR #18), `1.0.0` (2026-09-29) |
-| Branche de travail | `feature/api-audit` (2026-10-25, locale, pas encore poussée) : audit de l'API contre les clients actuels, voir section 7 ter |
+| Branche de travail | `feature/api-audit` (2026-10-25, poussée, attend les tests en jeu, section 7 ter) puis **`feature/dev-tooling`** (partie de `feature/api-audit`, poussée : outils de contrôle, section 7 quater). Fusionner dans cet ordre |
 | Pull request | PR #1 à #20 fusionnées dans `main` (+ la PR de ce suivi) ; aucune autre ouverte |
 | `main` | = tag `1.1.1` + mises à jour du suivi |
 | Logo | ✅ 2026-09-28 (PR #4) : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7. Icône vérifiée en jeu (Retail et Forever) le 2026-09-29. Reste : image sociale à envoyer à la main (Settings → Social preview) |
 | Installé sur Mac | Retail (`/Applications/World of Warcraft/_retail_`, compte DARKICE7, aucune donnée kgPanels : test de première installation) via `WOW_DIR="/Applications/World of Warcraft" bash tools/deploy.sh retail`. Forever pas encore lancé sur ce Mac. Test en jeu à faire |
-| Tests hors jeu | Tous verts : `bash tools/tests/run-all.sh <luajit>` (migrate, original, handinstall, empty, nolibs, notloaded, forever, tbc, zhcn, options ×11 langues) + `real` avec les vraies données |
+| Tests hors jeu | Tous verts : `bash tools/tests/run-all.sh` (contrôle statique `tools/lint.sh`, puis migrate, original, handinstall, empty, nolibs, notloaded, forever, tbc, zhcn, options ×11 langues) + `real` avec les vraies données |
 | Installé en local | Oui, Retail (`_retail_`), Forever (`_classic_beta_`, bêta fermée jusqu'au 5 novembre) et TBC Anniversary (`_anniversary_`) via `bash tools/deploy.sh all`. Fichiers de test de la bibliothèque dans `Interface\AddOns\nxTestMedia\` (Retail, Anniversary) |
 | CurseForge | Projet `1444518` **renommé nxPanels** (slug `nxpanels`, logo, description courte, licence « All Rights Reserved », distribution tierce refusée). Secret GitHub `CF_API_KEY` en place, envoi automatique au tag. Fichiers : **`nxPanels-1.1.1` (release, 2026-10-23, 12.1.5 inclus)**, `nxPanels-1.1.0` (release, 2026-10-23), `1.0.0` (release, 2026-09-29) ; `1.0.0-alpha.2` archivé. Description et résumé mis à jour pour la 1.1.0 le 2026-10-23 (source : `docs/publication/CURSEFORGE.md`) |
 | Publication | Dossier prêt : `docs/publication/PUBLICATION.md` (étapes, test de mise à jour, message au modérateur, captures, brief du logo, GitHub) et `docs/publication/CURSEFORGE.md` (page CurseForge EN + FR / zhCN / zhTW). Workflow `.github/workflows/release.yml` (tag → release GitHub, CurseForge si secret `CF_API_KEY` ; lancement manuel = construction de test sans envoi) |
@@ -34,11 +34,12 @@ Dernière mise à jour : 2026-10-25
 | `nxPanels_Import/` | Import des données kgPanels / kgPanels Reloaded (temporaire, voir section 5) |
 | `kgPanels_Reloaded/` | **Pont de migration** : déclare `kgPanelsDB` pour que nxPanels puisse lire l'ancien fichier |
 | `kgPanelsConfig_Reloaded/` | Dossier vide qui remplace l'ancien module de config |
-| `tools/` | Tests hors jeu (`tests/`), `deploy.sh`, `check-libs.sh` |
+| `tools/` | Tests hors jeu (`tests/`), contrôle statique (`lint.sh`), `deploy.sh`, `check-libs.sh` |
 | `docs/publication/` | Textes et procédure de la sortie publique (CurseForge, GitHub, logo) |
 
 Outils locaux (hors PATH de Bash) :
-- LuaJIT : `C:\Users\Muse\AppData\Local\Programs\LuaJIT\bin\luajit.exe`
+- LuaJIT : `C:\Users\Muse\AppData\Local\Programs\LuaJIT\bin\luajit.exe` (trouvé tout seul par `run-all.sh`)
+- lua-language-server 3.19.1 (winget `LuaLS.lua-language-server`, trouvé tout seul par `tools/lint.sh`)
 - GitHub CLI : `"/c/Program Files/GitHub CLI/gh.exe"` (connecté en `WillOli7`)
 - Skill Claude Code `wow-addon-dev` (plugin `wow` du marketplace privé `WillOli7/claude-skills`, créé le 2026-10-25 sur le Mac) : vérifie l'API contre le build actuel, audite un addon, compare deux patchs, met à jour `## Interface`. Installation : `/plugin marketplace add WillOli7/claude-skills` puis `/plugin install wow@willoli7-skills` (après `gh auth setup-git`) ; mise à jour : `/plugin marketplace update willoli7-skills`. Dans Git Bash : `bash <skill>/scripts/setup.sh live forever classic_anniversary` (indique la commande Python à utiliser). Point de comparaison `baseline 12.1.0` créé sur le PC le 2026-10-25. Au prochain patch : `setup.sh`, puis `wowapi.py changes --addon nxPanels`
 - Connecteur **Context7** (branché sur le compte Claude le 2026-10-25, donc aussi disponible sur le Mac, sans fichier dans le dépôt) : manuel Lua 5.1, Ace3, LuaJIT, outils. Répartition avec le skill : voir `CLAUDE.md` (Workflow, « Documentation sources »)
@@ -203,9 +204,27 @@ Tests : mock sans les noms globaux (`GetSpecializationInfo` seulement dans `C_Sp
 
 Reste à faire : tests en jeu ci-dessus, puis commit, push et PR (avec l'accord du mainteneur).
 
+## 7 quater. Outils de développement (2026-10-25, branche `feature/dev-tooling`)
+
+But : des contrôles automatiques, les mêmes sur le Mac, le PC et GitHub, et une reprise d'une machine à l'autre par `git pull` seulement.
+
+| Élément | Rôle |
+|---|---|
+| `tools/lint.sh` | lua-language-server avec `.luarc.json` : Lua 5.1 seulement, API WoW (annotations de Ketho, dans `~/.cache/wow-addon-dev`, le même dossier que le skill ; téléchargées si absentes, `--update` pour les rafraîchir), `Libs/` ignoré. Repère les fautes de frappe dans les fonctions WoW, les mauvais arguments, les fonctions dépréciées et la syntaxe 5.2+ (`goto`, `//`). Premier passage : 50 remarques, toutes du bruit ou des secours voulus, marqués ligne par ligne (`---@diagnostic disable-next-line`) ou déclarés dans `diagnostics.globals` |
+| `tools/tests/run-all.sh` | Trouve LuaJIT tout seul, lance le contrôle statique puis tous les scénarios |
+| `.github/workflows/tests.yml` | À chaque push et PR : syntaxe, contrôle statique, scénarios (droits en lecture seule) |
+| `.github/actions/setup-lua` | Installe LuaJIT et lua-language-server (version figée, empreinte SHA-256 vérifiée) pour les tests et la publication |
+| `.github/dependabot.yml` | Une PR par mois pour mettre à jour les actions GitHub, figées par commit (packager BigWigs v2.6.1, checkout v4.4.0, upload-artifact v4.6.2) |
+| `CLAUDE.md` | Règles : fin de session = suivi + commit + push de la branche ; section « Two computers » (installation par machine) |
+
+Reste à faire :
+1. Après la fusion : vérifier que la publication marche toujours (construction de test « Run workflow » du workflow Release, sans envoi).
+2. Réglage GitHub à décider par le mainteneur : rendre le check « Tests » obligatoire pour fusionner dans `main` (ruleset).
+3. Mac : `brew install lua-language-server`.
+
 ## 8. Reprendre le travail
 
 Dans une nouvelle conversation, commencer par :
 > Lis `CLAUDE.md`, `docs/SUIVI.md`, `docs/ROADMAP.md` et `docs/publication/PUBLICATION.md` du dépôt nxPanels (`D:\_CLAUDE\WoW - nxPanels`), puis vérifie l'état avec `git status` et `git log --oneline -10`.
 
-Reprise sur un autre ordinateur (Mac) : tout le travail est sur GitHub (`git pull`), dépôt cloné dans `~/Desktop/nxPanels`. Ne sont **pas** dans le dépôt : `.local/kgPanels_Reloaded.lua` (vraies données, scénario `real` impossible ailleurs que sur le PC de jeu), l'installation du jeu (`tools/deploy.sh`, test de mise à jour phase B) et les chemins d'outils du PC. Sur Mac (Homebrew installé, avec `luajit`, `librsvg`, `imagemagick`) : `bash tools/tests/run-all.sh luajit`. Le dossier `img/` (brouillons du logo) est ignoré par git.
+Reprise sur un autre ordinateur (Mac) : tout le travail est sur GitHub (`git pull`), dépôt cloné dans `~/Desktop/nxPanels`. Ne sont **pas** dans le dépôt : `.local/kgPanels_Reloaded.lua` (vraies données, scénario `real` impossible ailleurs que sur le PC de jeu), l'installation du jeu (`tools/deploy.sh`, test de mise à jour phase B) et les chemins d'outils du PC. Sur Mac (Homebrew installé, avec `luajit`, `librsvg`, `imagemagick`) : `brew install lua-language-server` une fois (sinon le contrôle statique est sauté en local, mais GitHub le fait), puis `bash tools/tests/run-all.sh`. Le dossier `img/` (brouillons du logo) est ignoré par git.
