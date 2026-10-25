@@ -26,6 +26,7 @@ Artistic panels addon for World of Warcraft (Retail 12.x, WoW Forever and TBC An
 
 ## Workflow
 - Start of a session: read `docs/SUIVI.md`; end of a session: update it.
+- Documentation sources: WoW API signatures, events, restrictions and Interface numbers come only from the `wow-addon-dev` skill (`wowapi.py lookup` / `event` / `audit`, Blizzard's docs for the exact client build). Context7 (account connector) is for the language and tools: Lua 5.1 manual `/websites/lua_manual_5_1` (never the 5.3 / 5.4 manuals: no `goto`, `//`, `utf8` in WoW), Ace3 `/hurricup/wow-ace3`, LuaJIT, Python, bash, GitHub Actions. Its WoW API pages (wiki copies) have no build or flavor and can be stale: use them for explanations only, then check with `lookup`.
 - Offline tests before every commit: `bash tools/tests/run-all.sh <path to luajit>` (add checks for new behavior in `tools/tests/run.lua`).
 - Local game install for the maintainer's tests: `bash tools/deploy.sh all` (game closed; a restart is needed for TOC changes).
 - Branches: `main` stable, `feature/<name>` then pull request. Commit messages in English.
