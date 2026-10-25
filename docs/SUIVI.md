@@ -4,7 +4,7 @@ Document de reprise : l'état exact du projet, pour continuer dans une nouvelle 
 À lire avec `CLAUDE.md` (règles du projet) et `docs/ROADMAP.md` (idées et backlog).
 **Mettre ce fichier à jour à la fin de chaque session de travail.**
 
-Dernière mise à jour : 2026-10-23
+Dernière mise à jour : 2026-10-25
 
 ---
 
@@ -13,7 +13,7 @@ Dernière mise à jour : 2026-10-23
 | Élément | État |
 |---|---|
 | Version | **`1.1.1` publiée en release le 2026-10-23** (PR #20, tag `1.1.1`, compatibilité Retail 12.1.5 seulement : interface 120105, pas de fenêtre des nouveautés ; envoyée sur CurseForge pour Retail 12.0.0–12.1.5, TBC Anniversary 2.5.5 / 2.5.6 et Forever 1.60.1). Avant : `1.1.0` (2026-10-23, PR #18), `1.0.0` (2026-09-29) |
-| Branche de travail | aucune : tout est sur `main` |
+| Branche de travail | `feature/api-audit` (2026-10-25, locale, pas encore poussée) : audit de l'API contre les clients actuels, voir section 7 ter |
 | Pull request | PR #1 à #20 fusionnées dans `main` (+ la PR de ce suivi) ; aucune autre ouverte |
 | `main` | = tag `1.1.1` + mises à jour du suivi |
 | Logo | ✅ 2026-09-28 (PR #4) : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7. Icône vérifiée en jeu (Retail et Forever) le 2026-09-29. Reste : image sociale à envoyer à la main (Settings → Social preview) |
@@ -40,6 +40,8 @@ Dernière mise à jour : 2026-10-23
 Outils locaux (hors PATH de Bash) :
 - LuaJIT : `C:\Users\Muse\AppData\Local\Programs\LuaJIT\bin\luajit.exe`
 - GitHub CLI : `"/c/Program Files/GitHub CLI/gh.exe"` (connecté en `WillOli7`)
+- Skill Claude Code `wow-addon-dev` (plugin `wow` du marketplace privé `WillOli7/claude-skills`, créé le 2026-10-25 sur le Mac) : vérifie l'API contre le build actuel, audite un addon, compare deux patchs, met à jour `## Interface`. Installation : `/plugin marketplace add WillOli7/claude-skills` puis `/plugin install wow@willoli7-skills` (après `gh auth setup-git`) ; mise à jour : `/plugin marketplace update willoli7-skills`. Dans Git Bash : `bash <skill>/scripts/setup.sh live forever classic_anniversary` (indique la commande Python à utiliser). Point de comparaison `baseline 12.1.0` créé sur le PC le 2026-10-25. Au prochain patch : `setup.sh`, puis `wowapi.py changes --addon nxPanels`
+- Connecteur **Context7** (branché sur le compte Claude le 2026-10-25, donc aussi disponible sur le Mac, sans fichier dans le dépôt) : manuel Lua 5.1, Ace3, LuaJIT, outils. Répartition avec le skill : voir `CLAUDE.md` (Workflow, « Documentation sources »)
 
 ## 3. Fonctionnalités livrées (1.0.0)
 
@@ -125,8 +127,10 @@ Invariants à garder :
 | 14 | Modèles | ✅ | — |
 | 15 | Export / import d'un panneau | ✅ | — |
 | 17-18 | Icônes du jeu, monnaies, polices des listes | ✅ | — |
+| 19 | `{gold}` en icônes or / argent / cuivre, à la taille du texte (correctif de l'audit) | ✅ 2026-10-25 | ⏳ (TBC Anniversary ✅ 2026-10-25) |
+| 20 | Spécialisation lue via `C_SpecializationInfo` (`{spec}` = « Maître brasseur ») | ✅ 2026-10-25 | ⏳ talents principaux / secondaires (TBC Anniversary : « Talents principaux » ✅) |
 
-Reste à tester : layout par spécialisation sur Forever (talents principaux / secondaires) quand le personnage aura les talents.
+Reste à tester : layout par spécialisation sur Forever (talents principaux / secondaires) quand le personnage aura les talents ; points 19 et 20 sur les trois clients (détails section 7 ter).
 
 ## 7. Suite prévue
 
@@ -174,6 +178,30 @@ Reste à faire :
 2. Import réel depuis TBC Anniversary : créer quelques panneaux avec kgPanels sur ce client, puis importer (le fichier peut aussi servir au scénario `real`).
 3. Surveiller les commentaires CurseForge (32 le 2026-10-23, un nouveau après les réponses) et les issues GitHub.
 4. Supprimer les branches distantes `release/1.1.0` et `release/1.1.1` (fusionnées).
+5. Version **1.1.2** (correctifs de l'audit, section 7 ter) : tests en jeu, commit sur `feature/api-audit`, PR vers `main`, `CHANGELOG.md` (« Retail: layouts per specialization and the {gold} variable no longer depend on deprecated game functions »), fenêtre des nouveautés (notes dans `News.NOTES` + clé `NEWS_1_1_2` dans les 10 langues, ou décider qu'une version de correction n'en a pas). Idéalement regroupée avec les correctifs des tests Forever du 5 novembre. Rien sur CurseForge avant les tests en jeu.
+6. Relecture des traductions par des joueurs natifs (toutes sauf le français).
+
+## 7 ter. Audit de l'API (2026-10-25, branche `feature/api-audit`)
+
+Même audit fait le même jour sur le Mac (sur `main` = `1.1.1`, sans modification) puis refait sur le PC : mêmes conclusions. Audit avec le skill `wow-addon-dev` (`wowapi.py audit` sur les 3 addons, `changes` depuis 12.1.0.69933) contre live **12.1.5.70575**, Forever **1.60.1.70532** et TBC Anniversary **2.5.6.70006**. Les interfaces du TOC (120105, 16001, 20506) sont à jour : pas de changement d'Interface.
+
+| Point | Verdict | Fait |
+|---|---|---|
+| API supprimées / inconnues, événements inconnus | Aucun sur les 3 clients | — |
+| `{gold}` : `GetCoinTextureString` (`Engine/TextVars.lua`) | **Vrai problème** : le nom global n'a plus d'alias dans FrameXML sur Retail et Forever (seul TBC Anniversary le garde). `{gold}` affichait sans doute `123g` au lieu des pièces, sans erreur | `C_CurrencyInfo.GetCoinTextureString(money, 0)` d'abord (hauteur 0 = taille du texte, comme les autres icônes ; la doc donne 14 par défaut), ancien nom en secours. La passation du Mac disait l'ancien nom encore présent sur Forever : faux, aucun alias dans le FrameXML de Forever 1.60.1.70532 |
+| `GetSpecializationInfo` (`Core/Specs.lua`) | **Vrai problème latent** : appel protégé sans préférence pour `C_`, ne marche que par l'alias `Blizzard_DeprecatedSpecialization`, chargé seulement si le CVar `loadDeprecationFallbacks` est actif (vérifié dans les sources 12.1.5) ; s'il disparaît, le layout par spécialisation s'arrête en silence | `C_SpecializationInfo.GetSpecializationInfo` d'abord (même fonction que l'alias, même appel avec le seul index) |
+| `GetNumSpecializationsForClassID` (`Core/Specs.lua`) | Faux positif : le `C_` est déjà préféré | — |
+| `UnitClass` / `UnitName` (valeurs secrètes) | Faux positifs : seulement `"player"`. Couleur de réaction : `UnitExists` / `UnitCanAttack` / `UnitIsFriend` sur `"target"` sans restriction en 12.1.5 | — |
+| `C_ClassColor.GetClassColor` (12.1.5 : 2e argument optionnel `tintColor`) | Sans effet, appelé avec un seul argument | — |
+
+Tests : mock sans les noms globaux (`GetSpecializationInfo` seulement dans `C_SpecializationInfo`, `GetCoinTextureString` seulement dans `C_CurrencyInfo`), vérifications de `{gold}` (fonction `C_` avec la hauteur 0, et ancien nom en secours) et de la spécialisation courante. `run-all.sh` vert, `real` vert.
+
+À tester en jeu avant de fusionner (`/console scriptErrors 1` ou BugSack) :
+- **Retail** : `/dump GetCoinTextureString` (attendu : `nil`, ce qui confirme le bug) ; un panneau avec `{gold}` affiche les pièces en icônes, à la taille du texte (essayer deux tailles de police) ; changer de spécialisation change le layout choisi ; `{spec}` affiche le nom de la spé ; `/reload` sans erreur.
+- **Forever** (dès la réouverture du 5 novembre) : mêmes points pour `{gold}` ; layout par groupe de talents (principal / secondaire) ; `/reload`.
+- **TBC Anniversary** : `{gold}` toujours en icônes ; changement de groupe de talents ; `/reload`.
+
+Résultat (2026-10-25, captures du mainteneur) : Retail ✅ (`{gold}` = « 257475 or 79 argent 49 cuivre » en icônes, `{spec}` = « Maître brasseur », pas d'erreur) ; TBC Anniversary ✅ (`{gold}` en icônes, « Talents principaux ») ; Forever ⏳ 5 novembre. Fusion dans `main` validée par le mainteneur ; la publication 1.1.2 attend le test Forever.
 
 ## 8. Reprendre le travail
 

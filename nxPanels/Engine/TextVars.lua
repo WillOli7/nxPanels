@@ -35,7 +35,10 @@ local VARS = {
 	end,
 	gold = function()
 		local money = GetMoney()
-		if GetCoinTextureString then return GetCoinTextureString(money) end
+		-- The global name is gone on Retail and WoW Forever: prefer the C_ function.
+		-- Height 0: coins as big as the text, like the other icons
+		local coins = C_CurrencyInfo and C_CurrencyInfo.GetCoinTextureString or GetCoinTextureString
+		if coins then return coins(money, 0) end
 		return math.floor(money / 10000) .. "g"
 	end,
 }
