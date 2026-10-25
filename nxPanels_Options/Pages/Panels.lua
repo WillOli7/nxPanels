@@ -396,6 +396,34 @@ local function colorGetSet(path, key, what)
 		function(c) path()[key] = { r = c.r, g = c.g, b = c.b, a = c.a } changed(what or "look") end
 end
 
+-- Changing the unit keeps the size on screen: 350 px become 18.2 % of a 1920 px
+-- parent, not 350 %. A size in % is a share of the parent on screen, a size in
+-- pixels is multiplied by the scale (see Panel:ApplyGeometry)
+local function setUnit(sizeKey, unitKey, getParentSize)
+	return function(unit)
+		local panel = P()
+		if panel[unitKey] == unit then return end
+		local parentSize = getParentSize()
+		local scale = panel.scale and panel.scale > 0 and panel.scale or 1
+		-- An unknown parent size (hidden parent): only the unit changes, never a division by 0
+		if parentSize and parentSize > 0 then
+			if unit == "%" then
+				panel[sizeKey] = math.floor(panel[sizeKey] * scale / parentSize * 10000 + 0.5) / 100
+			else
+				panel[sizeKey] = math.floor(parentSize * panel[sizeKey] / 100 / scale * 10 + 0.5) / 10
+			end
+		end
+		panel[unitKey] = unit
+		changed("look")
+	end
+end
+
+-- Size of the frame the selected panel is attached to (the screen when it is not shown)
+local function parentFrame()
+	local frame = core.Layouts.frames[Panels.selected]
+	return frame and frame:GetParent() or UIParent
+end
+
 local function buildGeneral(form)
 	form:Section(L["SECTION_PANEL"])
 	W.InputRow(form, L["NAME"], function() return P().name end, function(text)
@@ -414,11 +442,11 @@ local function buildGeneral(form)
 	W.SliderRow(form, L["WIDTH"], 0, maxSize("widthUnit"), 1, function() return P().width end,
 		function(v) P().width = v changed("look") end, { free = true })
 	W.DropdownRow(form, L["WIDTH_UNIT"], units, function() return P().widthUnit end,
-		function(v) P().widthUnit = v changed("look") end)
+		setUnit("width", "widthUnit", function() return parentFrame():GetWidth() end))
 	W.SliderRow(form, L["HEIGHT"], 0, maxSize("heightUnit"), 1, function() return P().height end,
 		function(v) P().height = v changed("look") end, { free = true })
 	W.DropdownRow(form, L["HEIGHT_UNIT"], units, function() return P().heightUnit end,
-		function(v) P().heightUnit = v changed("look") end)
+		setUnit("height", "heightUnit", function() return parentFrame():GetHeight() end))
 	W.SliderRow(form, L["SCALE"], 0.1, 3, 0.01, function() return P().scale end,
 		function(v) P().scale = math.max(0.01, v) changed("look") end, { free = true })
 

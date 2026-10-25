@@ -852,7 +852,17 @@ elseif scenario == "options" then
 	setSlider(findRow(general, L["OFFSET_X"]), 2500)
 	check(chatPanel.anchor.x == 2500, "offset accepts values outside the slider range")
 	check(choose(findRow(general, L["WIDTH_UNIT"]), "%") and chatPanel.widthUnit == "%", "unit dropdown")
+	-- The unit change keeps the size on screen: 321 px of 1920 = 16.72 %
+	check(chatPanel.width == 16.72 and math.abs(chat.w - 321) < 0.5, "px to %: same size on screen")
 	choose(findRow(general, L["WIDTH_UNIT"]), "px")
+	check(chatPanel.width == 321, "% to px: same size on screen")
+	chatPanel.scale = 2
+	choose(findRow(general, L["HEIGHT_UNIT"]), "%")
+	local percentHeight = chatPanel.height
+	choose(findRow(general, L["HEIGHT_UNIT"]), "px")
+	check(percentHeight > 0 and math.abs(chatPanel.height * 2 / 1080 * 100 - percentHeight) < 0.01, "unit change with a scale: same size on screen")
+	chatPanel.scale = 1
+	ns.Layouts:PanelChanged(chatId, "look")
 	choose(findRow(general, L["ANCHORED_TO"]), "__custom")
 	M.lastPopup.data.onAccept("MissingFrame")
 	check(chatPanel.anchor.relativeTo == "MissingFrame" and ns.Layouts.waiting[chatId] and not chat.shown, "anchored to a frame by name")
