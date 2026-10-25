@@ -494,6 +494,32 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 	check(copy and copy.name == "Copy" and chatPanel.anchor.relativeTo == "panel:" .. barId, "imported copy keeps its anchors")
 	local bad, err = ns.Share:Decode("hello")
 	check(not bad and err == L["IMPORT_INVALID"], "invalid string rejected")
+	-- Damaged or forged string: wrong types are dropped before anything uses them
+	do
+		local LD = LibStub("LibDeflate")
+		local forged = "!NXP1!" .. LD:EncodeForPrint(LD:CompressDeflate(LibStub("LibSerialize"):Serialize({
+			kind = "layout", schema = 3,
+			layout = { name = 42, folders = { "Ok", 7 }, panels = {
+				P1 = "not a panel",
+				P2 = { name = 5, anchor = "bad", width = "120", height = {}, mouse = "yes", folder = {},
+					background = { color = 3, texture = false, texCoord = { 1, 2 } }, border = { texture = 9 },
+					text = { value = {}, font = {} }, display = "hidden", scripts = { LOAD = 7, SHOW = "x = 1" } },
+			} },
+			media = { background = { Art = {}, Ok = "Interface\\AddOns\\A\\ok.tga" }, border = "bad" },
+		}), { level = 9 }))
+		local forgedDecoded = ns.Share:Decode(forged)
+		check(forgedDecoded and forgedDecoded.count == 1 and forgedDecoded.scripted[1] == "5", "forged string decoded, wrong values left out")
+		local ok, forgedId = pcall(ns.Share.Import, ns.Share, forgedDecoded, "Forged")
+		local forgedLayout = ok and ns.Database:GetLayout(forgedId)
+		local _, p2 = ns.Database:FindPanel(forgedLayout, "5")
+		check(p2 and p2.width == 120 and p2.height == 100 and p2.anchor.point == "CENTER" and p2.mouse == false
+			and p2.background.color.r == 0.3 and p2.background.texture == false and p2.background.texCoord == nil
+			and p2.border.texture == "Blizzard Tooltip" and p2.text.value == "" and p2.text.font == nil
+			and p2.display.combat == "ANY" and p2.scripts.LOAD == nil and p2.folder == nil, "forged string imported with defaults: " .. tostring(forgedId))
+		check(ok and #forgedLayout.folders == 1 and db.global.media.background.Art == nil, "forged folders and media left out")
+		ns.Database:DeleteLayout(forgedId)
+		db.global.media.background.Ok = nil
+	end
 	local legacyString = LibStub("AceSerializer-3.0"):Serialize(fixture().global.layouts["Second"])
 	local old = ns.Share:Decode(legacyString)
 	check(old and old.count == 2 and old.format == L["FORMAT_LEGACY"], "old kgPanels string decoded by the import module")

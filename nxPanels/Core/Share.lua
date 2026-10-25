@@ -138,6 +138,78 @@ function Share:ExportPanels(layoutId, panelIds)
 	return PREFIX .. LibDeflate:EncodeForPrint(compressed)
 end
 
+--[[
+A string can be damaged or forged: values of the wrong type are dropped (the
+defaults replace them) before anything uses them. Tables must stay tables, numbers
+numbers (a number in a string is kept), texts texts; false stays allowed for
+"no texture". Values without a default (folder, font...) are checked by cleanPayload.
+]]
+local function cleanValues(target, defaults)
+	for key, default in pairs(defaults) do
+		local value = target[key]
+		if value ~= nil then
+			if type(default) == "table" then
+				if type(value) ~= "table" then
+					target[key] = nil
+				elseif next(default) then
+					cleanValues(value, default)
+				end
+			elseif type(default) == "number" then
+				target[key] = tonumber(value)
+			elseif type(value) ~= type(default) and not (key == "texture" and value == false) then
+				target[key] = nil
+			end
+		end
+	end
+end
+
+local function cleanPayload(payload)
+	local layout = payload.layout
+	local panels = {}
+	for id, panel in pairs(layout.panels) do
+		if type(id) == "string" and type(panel) == "table" then
+			if type(panel.name) == "number" then panel.name = tostring(panel.name) end
+			cleanValues(panel, ns.PanelDefaults)
+			panel.name = panel.name or id
+			if type(panel.folder) ~= "string" then panel.folder = nil end
+			if type(panel.scriptDependency) ~= "string" then panel.scriptDependency = nil end
+			local scripts = {}
+			for hook, code in pairs(type(panel.scripts) == "table" and panel.scripts or {}) do
+				if type(hook) == "string" and type(code) == "string" then scripts[hook] = code end
+			end
+			panel.scripts = scripts
+			if type(panel.text) == "table" and type(panel.text.font) ~= "string" then panel.text.font = nil end
+			local bg = panel.background
+			if type(bg) == "table" and bg.texCoord ~= nil then
+				local c = bg.texCoord
+				local valid = type(c) == "table" and #c == 8
+				for i = 1, 8 do valid = valid and type(c[i]) == "number" end
+				if not valid then bg.texCoord = nil end
+			end
+			panels[id] = panel
+		end
+	end
+	layout.panels = panels
+	local folders = {}
+	for _, folder in ipairs(type(layout.folders) == "table" and layout.folders or {}) do
+		if type(folder) == "string" then folders[#folders + 1] = folder end
+	end
+	layout.folders = folders
+	if type(layout.name) ~= "string" then layout.name = nil end
+	local media = {}
+	for kind, list in pairs(type(payload.media) == "table" and payload.media or {}) do
+		if type(kind) == "string" and type(list) == "table" then
+			media[kind] = {}
+			for name, path in pairs(list) do
+				if type(name) == "string" and (type(path) == "string" or type(path) == "number") then
+					media[kind][name] = path
+				end
+			end
+		end
+	end
+	payload.media = media
+end
+
 local function decodeNative(text)
 	if text:sub(1, #PREFIX) ~= PREFIX then return end
 	local decoded = LibDeflate:DecodeForPrint(text:sub(#PREFIX + 1))
@@ -150,6 +222,7 @@ local function decodeNative(text)
 	if (tonumber(payload.schema) or 1) > ns.SCHEMA then
 		return false, L["IMPORT_NEWER"]
 	end
+	cleanPayload(payload)
 	local count, scripted = 0, {}
 	for _, panel in pairs(payload.layout.panels) do
 		count = count + 1
