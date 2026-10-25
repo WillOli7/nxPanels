@@ -126,8 +126,9 @@ function Panel:ApplyGeometry(frame, panel, parent, anchor)
 	local scale = panel.scale and panel.scale > 0 and panel.scale or 1
 	frame:SetScale(scale)
 
-	local width = panel.widthUnit == "%" and parent:GetWidth() * panel.width / 100 or panel.width
-	local height = panel.heightUnit == "%" and parent:GetHeight() * panel.height / 100 or panel.height
+	-- A size in % is a share of the parent on screen, whatever the scale of the panel
+	local width = panel.widthUnit == "%" and parent:GetWidth() * panel.width / 100 / scale or panel.width
+	local height = panel.heightUnit == "%" and parent:GetHeight() * panel.height / 100 / scale or panel.height
 	frame:SetSize(math.max(width, 0), math.max(height, 0))
 
 	local a = panel.anchor
