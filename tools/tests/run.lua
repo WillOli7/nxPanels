@@ -5,18 +5,31 @@
 local scenario = arg[1] or "migrate"
 local M = dofile("tools/tests/wowmock.lua")
 
--- WoW's string.format supports positional arguments (%2$s), LuaJIT's does not
+-- WoW's string.format supports positional arguments (%2$s), LuaJIT's does not.
+-- Like Lua 5.1 (and unlike LuaJIT), %s refuses nil and other non-string values.
 do
 	local rawformat = string.format
+	local function strict(fmt, ...)
+		local i = 0
+		for spec in (fmt:gsub("%%%%", "")):gmatch("%%[%-%+ #0]*%d*%.?%d*(%a)") do
+			i = i + 1
+			local v = select(i, ...)
+			if spec == "s" and type(v) ~= "string" and type(v) ~= "number" then
+				error(("bad argument #%d to 'format' (string expected, got %s)"):format(i + 1, type(v)), 3)
+			end
+		end
+		return rawformat(fmt, ...)
+	end
 	string.format = function(fmt, ...)
 		if type(fmt) == "string" and fmt:find("%%%d+%$") then
 			local args, order = { ... }, {}
 			fmt = fmt:gsub("%%(%d+)%$", function(n) order[#order + 1] = tonumber(n) return "%" end)
 			local ordered = {}
 			for i, n in ipairs(order) do ordered[i] = args[n] end
-			return rawformat(fmt, unpack(ordered, 1, #order))
+			return strict(fmt, unpack(ordered, 1, #order))
 		end
-		return rawformat(fmt, ...)
+		if type(fmt) ~= "string" then return rawformat(fmt, ...) end
+		return strict(fmt, ...)
 	end
 	getmetatable("").__index.format = string.format
 end
@@ -446,7 +459,8 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 	check(tiled.bg.wrapH == "REPEAT" and tiled.bg.texCoord[2] == 6, "tiled background")
 
 	-- Commands
-	for _, cmd in ipairs({ "", "layouts", "status", "toggle", "toggle", "minimap", "config", "layout nope" }) do
+	-- "layout" with the panels switched off: no layout shown, the name comes from the data
+	for _, cmd in ipairs({ "", "layouts", "status", "toggle", "toggle", "minimap", "config", "layout nope", "off", "layout second", "on" }) do
 		local ok, err = pcall(SlashCmdList.NXPANELS, cmd)
 		check(ok, "command '" .. cmd .. "': " .. tostring(err))
 	end
