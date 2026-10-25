@@ -822,6 +822,11 @@ elseif scenario == "options" then
 		if f.text and f.text.textValue == L["NEWS_1_1_0"] and f.parent == newsPage.scroll.content then notesShown = true end
 	end
 	check(notesShown, "notes of 1.1.0 on the page")
+	-- Notes of every version written in the language of the client
+	for _, key in pairs(ns.News.NOTES) do
+		check(rawget(L, key) and L[key] ~= key and L[key]:find("\n", 1, true), "notes " .. key .. " translated")
+	end
+	check(ns.News:Versions()[1] == "1.2.0", "notes of 1.2.0 first")
 	local NOTES = ns.News.NOTES
 	ns.News.NOTES = { ["1.9.2"] = "x", ["1.10.0"] = "x", ["1.1.0"] = "x", ["2.0"] = "x" }
 	check(table.concat(ns.News:Versions(), " ") == "2.0 1.10.0 1.9.2 1.1.0", "versions sorted, the most recent first")

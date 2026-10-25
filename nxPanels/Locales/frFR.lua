@@ -36,6 +36,7 @@ L["SETTINGS_DESC"] = "Créez et agencez des panneaux artistiques : fonds, bordur
 L["OPEN_OPTIONS"] = "Ouvrir nxPanels"
 L["OK"] = "OK"
 L["NEWS_TITLE"] = "nxPanels %s : quoi de neuf ?"
+L["NEWS_1_2_0"] = "• |cffffd100Nom de la frame|r : tapez-le à côté de « Ancré à » et « Parent », puis Entrée. Un voyant indique si la frame existe (vert) ou si le panneau l'attend (orange).\n• |cffffd100Déplacement au pixel|r : boutons flèches dans la barre du mode édition, - et + à côté des décalages dans l'éditeur (Maj : grand pas).\n• Les |cffffd100barres de défilement|r se saisissent à la souris ; un clic sur la barre avance d'une page."
 L["NEWS_1_1_0"] = "• |cffffd100TBC Anniversary|r est pris en charge.\n• nxPanels est traduit dans toutes les langues du jeu.\n• |cffffd100Bibliothèque|r : ajoutez tous les fichiers d'un dossier d'un coup, retrouvez-les dans l'onglet « Ma bibliothèque ».\n• Les bordures sont identiques au pixel près à celles du jeu.\n• Un script qui cache son panneau (self:Hide()) le garde caché.\n• Une copie de panneau garde exactement sa position."
 L["NEWS_DONT_SHOW"] = "Ne plus afficher les nouveautés au démarrage"
 L["NEWS_SHOW_SETTING"] = "Afficher les nouveautés au démarrage"

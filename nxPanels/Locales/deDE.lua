@@ -37,6 +37,7 @@ L["SETTINGS_DESC"] = "Erstelle und ordne künstlerische Panels an: Hintergründe
 L["OPEN_OPTIONS"] = "nxPanels öffnen"
 L["OK"] = "OK"
 L["NEWS_TITLE"] = "nxPanels %s: Was ist neu?"
+L["NEWS_1_2_0"] = "• |cffffd100Frame-Name|r: neben „Verankert an“ und „Elternelement“ eingeben, dann Enter. Eine Leuchte zeigt, ob der Frame existiert (grün) oder das Panel darauf wartet (orange).\n• |cffffd100Pixelgenaues Verschieben|r: Pfeiltasten in der Leiste des Bearbeitungsmodus, - und + neben den Versätzen im Editor (Umschalt: großer Schritt).\n• |cffffd100Bildlaufleisten|r lassen sich mit der Maus ziehen; ein Klick auf die Leiste blättert eine Seite weiter."
 L["NEWS_1_1_0"] = "• |cffffd100TBC Anniversary|r wird unterstützt.\n• nxPanels ist in alle Sprachen des Spiels übersetzt.\n• |cffffd100Bibliothek|r: Füge alle Dateien eines Ordners auf einmal hinzu und finde sie im Reiter „Meine Bibliothek“.\n• Rahmen sehen pixelgenau aus wie die Rahmen des Spiels.\n• Ein Skript, das sein Panel ausblendet (self:Hide()), hält es ausgeblendet.\n• Ein dupliziertes Panel behält seine genaue Position."
 L["NEWS_DONT_SHOW"] = "Neuigkeiten beim Start nicht mehr anzeigen"
 L["NEWS_SHOW_SETTING"] = "Neuigkeiten beim Start anzeigen"

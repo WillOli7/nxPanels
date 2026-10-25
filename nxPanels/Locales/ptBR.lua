@@ -37,6 +37,7 @@ L["SETTINGS_DESC"] = "Crie e organize painéis artísticos: fundos, bordas, text
 L["OPEN_OPTIONS"] = "Abrir o nxPanels"
 L["OK"] = "OK"
 L["NEWS_TITLE"] = "nxPanels %s: novidades"
+L["NEWS_1_2_0"] = "• |cffffd100Nome do quadro|r: digite-o ao lado de \"Ancorado a\" e \"Pai\", depois Enter. Um indicador mostra se o quadro existe (verde) ou se o painel o aguarda (laranja).\n• |cffffd100Movimento ao pixel|r: botões de seta na barra do modo de edição, - e + ao lado dos deslocamentos no editor (Shift: passo grande).\n• As |cffffd100barras de rolagem|r podem ser arrastadas com o mouse; um clique na barra rola uma página."
 L["NEWS_1_1_0"] = "• |cffffd100TBC Anniversary|r é compatível.\n• O nxPanels está traduzido para todos os idiomas do jogo.\n• |cffffd100Biblioteca|r: adicione todos os arquivos de uma pasta de uma vez e encontre-os na aba \"Minha biblioteca\".\n• As bordas são idênticas, pixel a pixel, às do jogo.\n• Um script que oculta seu painel (self:Hide()) o mantém oculto.\n• Um painel duplicado mantém sua posição exata."
 L["NEWS_DONT_SHOW"] = "Não mostrar as novidades ao iniciar"
 L["NEWS_SHOW_SETTING"] = "Mostrar as novidades ao iniciar"

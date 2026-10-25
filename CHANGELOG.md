@@ -2,7 +2,14 @@
 
 All notable changes to nxPanels. Versions follow [Semantic Versioning](https://semver.org/).
 
-## Unreleased
+## 1.2.0 — Unreleased
+
+New (interface suggestions of Aur0r4, issue #16):
+- **Frame names are typed** next to "Anchored to" and "Parent" (validated with Enter); the list next to it keeps the screen and the other panels. A light shows whether the frame exists (green) or the panel waits for it (orange). The "Other frame..." window is gone.
+- **Pixel moves**: four arrow buttons in the edit mode bar (1 pixel, Shift for the big step, Ctrl+Z undoes) and - / + buttons next to the offsets in the editor.
+- **Draggable scrollbars** in the window and the text areas: the thumb is grabbed with the mouse (wider zone than the line), a click on the line scrolls by one page. The icon grid follows while dragging.
+
+## 1.1.2 — Unreleased
 
 New:
 - Text variables `{specicon}` (icon of the specialization or of the main talent tree) and `{talents}` (name of the active talents).

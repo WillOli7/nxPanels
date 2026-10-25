@@ -36,6 +36,7 @@ L["SETTINGS_DESC"] = "Create and arrange artistic panels: backgrounds, borders, 
 L["OPEN_OPTIONS"] = "Open nxPanels"
 L["OK"] = "OK"
 L["NEWS_TITLE"] = "nxPanels %s: what's new?"
+L["NEWS_1_2_0"] = "• |cffffd100Frame name|r: type it next to \"Anchored to\" and \"Parent\", then Enter. A light shows whether the frame exists (green) or the panel waits for it (orange).\n• |cffffd100Pixel moves|r: arrow buttons in the edit mode bar, - and + next to the offsets in the editor (Shift: big step).\n• |cffffd100Scrollbars|r can be dragged with the mouse; a click on the bar scrolls by one page."
 L["NEWS_1_1_0"] = "• |cffffd100TBC Anniversary|r is supported.\n• nxPanels is translated into every language of the game.\n• |cffffd100Library|r: add all the files of a folder at once, find them in the \"My library\" tab.\n• Borders look exactly like the borders of the game, to the pixel.\n• A script hiding its panel (self:Hide()) keeps it hidden.\n• A duplicated panel keeps its exact position."
 L["NEWS_DONT_SHOW"] = "Do not show what's new at startup"
 L["NEWS_SHOW_SETTING"] = "Show what's new at startup"

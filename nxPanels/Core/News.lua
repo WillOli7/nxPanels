@@ -13,6 +13,7 @@ ns.News = News
 
 -- Versions with notes: text of the window
 News.NOTES = {
+	["1.2.0"] = "NEWS_1_2_0",
 	["1.1.0"] = "NEWS_1_1_0",
 }
 

@@ -143,7 +143,8 @@ Principe retenu : les librairies restent **dans le dépôt** (versions dans `Lib
 ### Création & édition
 - ✅ **Mode édition visuel** : grille, aimantation (bords, centre, autres panneaux), guides d'alignement, flèches du clavier, sélection multiple, annuler/rétablir.
 - ✅ **Navigateur de textures en vignettes** (au lieu d'une liste déroulante).
-- ❌ **Sélecteur de frame au survol** : essayé puis retiré (frames protégées depuis Midnight, trop coûteux sur une grosse interface). Reste « Autre frame… » avec `/fstack`.
+- ❌ **Sélecteur de frame au survol** : essayé puis retiré (frames protégées depuis Midnight, trop coûteux sur une grosse interface). Remplacé en 1.2.0 par la saisie directe du nom (`/fstack`).
+- 🚧 **Suggestions d'interface d'Aur0r4 (issue #16), 1.2.0** : saisie directe du nom de frame avec voyant, boutons de déplacement au pixel (mode édition et éditeur), barres de défilement déplaçables. À tester en jeu. Plus tard : autocomplétion du nom de frame.
 - 🚧 Éditeur de scripts : affichage de la ligne en erreur (fait). Reste : coloration syntaxique, bibliothèque d'extraits.
 
 ### Partage
