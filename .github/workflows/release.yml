@@ -20,31 +20,30 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
 
-      - name: Install LuaJIT
-        run: sudo apt-get update && sudo apt-get install -y luajit
+      - uses: ./.github/actions/setup-lua
 
-      - name: Offline scenarios
+      - name: Static check and offline scenarios
         run: bash tools/tests/run-all.sh luajit
 
       - name: Test build (no upload)
         if: github.event_name == 'workflow_dispatch'
-        uses: BigWigsMods/packager@v2
+        uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
         with:
           args: -d
 
       - name: Package and publish
         if: github.event_name == 'push'
-        uses: BigWigsMods/packager@v2
+        uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
         with:
           # File label on CurseForge: nxPanels-1.1.1 (the packager default is the bare version)
           args: -p 1444518 -n ":{package-name}-{project-version}{classic}{nolib}"
 
       - name: Keep the zip
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: nxPanels-package
           path: .release/*.zip

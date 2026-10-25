@@ -35,6 +35,7 @@ function Specs:List()
 	local _, _, classId = UnitClass("player")
 	local count = C_SpecializationInfo and C_SpecializationInfo.GetNumSpecializationsForClassID
 		and C_SpecializationInfo.GetNumSpecializationsForClassID(classId)
+		---@diagnostic disable-next-line: deprecated -- fallback for clients without the C_ function
 		or (GetNumSpecializationsForClassID and GetNumSpecializationsForClassID(classId)) or 0
 	for i = 1, count do
 		local id, name = GetSpecializationInfoForClassID(classId, i)

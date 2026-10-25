@@ -37,6 +37,7 @@ local VARS = {
 		local money = GetMoney()
 		-- The global name is gone on Retail and WoW Forever: prefer the C_ function.
 		-- Height 0: coins as big as the text, like the other icons
+		---@diagnostic disable-next-line: deprecated -- fallback for clients without the C_ function
 		local coins = C_CurrencyInfo and C_CurrencyInfo.GetCoinTextureString or GetCoinTextureString
 		if coins then return coins(money, 0) end
 		return math.floor(money / 10000) .. "g"
@@ -62,7 +63,9 @@ local PARAM_VARS = {
 		return icon(info.iconFileID) .. amount
 	end,
 	item = function(id)
+		---@diagnostic disable-next-line: deprecated -- fallback for clients without the C_ function
 		local getCount = C_Item and C_Item.GetItemCount or GetItemCount
+		---@diagnostic disable-next-line: deprecated -- fallback for clients without the C_ function
 		local getIcon = C_Item and C_Item.GetItemIconByID or GetItemIcon
 		local count = getCount and getCount(id, true) or 0
 		return icon(getIcon and getIcon(id)) .. count

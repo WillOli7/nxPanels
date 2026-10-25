@@ -1,0 +1,25 @@
+name: Set up Lua tools
+description: LuaJIT (offline tests) and lua-language-server (tools/lint.sh), shared by the Tests and Release workflows
+
+runs:
+  using: composite
+  steps:
+    - name: Install LuaJIT
+      shell: bash
+      run: sudo apt-get update && sudo apt-get install -y luajit
+
+    # Fixed version, checked against its SHA-256 (published by GitHub for the release asset).
+    # To update: new version and checksum from
+    #   gh api repos/LuaLS/lua-language-server/releases/tags/<version> --jq '.assets[] | select(.name|test("linux-x64.tar.gz")) | .digest'
+    - name: Install lua-language-server
+      shell: bash
+      env:
+        LUALS_VERSION: "3.19.1"
+        LUALS_SHA256: e9235d2d72ef55bc41cf8c99cda2ed64777682024b4bb81f5dea425060c5cbb8
+      run: |
+        archive="lua-language-server-$LUALS_VERSION-linux-x64.tar.gz"
+        curl -sSfL -o "$RUNNER_TEMP/$archive" "https://github.com/LuaLS/lua-language-server/releases/download/$LUALS_VERSION/$archive"
+        echo "$LUALS_SHA256  $RUNNER_TEMP/$archive" | sha256sum -c -
+        mkdir -p "$RUNNER_TEMP/luals"
+        tar xzf "$RUNNER_TEMP/$archive" -C "$RUNNER_TEMP/luals"
+        echo "$RUNNER_TEMP/luals/bin" >> "$GITHUB_PATH"

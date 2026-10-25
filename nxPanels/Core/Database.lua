@@ -49,6 +49,7 @@ local DEFAULTS = {
 
 -- Profile given to a character that has none yet (read before AceDB starts)
 local function newCharacterProfile()
+	---@diagnostic disable-next-line: undefined-field -- SavedVariables, declared by the TOC
 	local sv = _G.nxPanelsDB
 	local choice = type(sv) == "table" and type(sv.global) == "table" and sv.global.newCharacters
 	if choice == "class" then
