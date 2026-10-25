@@ -18,6 +18,8 @@ Fixed:
 - Textures or frames created by a panel script no longer show on another panel after a layout change.
 - `/nxp layout <name>` no longer raises a Lua error while the panels are switched off.
 - A damaged import string no longer raises a Lua error nor leaves an empty layout.
+- Switching a size between pixels and % keeps the size on screen (350 px no longer become 350 %).
+- With a Blizzard image (atlas), the tiling options are hidden and explained: an atlas cannot be repeated.
 - An error in one part of the addon at startup no longer stops the others.
 
 ## 1.1.1 — 2026-10-23

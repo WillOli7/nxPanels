@@ -244,6 +244,12 @@ Rapport complet : `docs/REVUE-CODE.md` (vrais problèmes, faux positifs écarté
 | 8 | Fond répété : suit le style et l'opacité comme les autres fonds. **Change l'affichage** des fonds répétés en style « Aucun » / « Dégradé » ou avec une couleur plus opaque que l'opacité (aucun dans les vraies données) | `Render/Panel.lua` |
 | + | Nouveauté : **sens de répétition** (les deux, horizontal, vertical), importé de kgPanels (`horz_tile` / `vert_tile`) ; rotation, miroirs et coordonnées masqués pendant la répétition. **Schéma 4** (valeur ajoutée par `NormalizeLayout`). Clés `TILE_DIRECTION`, `TILE_DIR_*` dans les 10 langues | `Render/Panel.lua`, `Pages/Panels.lua`, `Convert.lua`, `Locales/` |
 
+Résultats en jeu, Retail, 2026-10-25 (captures du mainteneur) : démarrage sans erreur Lua ; texture créée par un script ✅ (un seul rectangle, sur le bon panneau, après changement de layout et `/reload`) ; taille en % avec l'échelle ✅ et redimensionnement à la souris ✅ (le mainteneur n'aime pas beaucoup le %) ; `/nxp off` / `layout Test` / `on` ✅. Deux défauts d'ergonomie trouvés, corrigés le même jour :
+- passer une taille de px à % gardait le nombre (350 px → 350 %, panneau plus grand que l'écran) : la valeur est maintenant convertie pour garder la taille à l'écran (`setUnit`, `Pages/Panels.lua`) ;
+- avec une image Blizzard (atlas « QuestBG-Horde »), « Répéter la texture » ne faisait rien (un atlas ne se répète pas) mais masquait la rotation : options de répétition masquées et phrase d'explication (`TILE_ATLAS`, 10 langues).
+
+À refaire en jeu après réinstallation : changer l'unité d'un panneau en px vers % puis vers px (même taille à l'écran) ; fond en atlas (pas d'option de répétition, phrase affichée) ; fond en fichier (« Répéter » avec « Horizontal seulement » / « Vertical seulement » : le motif ne se répète que dans un sens) ; TBC Anniversary : démarrage sans erreur.
+
 Tests en jeu à faire avant de fusionner (`/console scriptErrors 1` ou BugSack), sur Retail, Forever (dès le 5 novembre) et TBC Anniversary :
 1. `/reload` sans erreur ; `/nxp status`.
 2. Point 1 : panneau ancré à une frame qui n'existe pas encore (ex. `Autre frame…` → `DetailsBaseFrame1` avant d'ouvrir Details, ou un nom inventé), attendre plus d'une minute, changer son ancrage vers une autre frame absente puis la créer (ouvrir l'addon) : il doit apparaître dans la seconde.
