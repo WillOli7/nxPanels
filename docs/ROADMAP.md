@@ -143,6 +143,7 @@ Principe retenu : les librairies restent **dans le dépôt** (versions dans `Lib
 ### Création & édition
 - ✅ **Mode édition visuel** : grille, aimantation (bords, centre, autres panneaux), guides d'alignement, flèches du clavier, sélection multiple, annuler/rétablir.
 - ✅ **Navigateur de textures en vignettes** (au lieu d'une liste déroulante).
+- 🔍 **Icônes du jeu par thème** (demande du mainteneur, 2026-10-26) : le jeu ne donne que des numéros de fichier, sans nom ni catégorie. Possible sans données ajoutées : onglets « Sorts » / « Objets » (listes séparées du jeu, comme `IconDataProvider` de Blizzard), « Montures » et « Mascottes » (icônes des journaux). Par classe, type d'armure (tissu, plaques…) : il faudrait embarquer une table numéro → nom de fichier (plusieurs Mo, à mettre à jour à chaque patch).
 - ❌ **Sélecteur de frame au survol** : essayé puis retiré (frames protégées depuis Midnight, trop coûteux sur une grosse interface). Remplacé en 1.2.0 par la saisie directe du nom (`/fstack`).
 - 🚧 **Suggestions d'interface d'Aur0r4 (issue #16), 1.2.0** : saisie directe du nom de frame avec voyant, boutons de déplacement au pixel (mode édition et éditeur), barres de défilement déplaçables. À tester en jeu. Plus tard : autocomplétion du nom de frame.
 - 🚧 Éditeur de scripts : affichage de la ligne en erreur (fait). Reste : coloration syntaxique, bibliothèque d'extraits.

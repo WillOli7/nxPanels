@@ -295,7 +295,9 @@ Tests en jeu à faire (`/console scriptErrors 1` ou BugSack), Retail d'abord pui
 8. Navigateur d'icônes (« Insérer une icône » → toutes les icônes) : glisser la barre → la grille se redessine pendant le glissement, sans trou.
 9. Aucune erreur Lua au démarrage sur les 3 clients.
 
-À faire ensuite : tests en jeu, puis PR `feature/ui-aurora` (accord du mainteneur), réponse à Aur0r4 sur l'issue #16.
+Résultats en jeu, Retail, 2026-10-26 (captures du mainteneur) : 1 ✅ ; 2 ✅ (nom inventé → orange et panneau masqué, `PlayerFrame` → vert et attaché, nom d'un panneau → suit DTC) ; 3 non faisable sans groupe, accepté par le mainteneur ; 4 ✅ (infobulle du voyant) ; 5 ✅ (flèches et clavier) ; 6 ✅ ; 7 ✅ ; 8 ✅ (grille redessinée pendant le glissement) ; 9 ✅ aucune erreur Lua. Défaut trouvé et corrigé le même jour : l'explication « Ce panneau est masqué… » était coupée sur une ligne (ligne de 44 px → 56 px, deux lignes). Demande notée dans `docs/ROADMAP.md` : trier les icônes du jeu par thème.
+
+À faire ensuite : vérifier la phrase « Ce panneau est masqué… » sur deux lignes, démarrage sur TBC Anniversary et Forever (5 novembre), puis PR `feature/ui-aurora` (accord du mainteneur), réponse à Aur0r4 sur l'issue #16.
 
 ## 8. Reprendre le travail
 
