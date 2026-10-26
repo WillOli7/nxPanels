@@ -505,7 +505,8 @@ local function buildGeneral(form)
 	W.SliderRow(form, L["OFFSET_Y"], -1000, 1000, 1, function() return P().anchor.y end,
 		function(v) P().anchor.y = v changed("geometry") end, offset)
 	frameRefRow(form, L["PARENT"], "parent")
-	local status = W.TextRow(form, "", 44)
+	-- Room for two lines: the explanation is cut on one line in most languages
+	local status = W.TextRow(form, "", 56)
 	status.text:SetTextColor(unpack(C.danger))
 	status.isShown = function()
 		local id = Panels.selected

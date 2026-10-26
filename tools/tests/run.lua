@@ -886,6 +886,11 @@ elseif scenario == "options" then
 		typeName(anchorRow, "MissingFrame")
 		check(chatPanel.anchor.relativeTo == "MissingFrame" and ns.Layouts.waiting[chatId] and not chat.shown, "anchored to a frame by its typed name")
 		check(edit:GetText() == "MissingFrame" and anchorRow.statusColor == O.Theme.colors.warning and anchorRow.statusText == L["FRAME_MISSING"], "missing frame: orange light")
+		local waitingNote
+		for _, r in ipairs(general.rows) do
+			if r.text and r.text.textValue == L["STATUS_WAITING"] then waitingNote = r end
+		end
+		check(waitingNote and waitingNote.shown and waitingNote.fixedHeight >= 56, "waiting explanation shown, room for two lines")
 		-- Typed without Enter: nothing saved, the box shows the saved value again
 		edit:SetFocus()
 		edit:SetText("Half")
