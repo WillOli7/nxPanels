@@ -822,6 +822,11 @@ elseif scenario == "options" then
 		if f.text and f.text.textValue == L["NEWS_1_1_0"] and f.parent == newsPage.scroll.content then notesShown = true end
 	end
 	check(notesShown, "notes of 1.1.0 on the page")
+	-- Notes of every version written in the language of the client
+	for _, key in pairs(ns.News.NOTES) do
+		check(rawget(L, key) and L[key] ~= key and L[key]:find("\n", 1, true), "notes " .. key .. " translated")
+	end
+	check(ns.News:Versions()[1] == "1.2.0", "notes of 1.2.0 first")
 	local NOTES = ns.News.NOTES
 	ns.News.NOTES = { ["1.9.2"] = "x", ["1.10.0"] = "x", ["1.1.0"] = "x", ["2.0"] = "x" }
 	check(table.concat(ns.News:Versions(), " ") == "2.0 1.10.0 1.9.2 1.1.0", "versions sorted, the most recent first")
@@ -868,12 +873,75 @@ elseif scenario == "options" then
 	check(percentHeight > 0 and math.abs(chatPanel.height * 2 / 1080 * 100 - percentHeight) < 0.01, "unit change with a scale: same size on screen")
 	chatPanel.scale = 1
 	ns.Layouts:PanelChanged(chatId, "look")
-	choose(findRow(general, L["ANCHORED_TO"]), "__custom")
-	M.lastPopup.data.onAccept("MissingFrame")
-	check(chatPanel.anchor.relativeTo == "MissingFrame" and ns.Layouts.waiting[chatId] and not chat.shown, "anchored to a frame by name")
-	check(findRow(general, L["ANCHORED_TO"]).button.text.textValue == "MissingFrame", "custom frame name shown")
-	choose(findRow(general, L["ANCHORED_TO"]), "panel:" .. barId)
-	check(chatPanel.anchor.relativeTo == "panel:" .. barId and chat.shown and chat.points[1][2] == ns.Layouts.frames[barId], "anchored back to a panel")
+	-- Frame typed by its name (validated with Enter), the list next to it
+	do
+		local anchorRow, parentRow = findRow(general, L["ANCHORED_TO"]), findRow(general, L["PARENT"])
+		local edit = anchorRow.box.edit
+		local function typeName(r, text)
+			r.box.edit:SetFocus()
+			r.box.edit:SetText(text)
+			r.box.edit.scripts.OnEnterPressed(r.box.edit)
+		end
+		check(edit:GetText() == "Bottom Bar" and anchorRow.statusColor == O.Theme.colors.success and parentRow.box.edit:GetText() == L["SCREEN"], "panel name and screen shown, green light")
+		typeName(anchorRow, "MissingFrame")
+		check(chatPanel.anchor.relativeTo == "MissingFrame" and ns.Layouts.waiting[chatId] and not chat.shown, "anchored to a frame by its typed name")
+		check(edit:GetText() == "MissingFrame" and anchorRow.statusColor == O.Theme.colors.warning and anchorRow.statusText == L["FRAME_MISSING"], "missing frame: orange light")
+		local waitingNote
+		for _, r in ipairs(general.rows) do
+			if r.text and r.text.textValue == L["STATUS_WAITING"] then waitingNote = r end
+		end
+		check(waitingNote and waitingNote.shown and waitingNote.fixedHeight >= 56, "waiting explanation shown, room for two lines")
+		-- Typed without Enter: nothing saved, the box shows the saved value again
+		edit:SetFocus()
+		edit:SetText("Half")
+		edit:ClearFocus()
+		check(chatPanel.anchor.relativeTo == "MissingFrame" and edit:GetText() == "MissingFrame", "only Enter saves the name")
+		-- The frame appears (addon loaded): green light
+		CreateFrame("Frame", "MissingFrame", UIParent)
+		ns.Layouts:PanelChanged(chatId, "anchors")
+		P:RefreshEditor()
+		check(anchorRow.statusColor == O.Theme.colors.success and chat.shown, "frame created: green light, panel shown")
+		-- Raid frames (issue #17): the name changed by hand
+		CreateFrame("Frame", "RaidFrame2", UIParent)
+		typeName(parentRow, " RaidFrame2 ")
+		check(chatPanel.parent == "RaidFrame2" and chat.parent == _G.RaidFrame2, "parent typed, spaces removed")
+		-- A panel by its name, a frame of the game first
+		typeName(anchorRow, "Bottom Bar")
+		check(chatPanel.anchor.relativeTo == "panel:" .. barId and edit:GetText() == "Bottom Bar", "panel typed by its name")
+		typeName(anchorRow, "Bottom Bar")
+		check(chatPanel.anchor.relativeTo == "panel:" .. barId, "unchanged name keeps the panel")
+		typeName(parentRow, L["SCREEN"])
+		check(chatPanel.parent == "UIParent" and parentRow.box.edit:GetText() == L["SCREEN"], "screen typed")
+		typeName(parentRow, "")
+		check(chatPanel.parent == "UIParent", "empty name: the screen")
+		-- The list: screen and other panels, no prompt any more
+		anchorRow.button.scripts.OnClick(anchorRow.button)
+		local values = {}
+		for _, b in ipairs(O.Dropdown.popup.buttons) do if b.shown then values[#values + 1] = b.item.value end end
+		O.Dropdown:Close()
+		check(values[1] == "UIParent" and not table.concat(values, " "):find("__custom") and not table.concat(values, " "):find(chatId .. "$"), "list: screen and the other panels")
+		check(choose(anchorRow, "UIParent") and chatPanel.anchor.relativeTo == "UIParent" and edit:GetText() == L["SCREEN"], "screen chosen in the list")
+		check(choose(anchorRow, "panel:" .. barId) and chatPanel.anchor.relativeTo == "panel:" .. barId and chat.shown
+			and chat.points[1][2] == ns.Layouts.frames[barId] and anchorRow.statusColor == O.Theme.colors.success, "anchored back to a panel")
+		MissingFrame, RaidFrame2 = nil, nil
+	end
+	-- - and + next to X / Y: 1 pixel, Shift for the big step of the edit mode
+	do
+		local xRow, yRow = findRow(general, L["OFFSET_X"]), findRow(general, L["OFFSET_Y"])
+		local x, y = chatPanel.anchor.x, chatPanel.anchor.y
+		click(xRow.plus)
+		click(yRow.minus)
+		check(chatPanel.anchor.x == x + 1 and chatPanel.anchor.y == y - 1 and xRow.valueBox.edit:GetText() == tostring(x + 1), "- and + move by 1 pixel")
+		M.shift = true
+		click(xRow.minus)
+		M.shift = false
+		check(chatPanel.anchor.x == x + 1 - ns.db.global.editMode.bigStep, "Shift+click: big step")
+		chatPanel.anchor.x, chatPanel.anchor.y = x, y
+		ns.Layouts:PanelChanged(chatId, "geometry")
+		check(not findRow(general, L["WIDTH"]).plus, "no - and + on the other sliders")
+		xRow.plus.scripts.OnEnter(xRow.plus)
+		check(M.tooltip[1] == L["OFFSET_X"] and M.tooltip[2] == L["STEP_PLUS"]:format(ns.db.global.editMode.bigStep), "- and + tooltip")
+	end
 
 	-- Texture rows open the browser
 	local function browse(r, value)
@@ -925,6 +993,32 @@ elseif scenario == "options" then
 	check(browse(findRow(editor.tabs.border.form, L["TEXTURE"]), false) and chatPanel.border.texture == false and not chat.border.textures.TOP.shown, "no border (false)")
 	local fontRow = findRow(editor.tabs.text.form, L["FONT"])
 	check(choose(fontRow, nil) and chatPanel.text.font == nil and chat.text.font[1] == STANDARD_TEXT_FONT, "language default font")
+	-- Text area: the same scrollbar
+	do
+		local area = editor.tabs.text.form.rows[1].area
+		local sc, e = area.scroll, area.edit
+		sc.h, e.h = 100, 400
+		sc:UpdateBar()
+		local thumb = sc.bar.thumb
+		check(sc.bar.shown and thumb.h == 25, "text area: scrollbar shown")
+		-- Released out of the game window (no OnMouseUp): the drag stops anyway
+		thumb.scripts.OnMouseDown(thumb, "LeftButton")
+		M.mouseReleased = true
+		thumb.scripts.OnUpdate(thumb, 0.01)
+		M.mouseReleased = nil
+		check(not thumb.scripts.OnUpdate and sc:GetVerticalScroll() == 0, "button released elsewhere: drag stopped")
+		local s0 = sc.bar:GetEffectiveScale()
+		M.cursor = { 0, 300 * s0 }
+		thumb.scripts.OnMouseDown(thumb, "LeftButton")
+		M.cursor = { 0, 290 * s0 }
+		thumb.scripts.OnUpdate(thumb, 0.01)
+		thumb.scripts.OnMouseUp(thumb, "LeftButton")
+		check(math.abs(sc:GetVerticalScroll() - 40) < 0.01, "text area: thumb dragged, text follows")
+		sc.scripts.OnMouseWheel(sc, 1)
+		check(sc:GetVerticalScroll() == 0, "text area: wheel still works")
+		sc.h, e.h = 0, 0
+		sc:SetVerticalScroll(0)
+	end
 	typeIn(editor.tabs.text.form.rows[1].area.edit, "Hello ||cffff0000red||r")
 	check(chatPanel.text.value == "Hello ||cffff0000red||r" and chat.text.textValue == "Hello |cffff0000red|r", "text typed live")
 
@@ -970,6 +1064,51 @@ elseif scenario == "options" then
 	browser.scroll.w, browser.scroll.h = 720, 440
 	O.Browser:FillIcons()
 	check(browser.count.textValue == L["ICON_COUNT"]:format(500) and browser.scroll.content.h == math.ceil(500 / 16) * 44, "500 icons in the grid")
+	-- Scrollbar dragged: the grid is drawn again while it moves, the cursor read with the scale
+	do
+		local sc = browser.scroll
+		local bar, thumb = sc.bar, sc.bar.thumb
+		local function firstIcon()
+			local first
+			for _, c in ipairs(sc.content.children) do
+				if c.shown and c.icon and (not first or c.icon < first) then first = c.icon end
+			end
+			return first
+		end
+		check(bar.shown and thumb.h == 440 * 440 / 1408, "scrollbar shown, thumb in proportion")
+		check(-(bar.hitInsets[1] + bar.hitInsets[2]) == 10 and -(thumb.hitInsets[1] + thumb.hitInsets[2]) == 10, "mouse zone 10 pixels wider than the line")
+		browser.scale = 0.8
+		M.cursor = { 0, 500 }
+		thumb.scripts.OnMouseDown(thumb, "LeftButton")
+		check(thumb.tex.w == 8, "dragged thumb wider")
+		M.cursor = { 0, 450 }
+		thumb.scripts.OnUpdate(thumb, 0.01)
+		-- 50 pixels at scale 0.8 = 62.5 units; content (1408 - 440) / free track (440 - 137.5) = 3.2 per unit
+		check(math.abs(sc:GetVerticalScroll() - 200) < 0.01, "content follows the thumb, cursor converted with the scale")
+		check(firstIcon() == 100000 + 4 * 16 + 1, "icon grid drawn again while dragging")
+		M.cursor = { 0, -2000 }
+		thumb.scripts.OnUpdate(thumb, 0.01)
+		check(sc:GetVerticalScroll() == 1408 - 440 and firstIcon() == 100000 + 22 * 16 + 1, "dragged to the end: last icons")
+		thumb.scripts.OnMouseUp(thumb, "LeftButton")
+		check(not thumb.scripts.OnUpdate and thumb.tex.w == 4, "released: no more updates, thin again")
+		-- Click on the line: one page up or down
+		sc:ScrollTo(0)
+		thumb.rect = { 0, 300, 4, 137.5 }
+		M.cursor = { 0, 100 * 0.8 }
+		bar.scripts.OnMouseDown(bar, "LeftButton")
+		check(sc:GetVerticalScroll() == 440 and firstIcon() == 100000 + 10 * 16 + 1, "click below the thumb: one page down")
+		M.cursor = { 0, 460 * 0.8 }
+		bar.scripts.OnMouseDown(bar, "LeftButton")
+		check(sc:GetVerticalScroll() == 0, "click above the thumb: one page up")
+		M.cursor = { 0, 350 * 0.8 }
+		bar.scripts.OnMouseDown(bar, "LeftButton")
+		check(sc:GetVerticalScroll() == 0, "click on the thumb: no page")
+		thumb.scripts.OnEnter(thumb)
+		check(thumb.tex.w == 8 and thumb.tex.vertexColor[1] == O.Theme.colors.accent[1], "thumb wider under the mouse")
+		thumb.scripts.OnLeave(thumb)
+		check(thumb.tex.w == 4, "thin again when the mouse leaves")
+		browser.scale, thumb.rect, M.cursor = 1, nil, { 0, 0 }
+	end
 	browser.scroll:SetVerticalScroll(44 * 20)
 	browser.scroll.scripts.OnMouseWheel(browser.scroll, 0)
 	O.Browser:Choose(100000 + 16 * 20 + 1)
@@ -1224,6 +1363,25 @@ elseif scenario == "options" then
 	check(M.reloaded, "interface reloaded")
 	check(findRow(settings, L["THEME_ACCENT"]).button.text.textValue == L["ACCENT_GOLD"], "accent shown")
 
+	-- Every scroll area of the window (pages, lists, text areas) has the draggable bar
+	do
+		local n, ok = 0, true
+		for _, f in ipairs(M.frames) do
+			if f.kind == "ScrollFrame" then
+				n = n + 1
+				local done = pcall(function()
+					local h = f.h
+					f.h = math.max(f.h, 10)
+					f:ScrollTo(1e6)
+					f:ScrollTo(0)
+					f.h = h
+				end)
+				ok = ok and done and f.bar and f.bar.thumb and f.bar.hitInsets and f:GetVerticalScroll() == 0
+			end
+		end
+		check(n >= 10 and ok, "draggable scrollbar on every scroll area (" .. n .. ")")
+	end
+
 	-- Edit mode
 	ns.Layouts:Activate(mainId)
 	local EM = O.EditMode
@@ -1261,6 +1419,29 @@ elseif scenario == "options" then
 	M.shift = false
 	check(test.anchor.x == 1 and test.anchor.y == 10, "arrow keys, Shift for a bigger step")
 	test.anchor.x, test.anchor.y = 0, 0
+	-- Arrows of the toolbar: same steps, undone by Ctrl+Z, a texture of the game (no character)
+	do
+		local nudge = EM.frame.bar.nudge
+		check(nudge.shown and nudge.buttons.LEFT.icon.texture:find("ScrollUpButton", 1, true) and nudge.buttons.LEFT.label.textValue == ""
+			and #nudge.buttons.LEFT.icon.texCoord == 8, "arrow buttons shown with a game texture")
+		local function press(key) nudge.buttons[key].scripts.OnClick(nudge.buttons[key], "LeftButton") end
+		press("LEFT")
+		press("DOWN")
+		M.shift = true
+		press("RIGHT")
+		M.shift = false
+		check(test.anchor.x == 9 and test.anchor.y == -1, "arrow buttons: 1 pixel, Shift for the big step")
+		check(EM.frame.bar.undo.alpha == 1, "arrow buttons can be undone")
+		M.ctrl = true
+		for _ = 1, 3 do EM.frame.scripts.OnKeyDown(EM.frame, "Z") end
+		M.ctrl = false
+		check(test.anchor.x == 0 and test.anchor.y == 0, "arrow buttons undone by Ctrl+Z")
+		nudge.buttons.UP.scripts.OnEnter(nudge.buttons.UP)
+		check(M.tooltip and M.tooltip[1] == L["NUDGE_UP"] and M.tooltip[2] == L["NUDGE_HINT"]:format(s.bigStep), "arrow tooltip reminds the keys")
+		EM:Select(nil)
+		check(not nudge.shown, "no arrows without a selected panel")
+		EM:Select(testId)
+	end
 	s.snapPanels, s.snapGrid = true, false
 	local guide = dragMover(m, 1000, 1005)
 	check(test.anchor.x == 0 and guide, "snapped to the screen center, guide shown")

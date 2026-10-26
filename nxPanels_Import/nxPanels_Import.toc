@@ -12,7 +12,7 @@
 ## Notes-ptBR: Importa seus layouts do kgPanels e do kgPanels Reloaded para o nxPanels. Você pode desativá-lo depois da importação.
 ## Notes-ruRU: Импортирует ваши макеты kgPanels и kgPanels Reloaded в nxPanels. После импорта его можно отключить.
 ## Author: Adna
-## Version: 1.1.1
+## Version: 1.2.0
 ## X-License: All Rights Reserved
 ## RequiredDeps: nxPanels
 ## OptionalDeps: kgPanels

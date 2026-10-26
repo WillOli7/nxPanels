@@ -4,7 +4,7 @@ Document de reprise : l'état exact du projet, pour continuer dans une nouvelle 
 À lire avec `CLAUDE.md` (règles du projet) et `docs/ROADMAP.md` (idées et backlog).
 **Mettre ce fichier à jour à la fin de chaque session de travail.**
 
-Dernière mise à jour : 2026-10-25 (revue du code)
+Dernière mise à jour : 2026-10-26 (1.2.0, suggestions d'interface d'Aur0r4)
 
 ---
 
@@ -13,9 +13,9 @@ Dernière mise à jour : 2026-10-25 (revue du code)
 | Élément | État |
 |---|---|
 | Version | **`1.1.1` publiée en release le 2026-10-23** (PR #20, tag `1.1.1`, compatibilité Retail 12.1.5 seulement : interface 120105, pas de fenêtre des nouveautés ; envoyée sur CurseForge pour Retail 12.0.0–12.1.5, TBC Anniversary 2.5.5 / 2.5.6 et Forever 1.60.1). Avant : `1.1.0` (2026-10-23, PR #18), `1.0.0` (2026-09-29) |
-| Branche de travail | **`feature/code-review`** (revue du code, 8 correctifs et le sens de répétition, section 7 sexies, PR pas encore ouverte). Avant : `feature/spec-icon` fusionnée (PR #27, 2026-10-25) |
-| Pull request | PR #1 à #27 fusionnées dans `main` ; aucune ouverte. #24 (Dependabot, 2026-10-25) : `actions/checkout` v4 → v7 et `actions/upload-artifact` v4 → v7, vérifiées par une construction de test de la release (run 40201091009 : vert, zip produit) |
-| `main` | **en avance sur le tag `1.1.1`** : contient les correctifs de l'audit (PR #22, future **1.1.2**, pas encore publiée) et les outils de contrôle (PR #23). Ne pas présenter `main` comme la version publiée |
+| Branche de travail | **`feature/ui-aurora`** (version 1.2.0 : saisie du nom de frame, déplacement au pixel, barres de défilement déplaçables, section 7 septies ; poussée, PR pas encore ouverte). Avant : `feature/code-review` fusionnée (PR #28, 2026-10-26) |
+| Pull request | PR #1 à #28 fusionnées dans `main` ; aucune ouverte. #28 (2026-10-26) : revue du code et sens de répétition (future 1.1.2). #24 (Dependabot, 2026-10-25) : `actions/checkout` v4 → v7 et `actions/upload-artifact` v4 → v7, vérifiées par une construction de test de la release (run 40201091009 : vert, zip produit) |
+| `main` | **en avance sur le tag `1.1.1`** : contient les correctifs de l'audit (PR #22) et de la revue du code (PR #28), future **1.1.2** pas encore publiée, et les outils de contrôle (PR #23). Ne pas présenter `main` comme la version publiée |
 | Logo | ✅ 2026-09-28 (PR #4) : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7. Icône vérifiée en jeu (Retail et Forever) le 2026-09-29. Reste : image sociale à envoyer à la main (Settings → Social preview) |
 | Installé sur Mac | Retail (`/Applications/World of Warcraft/_retail_`, compte DARKICE7, aucune donnée kgPanels : test de première installation) via `WOW_DIR="/Applications/World of Warcraft" bash tools/deploy.sh retail`. Forever pas encore lancé sur ce Mac. Test en jeu à faire |
 | Tests hors jeu | Tous verts : `bash tools/tests/run-all.sh` (contrôle statique `tools/lint.sh`, puis migrate, original, handinstall, empty, nolibs, notloaded, forever, tbc, zhcn, options ×11 langues) + `real` avec les vraies données |
@@ -82,7 +82,8 @@ Langues : enUS, frFR, zhCN, zhTW, et depuis `release/1.0.1` deDE, esES (sert aus
 | Import : une frame du jeu passe avant un panneau du même nom, jamais d'auto-référence | Même ordre que kgPanels (panneau « Minimap » ancré à `Minimap`, issue #16) |
 | Une copie de panneau garde la position exacte | Comme kgPanels (issue #17) |
 | Pas de choix de dossier par fenêtre Windows | Impossible pour un addon (aucun accès au disque) : remplacé par le collage de chemins (« Copier en tant que chemin d'accès ») |
-| Sélecteur de frame à la souris **retiré** | Frames protégées depuis Midnight (« secret values ») et trop coûteux sur une grosse interface. Reste « Autre frame… » + `/fstack` |
+| Sélecteur de frame à la souris **retiré**, pas de retour prévu | Frames protégées depuis Midnight (« secret values ») et trop coûteux sur une grosse interface. Remplacé en 1.2.0 par la saisie directe du nom (+ `/fstack`), avec un voyant |
+| Nom de frame tapé : une frame du jeu passe avant un panneau du même nom ; un nom inconnu reste un nom de frame (le panneau attend) ; seul Entrée valide | Même ordre que l'import ; un nom à moitié tapé n'est jamais appliqué |
 | Galerie de modèles dans le menu « Nouveau panneau » | Plus logique que dans Import / Export (retour du mainteneur) |
 | Style par défaut **Atelier + or** | Préféré par le mainteneur |
 | Grille du mode édition = aimant, désactivée par défaut | Les déplacements saccadaient |
@@ -170,7 +171,7 @@ Publication (2026-10-23) :
 1. ~~Version 1.1.0~~ ✅ TOC, CHANGELOG, PR #18, tag `1.1.0`, release GitHub, fichier CurseForge.
 2. ~~Tests de migration~~ ✅ `migrate`, `original`, `real` verts. Test de mise à jour (`tools/update-test.sh`) non refait.
 3. Forever : **exception décidée par le mainteneur le 2026-10-23** à la règle « rien sur CurseForge sans test en jeu sur Retail et Forever » : la 1.1.0 est publiée après les tests Retail et TBC Anniversary seulement (bêta de Forever fermée). **Tests en jeu sur Forever à faire dès la réouverture (5 novembre)** ; correctif 1.1.2 si besoin.
-4. ~~Réponses~~ ✅ CurseForge (Shailay, moosetraxftw, Cnas) et GitHub (#16, #17, Aur0r4). **Fermer #16 et #17 à la main quand Aur0r4 confirme** (la PR ne les ferme pas). Suggestions d'interface d'Aur0r4 (déplacement au pixel, barre de défilement déplaçable, saisie du nom de frame) : attendre son ticket, puis `docs/ROADMAP.md`.
+4. ~~Réponses~~ ✅ CurseForge (Shailay, moosetraxftw, Cnas) et GitHub (#16, #17, Aur0r4). **Fermer #16 et #17 à la main quand Aur0r4 confirme** (la PR ne les ferme pas). Suggestions d'interface d'Aur0r4 (déplacement au pixel, barre de défilement déplaçable, saisie du nom de frame) : faites en 1.2.0, branche `feature/ui-aurora` (section 7 septies).
 5. ~~Description CurseForge~~ ✅ résumé et description à jour (TBC Anniversary, 10 langues, bibliothèque).
 
 Reste à faire :
@@ -269,6 +270,36 @@ Tests en jeu à faire avant de fusionner (`/console scriptErrors 1` ou BugSack),
 À faire pour la 1.1.2 : `CHANGELOG.md` (section « Unreleased » prête), version dans les TOC, notes de la fenêtre des nouveautés (`News.NOTES` + clé `NEWS_1_1_2` dans les 10 langues, ou décider de ne pas en avoir) ; surveiller la réaction d'Aur0r4 aux points 5 et 8.
 
 Incident 2026-10-25 : les brouillons `docs/publication/REDDIT.md` et `REPLIES-1.1.0.md` (non suivis, à garder hors du dépôt) avaient été ajoutés par erreur à un commit poussé ; l'historique de `feature/code-review` a été réécrit pour les retirer (force-push accepté par le mainteneur). Les fichiers restent sur le disque, non suivis. Ne jamais faire `git add docs` : ajouter les fichiers un par un.
+
+## 7 septies. Version 1.2.0 : suggestions d'interface d'Aur0r4 (2026-10-26, branche `feature/ui-aurora`)
+
+Fin de l'issue #16 (Aur0r4, 126 panneaux, rendu au pixel près). Branche partie de `main` après la PR #28. Un commit par idée, chacun avec ses vérifications dans `tools/tests/run.lua` (vérifiées en cassant le code : les tests échouent). `run-all.sh` vert à chaque commit, `real` vert, `wowapi.py audit` de `nxPanels_Options` : 0 API supprimée / dépréciée, 0 événement inconnu (live 12.1.5.70575, forever, classic_anniversary).
+
+| # | Fonction | Fichiers |
+|---|---|---|
+| 1 | **Nom de frame tapé** : « Ancré à » et « Parent » ont un champ (validé par Entrée ; Échap ou perte du focus remettent la valeur enregistrée) et la liste à côté (écran, autres panneaux). Voyant vert si `Anchors:Resolve` trouve la frame, orange sinon (le panneau attend). Le champ affiche « Écran », le nom du panneau ou le nom de la frame. « Autre frame… » et sa fenêtre supprimés (clés `OTHER_FRAME`, `PROMPT_FRAME_NAME` retirées ; `FRAME_NAME_HINT`, `FRAME_FOUND`, `FRAME_MISSING` ajoutées). Pas d'autocomplétion | nouveau widget `W.ComboRow` (`UI/Dropdown.lua`), `Pages/Panels.lua` |
+| 2 | **Déplacement au pixel** : 4 boutons flèches dans la barre du mode édition (texture `Interface\Buttons\UI-ScrollBar-ScrollUpButton-Up` tournée par ses coordonnées, présente sur les 3 clients) → `EditMode:Nudge` (1 px, Maj = `bigStep`, Ctrl+Z annule), infobulle qui rappelle les flèches du clavier ; visibles avec un panneau sélectionné, à gauche de « Réglages du panneau » ou des boutons d'alignement. Boutons - / + à côté de X / Y dans l'éditeur (option `stepper` de `W.SliderRow`, Maj = `bigStep` du mode édition). Clés `NUDGE_*`, `STEP_MINUS`, `STEP_PLUS` | `EditMode/EditMode.lua`, `UI/Widgets.lua`, `Pages/Panels.lua` |
+| 3 | **Barres de défilement déplaçables** (`W.Scroll` et `W.TextArea`, construction commune `scrollBar`) : poignée saisie à la souris (zone de 14 px pour un trait de 4 px, `SetHitRectInsets`), plus large (8 px) et couleur d'accent au survol et pendant le glissement ; clic sur la piste = une page ; curseur converti avec l'échelle effective de la barre ; arrêt si le bouton est relâché hors du jeu (`IsMouseButtonDown`, utilisé aussi par Blizzard sur TBC Anniversary). Tout défilement passe par `scroll:ScrollTo` puis `scroll.onScroll` : la grille d'icônes du navigateur (`FillIcons`) suit pendant le glissement. 19 zones de défilement vérifiées (pages, listes, menus, zones de texte) | `UI/Widgets.lua`, `UI/Browser.lua` |
+| + | Version 1.2.0 dans les 5 TOC, `CHANGELOG.md` (section 1.2.0 ; la section des correctifs devient « 1.1.2 — Unreleased »), notes `NEWS_1_2_0` dans les 10 langues (test : notes de chaque version traduites) | |
+
+Remarque : si cette branche est fusionnée avant la publication de la 1.1.2, la 1.2.0 contiendra aussi ses correctifs (décider alors : publier 1.1.2 d'abord, ou tout regrouper en 1.2.0 et fusionner les deux sections du CHANGELOG).
+
+Tests en jeu à faire (`/console scriptErrors 1` ou BugSack), Retail d'abord puis TBC Anniversary et Forever (5 novembre) :
+1. `/reload` sans erreur ; la fenêtre des nouveautés montre 1.2.0 une fois.
+2. Éditeur, onglet Général : taper un nom inventé dans « Ancré à » puis Entrée → voyant orange, panneau masqué ; taper `UIParent` ou choisir « Écran » dans la liste → vert. Taper un nom qui existe (`Minimap`, `PlayerFrame`) → vert, panneau attaché. Taper le nom d'un autre panneau → attaché au panneau. Taper sans Entrée puis cliquer ailleurs → rien ne change. Même chose pour « Parent ».
+3. Cas des raid frames (#17) : dupliquer un panneau ancré à `CompactRaidFrame1` (en groupe), remplacer le 1 par 2 → même position sur la deuxième frame.
+4. Voyant : survol → infobulle ; ouvrir l'addon attendu (Details) → le voyant passe au vert à la prochaine actualisation de l'éditeur.
+5. Mode édition : sélectionner un panneau → 4 flèches à droite de l'info ; clic = 1 px, Maj+clic = grand pas ; Ctrl+Z annule ; infobulle ; sélection multiple (Ctrl+clic) : flèches à gauche de « Aligner », le groupe bouge ensemble ; flèches cachées sans sélection. Vérifier que les flèches pointent dans le bon sens sur les 3 clients.
+6. Éditeur : - / + à côté des décalages horizontal et vertical (1 px, Maj = grand pas), ligne non coupée (libellés longs en allemand).
+7. Barres de défilement : liste des panneaux, éditeur (page longue), page Layouts, Bibliothèque, menus déroulants longs (polices), zones de texte (texte, scripts, import / export) : saisir la poignée (aussi un peu à gauche du trait), glisser, relâcher hors de la barre ; clic sur la piste au-dessus / au-dessous = une page ; la poignée s'élargit au survol. Avec une autre échelle d'interface : la poignée suit exactement la souris.
+8. Navigateur d'icônes (« Insérer une icône » → toutes les icônes) : glisser la barre → la grille se redessine pendant le glissement, sans trou.
+9. Aucune erreur Lua au démarrage sur les 3 clients.
+
+Résultats en jeu, Retail, 2026-10-26 (captures du mainteneur) : 1 ✅ ; 2 ✅ (nom inventé → orange et panneau masqué, `PlayerFrame` → vert et attaché, nom d'un panneau → suit DTC) ; 3 non faisable sans groupe, accepté par le mainteneur ; 4 ✅ (infobulle du voyant) ; 5 ✅ (flèches et clavier) ; 6 ✅ ; 7 ✅ ; 8 ✅ (grille redessinée pendant le glissement) ; 9 ✅ aucune erreur Lua. Défaut trouvé et corrigé le même jour : l'explication « Ce panneau est masqué… » était coupée sur une ligne (ligne de 44 px → 56 px, deux lignes). Demande notée dans `docs/ROADMAP.md` : trier les icônes du jeu par thème.
+
+Phrase « Ce panneau est masqué… » sur deux lignes ✅ (Retail, 2026-10-26, après réinstallation). PR #29 ouverte (non fusionnée).
+
+À faire ensuite : démarrage sur TBC Anniversary et Forever (5 novembre), puis PR `feature/ui-aurora` (accord du mainteneur), réponse à Aur0r4 sur l'issue #16.
 
 ## 8. Reprendre le travail
 

@@ -259,3 +259,102 @@ function W.DropdownRow(form, label, items, get, set, opts)
 	row.button = button
 	return form:Add(row, opts.full)
 end
+
+---------------------------------------------------------------------------
+-- Setting row with a text box and its list: the value is typed (validated
+-- with Enter; Escape or leaving the box puts the saved value back) or chosen
+-- in the list next to it.
+-- get() gives the value, set(value) saves it.
+-- opts.text(value): text of the box (default: the value)
+-- opts.parse(text): value of a typed text (default: the text)
+-- opts.status(value): color and tooltip of a small light before the box
+-- opts.hint: tooltip of the box; opts.width: width of the box
+---------------------------------------------------------------------------
+function W.ComboRow(form, label, items, get, set, opts)
+	opts = opts or {}
+	local row = CreateFrame("Frame")
+	row.label = T:Text(row, T.fonts.normal, C.text)
+	row.label:SetPoint("LEFT", 16, 0)
+	row.label:SetText(label)
+
+	local function list()
+		return type(items) == "function" and items() or items
+	end
+	local function textOf(value)
+		if opts.text then return opts.text(value) end
+		return value ~= nil and tostring(value) or ""
+	end
+
+	-- The list opens under the box and the button together
+	local holder = CreateFrame("Frame", nil, row)
+	holder:SetSize((opts.width or 190) + 24, 24)
+	holder:SetPoint("RIGHT", -16, 0)
+	local button = CreateFrame("Button", nil, holder)
+	button:SetSize(24, 24)
+	button:SetPoint("RIGHT")
+	T:Fill(button, C.input)
+	local edges = T:Border(button, C.lineStrong)
+	button.arrow = T:Text(button, T.fonts.small, C.textDim, "CENTER")
+	button.arrow:SetPoint("CENTER")
+	button.arrow:SetText("v")
+	button:SetScript("OnEnter", function() T:SetBorderColor(edges, C.accent) end)
+	button:SetScript("OnLeave", function() T:SetBorderColor(edges, C.lineStrong) end)
+
+	local box = W.EditBox(holder, opts.width or 190, 24)
+	box:SetPoint("LEFT")
+	box:SetPoint("RIGHT", button, "LEFT", 1, 0)
+	if opts.hint then T:Tooltip(box.edit, label, opts.hint) end
+
+	local function commit(value)
+		set(value)
+		row:Refresh()
+	end
+	button:SetScript("OnClick", function()
+		box.edit:ClearFocus()
+		Dropdown:Open(holder, list(), get(), commit, opts)
+	end)
+	box.edit:SetScript("OnEnterPressed", function(self)
+		local text = strtrim(self:GetText() or "")
+		local value = opts.parse and opts.parse(text) or text
+		self:ClearFocus()
+		commit(value)
+	end)
+	-- Only Enter saves: a half-typed name is not applied when the box loses the focus
+	box.edit:HookScript("OnEditFocusLost", function() row:Refresh() end)
+
+	local light = row:CreateTexture(nil, "ARTWORK")
+	light:SetTexture(T.WHITE)
+	light:SetSize(8, 8)
+	light:SetPoint("RIGHT", holder, "LEFT", -8, 0)
+	-- The light is small: its tooltip opens over a larger zone around it
+	local lightZone = CreateFrame("Frame", nil, row)
+	lightZone:SetSize(20, 24)
+	lightZone:SetPoint("CENTER", light, "CENTER")
+	lightZone:EnableMouse(true)
+	lightZone:SetScript("OnEnter", function(self)
+		if not row.statusText then return end
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:SetText(label, 1, 1, 1)
+		GameTooltip:AddLine(row.statusText, nil, nil, nil, true)
+		GameTooltip:Show()
+	end)
+	lightZone:SetScript("OnLeave", function() GameTooltip:Hide() end)
+	light:SetShown(opts.status ~= nil)
+	lightZone:SetShown(opts.status ~= nil)
+	row.label:SetPoint("RIGHT", light, "LEFT", -8, 0)
+
+	function row:Refresh()
+		local value = get()
+		if not box.edit:HasFocus() then
+			box.edit:SetText(textOf(value))
+			box.edit:SetCursorPosition(0)
+		end
+		if opts.status then
+			local color, text = opts.status(value)
+			light:SetVertexColor(unpack(color))
+			self.statusColor, self.statusText = color, text
+		end
+	end
+	row.button, row.box, row.light = button, box, light
+	return form:Add(row, opts.full)
+end
