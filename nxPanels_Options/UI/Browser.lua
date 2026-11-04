@@ -246,9 +246,10 @@ local function create()
 	f.empty:SetPoint("RIGHT", -8, 0)
 	f.empty:SetWordWrap(true)
 	f.empty:SetText(L["BROWSER_EMPTY"])
-	f.scroll:HookScript("OnMouseWheel", function()
+	-- Wheel or dragged scrollbar: the icon cells follow at once
+	f.scroll.onScroll = function()
 		if Browser.kind == "icon" then Browser:FillIcons() end
-	end)
+	end
 	f:SetScript("OnHide", function() GameTooltip:Hide() end)
 end
 

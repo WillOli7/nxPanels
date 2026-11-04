@@ -1,6 +1,7 @@
 local _, O = ...
 local T = O.Theme
 local C = T.colors
+local L = O.L
 
 -- Controls of the options window. Row controls ("setting rows") share one API:
 -- row:Refresh() reads the value again, row.isShown() (optional) hides the row.
@@ -100,7 +101,116 @@ function W.Switch(parent, onChange)
 	return s
 end
 
--- Scroll area with a slim scrollbar; put the content in scroll.content
+---------------------------------------------------------------------------
+-- Slim scrollbar of W.Scroll and W.TextArea: a 4 pixel line the mouse grabs
+-- over a wider zone. The thumb is dragged (the content follows), a click on the
+-- line scrolls by one page. Adds to the scroll frame:
+--   scroll:UpdateBar()      places the thumb (returns false when all fits)
+--   scroll:ScrollTo(offset) scrolls within the limits, then calls scroll.onScroll
+--   scroll:MaxScroll()
+-- total() gives the height of the content.
+---------------------------------------------------------------------------
+local BAR, BAR_HOVER, GRAB = 4, 8, 14
+
+local function scrollBar(scroll, parent, total)
+	local bar = CreateFrame("Frame", nil, parent)
+	bar:SetWidth(BAR)
+	T:Fill(bar, C.line)
+	-- The mouse grabs 10 pixels more than the line, mostly on the content side
+	bar:SetHitRectInsets(BAR - GRAB + 2, -2, 0, 0)
+	bar:EnableMouse(true)
+	local thumb = CreateFrame("Frame", nil, bar)
+	thumb:SetWidth(BAR)
+	thumb:SetHitRectInsets(BAR - GRAB + 2, -2, 0, 0)
+	thumb:EnableMouse(true)
+	thumb.tex = thumb:CreateTexture(nil, "ARTWORK")
+	thumb.tex:SetTexture(T.WHITE)
+	thumb.tex:SetPoint("TOPRIGHT")
+	thumb.tex:SetPoint("BOTTOMRIGHT")
+	bar.thumb = thumb
+	scroll.bar = bar
+
+	-- Wider and in the accent color under the mouse and while dragged
+	local function highlight(on)
+		thumb.tex:SetWidth(on and BAR_HOVER or BAR)
+		thumb.tex:SetVertexColor(unpack(on and C.accent or C.textMuted))
+	end
+	highlight(false)
+
+	-- Cursor height in the units of the bar (the window can have its own scale)
+	local function cursorY()
+		local _, y = GetCursorPosition()
+		return y / bar:GetEffectiveScale()
+	end
+
+	function scroll:MaxScroll()
+		return math.max(0, total() - self:GetHeight())
+	end
+	function scroll:ScrollTo(offset)
+		self:SetVerticalScroll(math.min(self:MaxScroll(), math.max(0, offset)))
+		self:UpdateBar()
+		if self.onScroll then self.onScroll(self) end
+	end
+	function scroll:UpdateBar()
+		local visible, height = self:GetHeight(), total()
+		if height <= visible + 1 or visible <= 0 then
+			bar:Hide()
+			return false
+		end
+		bar:Show()
+		local h = math.max(24, visible * visible / height)
+		local offset = math.min(1, self:GetVerticalScroll() / (height - visible)) * math.max(0, visible - h)
+		thumb:SetHeight(h)
+		thumb:ClearAllPoints()
+		thumb:SetPoint("TOP", bar, "TOP", 0, -offset)
+		return true
+	end
+
+	-- Drag: the content moves as much as the thumb, in proportion
+	local drag
+	local function stopDrag()
+		drag = nil
+		thumb:SetScript("OnUpdate", nil)
+		highlight(thumb:IsMouseOver())
+	end
+	thumb:SetScript("OnMouseDown", function(self, button)
+		if button ~= "LeftButton" then return end
+		local free = scroll:GetHeight() - self:GetHeight()
+		-- Thumb as tall as the bar: nothing to drag (and never a division by 0)
+		if free <= 0 then return end
+		drag = { y = cursorY(), offset = scroll:GetVerticalScroll(), ratio = scroll:MaxScroll() / free }
+		highlight(true)
+		self:SetScript("OnUpdate", function()
+			-- Button released out of the game window: no OnMouseUp
+			if not IsMouseButtonDown("LeftButton") then return stopDrag() end
+			local y = cursorY()
+			if y == drag.last then return end
+			drag.last = y
+			scroll:ScrollTo(drag.offset + (drag.y - y) * drag.ratio)
+		end)
+	end)
+	thumb:SetScript("OnMouseUp", stopDrag)
+	thumb:SetScript("OnHide", function() if drag then stopDrag() end end)
+	thumb:SetScript("OnEnter", function() highlight(true) end)
+	thumb:SetScript("OnLeave", function() if not drag then highlight(false) end end)
+
+	-- A click on the line above or below the thumb: one page
+	bar:SetScript("OnMouseDown", function(_, button)
+		if button ~= "LeftButton" then return end
+		local y, page = cursorY(), scroll:GetHeight()
+		local top, bottom = thumb:GetTop(), thumb:GetBottom()
+		if not (top and bottom) then return end
+		if y > top then
+			scroll:ScrollTo(scroll:GetVerticalScroll() - page)
+		elseif y < bottom then
+			scroll:ScrollTo(scroll:GetVerticalScroll() + page)
+		end
+	end)
+	return bar
+end
+
+-- Scroll area with a slim scrollbar; put the content in scroll.content.
+-- scroll.onScroll(scroll): called after each scroll (wheel, bar)
 function W.Scroll(parent)
 	local scroll = CreateFrame("ScrollFrame", nil, parent)
 	local content = CreateFrame("Frame", nil, scroll)
@@ -108,30 +218,13 @@ function W.Scroll(parent)
 	scroll:SetScrollChild(content)
 	scroll.content = content
 
-	local bar = CreateFrame("Frame", nil, scroll)
+	local bar = scrollBar(scroll, scroll, function() return content:GetHeight() end)
 	bar:SetPoint("TOPRIGHT", 0, 0)
 	bar:SetPoint("BOTTOMRIGHT", 0, 0)
-	bar:SetWidth(4)
-	T:Fill(bar, C.line)
-	local thumb = bar:CreateTexture(nil, "ARTWORK")
-	thumb:SetTexture(T.WHITE)
-	thumb:SetVertexColor(unpack(C.textMuted))
-	thumb:SetWidth(4)
-
+	-- Everything fits: back to the top
+	local updateBar = scroll.UpdateBar
 	function scroll:UpdateBar()
-		local visible, total = self:GetHeight(), content:GetHeight()
-		if total <= visible + 1 or visible <= 0 then
-			bar:Hide()
-			self:SetVerticalScroll(0)
-			return
-		end
-		bar:Show()
-		local h = math.max(24, visible * visible / total)
-		local maxScroll = total - visible
-		local offset = (self:GetVerticalScroll() / maxScroll) * (visible - h)
-		thumb:SetHeight(h)
-		thumb:ClearAllPoints()
-		thumb:SetPoint("TOP", bar, "TOP", 0, -offset)
+		if not updateBar(self) then self:SetVerticalScroll(0) end
 	end
 
 	function scroll:SetContentHeight(height)
@@ -143,9 +236,7 @@ function W.Scroll(parent)
 
 	scroll:EnableMouseWheel(true)
 	scroll:SetScript("OnMouseWheel", function(self, delta)
-		local maxScroll = math.max(0, content:GetHeight() - self:GetHeight())
-		self:SetVerticalScroll(math.min(maxScroll, math.max(0, self:GetVerticalScroll() - delta * 48)))
-		self:UpdateBar()
+		self:ScrollTo(self:GetVerticalScroll() - delta * 48)
 	end)
 	scroll:SetScript("OnSizeChanged", function(self, width)
 		content:SetWidth(width)
@@ -369,6 +460,8 @@ end
 
 -- min, max and step can be functions (range or precision depending on another setting).
 -- opts.free: the input box accepts values outside the slider range.
+-- opts.stepper: - and + buttons around the box, one step per click;
+-- opts.bigStep(): steps of a Shift+click (default 10)
 function W.SliderRow(form, label, min, max, step, get, set, opts)
 	opts = opts or {}
 	local row = baseRow(label)
@@ -379,14 +472,44 @@ function W.SliderRow(form, label, min, max, step, get, set, opts)
 		return type(step) == "function" and step() or step
 	end
 	local valueBox = W.EditBox(row, 52, 22)
-	valueBox:SetPoint("RIGHT", -PAD, 0)
 	valueBox.edit:SetJustifyH("CENTER")
 	valueBox.edit:SetTextInsets(2, 2, 0, 0)
+	local left = valueBox
+	if opts.stepper then
+		local function stepButton(text, sign, hint)
+			local b = W.Button(row, text, 20, "default", function()
+				local steps = IsShiftKeyDown() and (opts.bigStep and opts.bigStep() or 10) or 1
+				local v = (get() or 0) + sign * steps * stepOf()
+				local lo, hi = range()
+				if not opts.free then v = math.min(hi, math.max(lo, v)) end
+				set(v)
+				if opts.onRelease then opts.onRelease() end
+				row:Refresh()
+			end)
+			b:SetHeight(22)
+			b:HookScript("OnEnter", function(self)
+				GameTooltip:SetOwner(self, "ANCHOR_TOP")
+				GameTooltip:SetText(label, 1, 1, 1)
+				GameTooltip:AddLine(hint:format(opts.bigStep and opts.bigStep() or 10), nil, nil, nil, true)
+				GameTooltip:Show()
+			end)
+			b:HookScript("OnLeave", function() GameTooltip:Hide() end)
+			return b
+		end
+		row.plus = stepButton("+", 1, L["STEP_PLUS"])
+		row.plus:SetPoint("RIGHT", -PAD, 0)
+		valueBox:SetPoint("RIGHT", row.plus, "LEFT", -2, 0)
+		row.minus = stepButton("-", -1, L["STEP_MINUS"])
+		row.minus:SetPoint("RIGHT", valueBox, "LEFT", -2, 0)
+		left = row.minus
+	else
+		valueBox:SetPoint("RIGHT", -PAD, 0)
+	end
 
 	local slider = CreateFrame("Slider", nil, row)
 	slider:SetOrientation("HORIZONTAL")
-	slider:SetSize(110, 16)
-	slider:SetPoint("RIGHT", valueBox, "LEFT", -10, 0)
+	slider:SetSize(opts.stepper and 90 or 110, 16)
+	slider:SetPoint("RIGHT", left, "LEFT", -10, 0)
 	-- The range and the step are set by Refresh (they can depend on the edited panel)
 	slider:SetValueStep(type(step) == "number" and step or 1)
 	slider:SetObeyStepOnDrag(true)
@@ -591,32 +714,11 @@ function W.TextArea(parent, width, height)
 	e:SetWidth(math.max(20, width - 20))
 	area.edit = e
 
-	local bar = CreateFrame("Frame", nil, area)
+	local bar = scrollBar(scroll, area, function() return e:GetHeight() end)
 	bar:SetPoint("TOPRIGHT", -4, -6)
 	bar:SetPoint("BOTTOMRIGHT", -4, 6)
-	bar:SetWidth(4)
-	T:Fill(bar, C.line)
-	local thumb = bar:CreateTexture(nil, "ARTWORK")
-	thumb:SetTexture(T.WHITE)
-	thumb:SetVertexColor(unpack(C.textMuted))
-	thumb:SetWidth(4)
 
-	local function maxScroll()
-		return math.max(0, e:GetHeight() - scroll:GetHeight())
-	end
-	function scroll:UpdateBar()
-		local visible, total = self:GetHeight(), e:GetHeight()
-		if total <= visible + 1 or visible <= 0 then
-			bar:Hide()
-			return
-		end
-		bar:Show()
-		local h = math.max(24, visible * visible / total)
-		local offset = math.min(1, self:GetVerticalScroll() / (total - visible)) * (visible - h)
-		thumb:SetHeight(h)
-		thumb:ClearAllPoints()
-		thumb:SetPoint("TOP", bar, "TOP", 0, -offset)
-	end
+	local function maxScroll() return scroll:MaxScroll() end
 	local function fit()
 		if scroll:GetVerticalScroll() > maxScroll() then scroll:SetVerticalScroll(maxScroll()) end
 		scroll:UpdateBar()
@@ -627,8 +729,7 @@ function W.TextArea(parent, width, height)
 	end)
 	scroll:EnableMouseWheel(true)
 	scroll:SetScript("OnMouseWheel", function(self, delta)
-		self:SetVerticalScroll(math.min(maxScroll(), math.max(0, self:GetVerticalScroll() - delta * 40)))
-		self:UpdateBar()
+		self:ScrollTo(self:GetVerticalScroll() - delta * 40)
 	end)
 	e:SetScript("OnSizeChanged", fit)
 	e:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)

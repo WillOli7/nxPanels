@@ -9,7 +9,8 @@ Edit mode: the panels of the active layout are moved and resized with the mouse.
 - Drag a panel to move it, drag an edge or a corner to resize it.
 - Snapping: grid, screen edges and center, edges and centers of the other panels
   (alignment guides show where it snapped). Shift while dragging: no snapping.
-- Arrow keys move the selected panel (Shift: bigger step), Ctrl+Z undoes,
+- Arrow keys or the arrows of the toolbar move the selected panel (Shift:
+  bigger step), Ctrl+Z undoes,
   Escape deselects then leaves.
 All the geometry is computed in UIParent units, then converted to the units of
 the panel data (offsets in parent units, size in the panel's own units or %).
@@ -640,6 +641,9 @@ function EditMode:RefreshInfo()
 	local p = panelOf(self.selected)
 	local count = #selectedIds()
 	bar.align:SetShown(count > 1)
+	bar.nudge:SetShown(p ~= nil)
+	bar.nudge:ClearAllPoints()
+	bar.nudge:SetPoint("RIGHT", count > 1 and bar.alignLabel or bar.editButton, "LEFT", count > 1 and -16 or -10, 0)
 	if count > 1 then
 		bar.info:SetText(L["EDIT_MULTI"]:format(count, p and p.name or ""))
 		bar.info:SetTextColor(unpack(C.text))
@@ -667,6 +671,36 @@ local function labeledSwitch(parent, text, onChange)
 	s.label:SetPoint("RIGHT", s, "LEFT", -6, 0)
 	s.label:SetText(text)
 	return s
+end
+
+-- Arrow of the game scroll bars (all clients), cropped then turned by its corners
+-- (texture coordinates of the top left, bottom left, top right, bottom right corners)
+local ARROW = "Interface\\Buttons\\UI-ScrollBar-ScrollUpButton-Up"
+local A, B = 0.22, 0.78
+local ARROW_COORDS = {
+	UP = { A, A, A, B, B, A, B, B },
+	DOWN = { A, B, A, A, B, B, B, A },
+	LEFT = { B, A, A, A, B, B, A, B },
+	RIGHT = { A, B, B, B, A, A, B, A },
+}
+
+-- Button moving the selected panels by 1 pixel (Shift: big step), like the arrow keys
+local function nudgeButton(parent, key)
+	local b = W.Button(parent, "", 26, "default", function() EditMode:Nudge(key) end)
+	b:SetHeight(24)
+	b.icon = b:CreateTexture(nil, "ARTWORK")
+	b.icon:SetTexture(ARROW)
+	b.icon:SetTexCoord(unpack(ARROW_COORDS[key]))
+	b.icon:SetSize(16, 16)
+	b.icon:SetPoint("CENTER")
+	b:HookScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_TOP")
+		GameTooltip:SetText(L["NUDGE_" .. key], 1, 1, 1)
+		GameTooltip:AddLine(L["NUDGE_HINT"]:format(S().bigStep), nil, nil, nil, true)
+		GameTooltip:Show()
+	end)
+	b:HookScript("OnLeave", function() GameTooltip:Hide() end)
+	return b
 end
 
 local function createToolbar(f)
@@ -749,8 +783,20 @@ local function createToolbar(f)
 	local alignLabel = T:Text(bar.align, T.fonts.normal, C.textDim, "RIGHT")
 	alignLabel:SetPoint("RIGHT", previous, "LEFT", -8, 0)
 	alignLabel:SetText(L["ALIGN"])
+	bar.alignLabel = alignLabel
 	bar.align:Hide()
-	bar.info:SetPoint("RIGHT", bar.editButton, "LEFT", -10, 0)
+
+	-- Arrows, next to the panel settings or the alignment buttons
+	bar.nudge = CreateFrame("Frame", nil, bar)
+	bar.nudge:SetSize(4 * 26 + 3 * 2, 24)
+	bar.nudge.buttons = {}
+	for i, key in ipairs({ "LEFT", "UP", "DOWN", "RIGHT" }) do
+		local b = nudgeButton(bar.nudge, key)
+		b:SetPoint("LEFT", (i - 1) * 28, 0)
+		bar.nudge.buttons[key] = b
+	end
+	bar.nudge:Hide()
+	bar.info:SetPoint("RIGHT", bar.nudge, "LEFT", -10, 0)
 	f.bar = bar
 end
 
