@@ -2,7 +2,7 @@
 
 All notable changes to nxPanels. Versions follow [Semantic Versioning](https://semver.org/).
 
-## 1.2.0 — Unreleased
+## 1.2.0 — 2026-11-04
 
 New:
 - **Frame names are typed** next to "Anchored to" and "Parent" (validated with Enter); the list next to it keeps the screen and the other panels. A light shows whether the frame exists (green) or the panel waits for it (orange). The "Other frame..." window is gone (suggestion of Aur0r4, issue #16).
