@@ -4,7 +4,7 @@ Document de reprise : l'état exact du projet, pour continuer dans une nouvelle 
 À lire avec `CLAUDE.md` (règles du projet) et `docs/ROADMAP.md` (idées et backlog).
 **Mettre ce fichier à jour à la fin de chaque session de travail.**
 
-Dernière mise à jour : 2026-10-26 (1.2.0, suggestions d'interface d'Aur0r4)
+Dernière mise à jour : 2026-11-04 (1.2.0 prête à publier, 1.1.2 regroupée dedans)
 
 ---
 
@@ -83,6 +83,8 @@ Langues : enUS, frFR, zhCN, zhTW, et depuis `release/1.0.1` deDE, esES (sert aus
 | Une copie de panneau garde la position exacte | Comme kgPanels (issue #17) |
 | Pas de choix de dossier par fenêtre Windows | Impossible pour un addon (aucun accès au disque) : remplacé par le collage de chemins (« Copier en tant que chemin d'accès ») |
 | Sélecteur de frame à la souris **retiré**, pas de retour prévu | Frames protégées depuis Midnight (« secret values ») et trop coûteux sur une grosse interface. Remplacé en 1.2.0 par la saisie directe du nom (+ `/fstack`), avec un voyant |
+| **Pas de 1.1.2** : ses correctifs (audit, revue du code, `{specicon}`, `{talents}`, sens de répétition) sont publiés dans la **1.2.0** (2026-11-04) | Choix du mainteneur : une seule version, un seul CHANGELOG |
+| Forever : la 1.2.0 est publiée sans test en jeu sur Forever (2026-11-04) | Choix du mainteneur : Retail vaut pour Forever ; sortie officielle de Forever le 5 novembre à 0 h, plus de bêta |
 | Nom de frame tapé : une frame du jeu passe avant un panneau du même nom ; un nom inconnu reste un nom de frame (le panneau attend) ; seul Entrée valide | Même ordre que l'import ; un nom à moitié tapé n'est jamais appliqué |
 | Galerie de modèles dans le menu « Nouveau panneau » | Plus logique que dans Import / Export (retour du mainteneur) |
 | Style par défaut **Atelier + or** | Préféré par le mainteneur |
@@ -299,7 +301,9 @@ Résultats en jeu, Retail, 2026-10-26 (captures du mainteneur) : 1 ✅ ; 2 ✅ (
 
 Phrase « Ce panneau est masqué… » sur deux lignes ✅ (Retail, 2026-10-26, après réinstallation). PR #29 ouverte (non fusionnée).
 
-À faire ensuite : démarrage sur TBC Anniversary et Forever (5 novembre), puis PR `feature/ui-aurora` (accord du mainteneur), réponse à Aur0r4 sur l'issue #16.
+Publication (2026-11-04, choix du mainteneur) : la 1.1.2 n'est pas publiée seule, ses correctifs entrent dans la 1.2.0 (une seule section dans `CHANGELOG.md`, deux lignes de plus dans `NEWS_1_2_0`, notes raccourcies pour tenir dans la fenêtre). Pas de test en jeu sur Forever avant la publication (Retail vaut pour Forever ; sortie officielle de Forever cette nuit). Tests hors jeu verts, `migrate`, `original`, `real` verts, librairies à jour, TOC à jour (live 12.1.5.70783 → 120105, forever 1.60.1.70755 → 16001, classic_anniversary 2.5.6.70577 → 20506).
+
+Reste avant le tag : test du mainteneur sur Retail et TBC Anniversary (démarrage sans erreur, fenêtre des nouveautés 1.2.0 lisible), fusion de la PR #29, tag `1.2.0` (workflow : release GitHub + CurseForge). À la sortie de Forever : revérifier le numéro d'Interface (`wowapi.py version --branch forever`) et le dossier du jeu (`_classic_beta_` dans `tools/deploy.sh` pourrait changer). Ensuite : vérifier l'approbation du fichier sur CurseForge, test en jeu sur Forever, fermer #16 quand Aur0r4 confirme.
 
 ## 8. Reprendre le travail
 

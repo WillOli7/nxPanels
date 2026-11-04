@@ -4,14 +4,10 @@ All notable changes to nxPanels. Versions follow [Semantic Versioning](https://s
 
 ## 1.2.0 — Unreleased
 
-New (interface suggestions of Aur0r4, issue #16):
-- **Frame names are typed** next to "Anchored to" and "Parent" (validated with Enter); the list next to it keeps the screen and the other panels. A light shows whether the frame exists (green) or the panel waits for it (orange). The "Other frame..." window is gone.
-- **Pixel moves**: four arrow buttons in the edit mode bar (1 pixel, Shift for the big step, Ctrl+Z undoes) and - / + buttons next to the offsets in the editor.
-- **Draggable scrollbars** in the window and the text areas: the thumb is grabbed with the mouse (wider zone than the line), a click on the line scrolls by one page. The icon grid follows while dragging.
-
-## 1.1.2 — Unreleased
-
 New:
+- **Frame names are typed** next to "Anchored to" and "Parent" (validated with Enter); the list next to it keeps the screen and the other panels. A light shows whether the frame exists (green) or the panel waits for it (orange). The "Other frame..." window is gone (suggestion of Aur0r4, issue #16).
+- **Pixel moves**: four arrow buttons in the edit mode bar (1 pixel, Shift for the big step, Ctrl+Z undoes) and - / + buttons next to the offsets in the editor (Aur0r4, #16).
+- **Draggable scrollbars** in the window and the text areas: the thumb is grabbed with the mouse (wider zone than the line), a click on the line scrolls by one page. The icon grid follows while dragging (Aur0r4, #16).
 - Text variables `{specicon}` (icon of the specialization or of the main talent tree) and `{talents}` (name of the active talents).
 - **Repeat direction** of a tiled background: both directions, horizontally only or vertically only (the kgPanels option, now imported).
 
@@ -28,6 +24,7 @@ Fixed:
 - Switching a size between pixels and % keeps the size on screen (350 px no longer become 350 %), and a size in % is edited with decimals.
 - With a Blizzard image (atlas), the tiling options are hidden and explained: an atlas cannot be repeated.
 - An error in one part of the addon at startup no longer stops the others.
+- The explanation of a hidden panel waiting for its frame is no longer cut.
 
 ## 1.1.1 — 2026-10-23
 
