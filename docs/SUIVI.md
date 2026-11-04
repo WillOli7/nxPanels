@@ -4,7 +4,7 @@ Document de reprise : l'état exact du projet, pour continuer dans une nouvelle 
 À lire avec `CLAUDE.md` (règles du projet) et `docs/ROADMAP.md` (idées et backlog).
 **Mettre ce fichier à jour à la fin de chaque session de travail.**
 
-Dernière mise à jour : 2026-11-04 (1.2.0 prête à publier, 1.1.2 regroupée dedans)
+Dernière mise à jour : 2026-11-04 (1.2.0 publiée)
 
 ---
 
@@ -12,10 +12,10 @@ Dernière mise à jour : 2026-11-04 (1.2.0 prête à publier, 1.1.2 regroupée d
 
 | Élément | État |
 |---|---|
-| Version | **`1.1.1` publiée en release le 2026-10-23** (PR #20, tag `1.1.1`, compatibilité Retail 12.1.5 seulement : interface 120105, pas de fenêtre des nouveautés ; envoyée sur CurseForge pour Retail 12.0.0–12.1.5, TBC Anniversary 2.5.5 / 2.5.6 et Forever 1.60.1). Avant : `1.1.0` (2026-10-23, PR #18), `1.0.0` (2026-09-29) |
-| Branche de travail | **`feature/ui-aurora`** (version 1.2.0 : saisie du nom de frame, déplacement au pixel, barres de défilement déplaçables, section 7 septies ; poussée, PR pas encore ouverte). Avant : `feature/code-review` fusionnée (PR #28, 2026-10-26) |
-| Pull request | PR #1 à #28 fusionnées dans `main` ; aucune ouverte. #28 (2026-10-26) : revue du code et sens de répétition (future 1.1.2). #24 (Dependabot, 2026-10-25) : `actions/checkout` v4 → v7 et `actions/upload-artifact` v4 → v7, vérifiées par une construction de test de la release (run 40201091009 : vert, zip produit) |
-| `main` | **en avance sur le tag `1.1.1`** : contient les correctifs de l'audit (PR #22) et de la revue du code (PR #28), future **1.1.2** pas encore publiée, et les outils de contrôle (PR #23). Ne pas présenter `main` comme la version publiée |
+| Version | **`1.2.0` publiée en release le 2026-11-04** (PR #29, tag `1.2.0` simple, workflow vert : release GitHub + `nxPanels-1.2.0.zip` envoyé sur CurseForge pour Retail 12.0.0–12.1.5, TBC Anniversary 2.5.5 / 2.5.6 et Forever 1.60.1). Contient aussi la 1.1.2 jamais publiée seule. Avant : `1.1.1` (2026-10-23), `1.1.0` (2026-10-23), `1.0.0` (2026-09-29) |
+| Branche de travail | Aucune en cours. `feature/ui-aurora` fusionnée (PR #29, 2026-11-04) ; ce suivi sur `feature/suivi-1.2.0` |
+| Pull request | PR #1 à #29 fusionnées dans `main`. #29 (2026-11-04) : version 1.2.0. #28 (2026-10-26) : revue du code et sens de répétition. #24 (Dependabot, 2026-10-25) : `actions/checkout` v4 → v7 et `actions/upload-artifact` v4 → v7 |
+| `main` | **= tag `1.2.0`** (version publiée) |
 | Logo | ✅ 2026-09-28 (PR #4) : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7. Icône vérifiée en jeu (Retail et Forever) le 2026-09-29. Reste : image sociale à envoyer à la main (Settings → Social preview) |
 | Installé sur Mac | Retail (`/Applications/World of Warcraft/_retail_`, compte DARKICE7, aucune donnée kgPanels : test de première installation) via `WOW_DIR="/Applications/World of Warcraft" bash tools/deploy.sh retail`. Forever pas encore lancé sur ce Mac. Test en jeu à faire |
 | Tests hors jeu | Tous verts : `bash tools/tests/run-all.sh` (contrôle statique `tools/lint.sh`, puis migrate, original, handinstall, empty, nolibs, notloaded, forever, tbc, zhcn, options ×11 langues) + `real` avec les vraies données |
@@ -303,7 +303,9 @@ Phrase « Ce panneau est masqué… » sur deux lignes ✅ (Retail, 2026-10-26, 
 
 Publication (2026-11-04, choix du mainteneur) : la 1.1.2 n'est pas publiée seule, ses correctifs entrent dans la 1.2.0 (une seule section dans `CHANGELOG.md`, deux lignes de plus dans `NEWS_1_2_0`, notes raccourcies pour tenir dans la fenêtre). Pas de test en jeu sur Forever avant la publication (Retail vaut pour Forever ; sortie officielle de Forever cette nuit). Tests hors jeu verts, `migrate`, `original`, `real` verts, librairies à jour, TOC à jour (live 12.1.5.70783 → 120105, forever 1.60.1.70755 → 16001, classic_anniversary 2.5.6.70577 → 20506).
 
-Reste avant le tag : test du mainteneur sur Retail et TBC Anniversary (démarrage sans erreur, fenêtre des nouveautés 1.2.0 lisible), fusion de la PR #29, tag `1.2.0` (workflow : release GitHub + CurseForge). À la sortie de Forever : revérifier le numéro d'Interface (`wowapi.py version --branch forever`) et le dossier du jeu (`_classic_beta_` dans `tools/deploy.sh` pourrait changer). Ensuite : vérifier l'approbation du fichier sur CurseForge, test en jeu sur Forever, fermer #16 quand Aur0r4 confirme.
+Tests du mainteneur (2026-11-04) : Retail et TBC Anniversary démarrent sans erreur Lua ; fenêtre et page des nouveautés 1.2.0 lisibles (TBC). Sur Retail, pas de fenêtre : déjà vue en 1.2.0 le 26 octobre (normal). **Publiée le 2026-11-04** : CHANGELOG daté, PR #29 fusionnée (CI verte), tag `1.2.0` sur `7b9b387`, workflow Release vert (tests, paquet, release GitHub non pré-version, CurseForge « release » pour 12.1.5, 12.1.0, 12.0.7, 12.0.5, 12.0.1, 12.0.0, 2.5.6, 2.5.5, 1.60.1).
+
+Ancienne liste (fait) : test du mainteneur sur Retail et TBC Anniversary (démarrage sans erreur, fenêtre des nouveautés 1.2.0 lisible), fusion de la PR #29, tag `1.2.0` (workflow : release GitHub + CurseForge). À la sortie de Forever : revérifier le numéro d'Interface (`wowapi.py version --branch forever`) et le dossier du jeu (`_classic_beta_` dans `tools/deploy.sh` pourrait changer). Ensuite : **vérifier l'approbation du fichier sur CurseForge** (onglet Files) ; **à la sortie de Forever (5 novembre)** : `bash <skill>/scripts/setup.sh forever` puis `wowapi.py version --branch forever` (si l'Interface n'est plus 16001 : TOC + version corrective 1.2.1, sans fenêtre des nouveautés), dossier du jeu dans `tools/deploy.sh`, test en jeu sur Forever (dont `{talents}`) ; fermer #16 quand Aur0r4 confirme.
 
 ## 8. Reprendre le travail
 
