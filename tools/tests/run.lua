@@ -300,6 +300,21 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 	News:Check()
 	check(not news:IsShown() and db.global.newsSeen == "1.1.0", "new player: no news")
 	db.global.migration, db.global.layouts = savedMigration, savedLayouts
+	-- Only the releases (x.y.0) are announced, never their fixes (x.y.z)
+	for v in pairs(News.NOTES) do check(News:Release(v) == v, "notes only for a release: " .. v) end
+	check(News:Release("1.2.3") == "1.2.0" and News:Release("2.0") == "2.0.0", "release of a version")
+	local function startAs(newVersion, seenVersion)
+		news:Hide()
+		ns.version, db.global.newsSeen = newVersion, seenVersion
+		News:Check()
+		return news:IsShown() and news.title:GetText()
+	end
+	check(not startAs("1.1.1", "1.1.0") and db.global.newsSeen == "1.1.1", "fix of a release already seen: no window")
+	check(startAs("1.2.0", "1.1.1") == L["NEWS_TITLE"]:format("1.2.0") and news.body:GetText() == L["NEWS_1_2_0"], "new release: its notes")
+	check(not startAs("1.2.1", "1.2.0"), "1.2.0 -> 1.2.1: no window")
+	check(startAs("1.2.1", "1.1.1") == L["NEWS_TITLE"]:format("1.2.0"), "1.1.1 -> 1.2.1: notes of 1.2.0, skipped release")
+	check(not startAs("1.2.0", "1.3.0"), "older version started again: no window")
+	news:Hide()
 	ns.version = version
 	check(printed(L["MIGRATED"]:format(2, 8, "kgPanels_Reloaded"):gsub("%p", "%%%0")), "migration message")
 

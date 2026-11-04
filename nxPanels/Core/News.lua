@@ -2,7 +2,8 @@ local _, ns = ...
 local L = ns.L
 
 --[[
-What's new window: shown once, at the first start of a new version.
+What's new window: shown once, at the first start of a new release (x.y.0;
+the fixes x.y.z have no window).
 	global.newsSeen   last version announced (or skipped)
 	global.showNews   false: never shown at startup (still available in the settings)
 Not shown to a new player (nothing changed for them), nor right after an import
@@ -11,7 +12,7 @@ Not shown to a new player (nothing changed for them), nor right after an import
 local News = {}
 ns.News = News
 
--- Versions with notes: text of the window
+-- Releases with notes (x.y.0 only): text of the window
 News.NOTES = {
 	["1.2.0"] = "NEWS_1_2_0",
 	["1.1.0"] = "NEWS_1_1_0",
@@ -74,17 +75,28 @@ function News:Show(version)
 	return true
 end
 
--- At login (a moment later, so the welcome window of an import is already open)
+-- Release a version belongs to: "1.2.3" -> "1.2.0". Only releases have notes, never
+-- the fixes (1.2.1, 1.2.2...)
+function News:Release(version)
+	local major, minor = tostring(version):match("^(%d+)%.(%d+)")
+	return major and (major .. "." .. minor .. ".0") or version
+end
+
+-- At login (a moment later, so the welcome window of an import is already open).
+-- The notes of the release are shown once, even to a player who skipped it
+-- (1.1.1 -> 1.2.1 shows 1.2.0); a fix of a release already seen shows nothing
 function News:Check()
 	local g = ns.db.global
 	local seen, version = g.newsSeen, ns.version
 	if seen == version then return end
 	g.newsSeen = version
+	local release = self:Release(version)
+	if seen and not newer(release, seen) then return end
 	-- New player, or an import made in this session: the welcome window is enough
 	local newPlayer = seen == nil and not g.migration and not next(g.layouts)
 	local importedNow = type(g.migration) == "table" and (g.migration.date or 0) >= (ns.startTime or 0)
-	if newPlayer or importedNow or g.showNews == false or not self.NOTES[version] then return end
-	ns.Splash:Queue(function() News:Show(version) end)
+	if newPlayer or importedNow or g.showNews == false or not self.NOTES[release] then return end
+	ns.Splash:Queue(function() News:Show(release) end)
 end
 
 function News:Init()
