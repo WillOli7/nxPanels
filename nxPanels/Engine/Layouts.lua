@@ -10,13 +10,26 @@ Layouts.waiting = {}      -- [panelId] = true: parent or anchor frame does not e
 Layouts.cyclic = {}       -- [panelId] = true: part of an anchoring loop, anchored to the screen
 local waitingAddon = {}   -- [addon] = { [panelId] = true }: scripts waiting for an addon
 local started = {}        -- [panelId] = true: scripts attached
-local ticker
+local ticker, tickerInterval
+local tries = 0
 
-local RETRY_INTERVAL, RETRY_COUNT = 1, 60
+-- Every second for a minute, then every few seconds for as long as a panel waits:
+-- unit frame addons create their party frames only when the group forms
+local RETRY_INTERVAL, RETRY_COUNT, SLOW_INTERVAL = 1, 60, 3
+
+local function stopTicker()
+	if ticker then
+		ticker:Cancel()
+		ticker, tickerInterval = nil, nil
+	end
+end
 
 function Layouts:Init()
 	ns:RegisterEvent("ADDON_LOADED", function(_, addon) self:OnAddonLoaded(addon) end)
 	ns:RegisterEvent("PLAYER_ENTERING_WORLD", function() self:RetryWaiting() end)
+	-- Party frames appear with the group, secure ones may wait for the end of combat
+	ns:RegisterEvent("GROUP_ROSTER_UPDATE", function() self:RetrySoon() end)
+	ns:RegisterEvent("PLAYER_REGEN_ENABLED", function() self:RetrySoon() end)
 	ns:RegisterEvent("DISPLAY_SIZE_CHANGED", function() self:RefreshAll() end)
 	ns:RegisterEvent("UI_SCALE_CHANGED", function() self:RefreshAll() end)
 end
@@ -37,10 +50,7 @@ function Layouts:ReleaseAll()
 	wipe(started)
 	ns.Media:ClearWaiting()
 	ns.Scripts:ResetErrors()
-	if ticker then
-		ticker:Cancel()
-		ticker = nil
-	end
+	stopTicker()
 	self.activeId = nil
 end
 
@@ -96,6 +106,7 @@ function Layouts:Place(panelId)
 	end
 	self.waiting[panelId] = nil
 	ns.Panel:Apply(frame, panel, parent, anchor)
+	self:WatchSize(parent, panel)
 	-- Shown unless its display conditions say otherwise
 	ns.Visibility:Refresh(panelId, true)
 	return true
@@ -117,30 +128,54 @@ function Layouts:StartScripts(panelId)
 	ns.Scripts:Attach(self.frames[panelId], panel)
 end
 
--- Panels waiting for a frame created later (another addon, a Blizzard frame loaded on demand)
+-- Panels waiting for a frame created later (another addon, a Blizzard frame loaded on
+-- demand, party frames). Only looks the frames up: a panel is redrawn once they exist
 function Layouts:RetryWaiting()
+	local layout = activeLayout()
+	if not layout then return end
 	for panelId in pairs(self.waiting) do
-		if self:Place(panelId) then
+		local panel = layout.panels[panelId]
+		local parent, anchor
+		if panel then parent, anchor = self:Targets(panelId, panel) end
+		if parent and anchor and self:Place(panelId) then
 			self:StartScripts(panelId)
 		end
 	end
 end
 
--- The tries are counted here: a ticker ended by its own count would stay in `ticker`
--- and no panel could wait again before the next layout change
-function Layouts:StartRetry()
-	if ticker or not next(self.waiting) then return end
-	local tries, own = 0, nil
-	own = C_Timer.NewTicker(RETRY_INTERVAL, function()
+-- The ticker stops itself, so a panel can wait again later on (new ticker)
+function Layouts:RunTicker(interval)
+	stopTicker()
+	local own
+	own = C_Timer.NewTicker(interval, function()
 		tries = tries + 1
 		self:RetryWaiting()
 		-- A script may have rebuilt the layout meanwhile (new ticker or none)
-		if ticker == own and (not next(self.waiting) or tries >= RETRY_COUNT) then
-			ticker:Cancel()
-			ticker = nil
+		if ticker ~= own then return end
+		if not next(self.waiting) then
+			stopTicker()
+		elseif interval == RETRY_INTERVAL and tries >= RETRY_COUNT then
+			self:RunTicker(SLOW_INTERVAL)
 		end
 	end)
-	ticker = own
+	ticker, tickerInterval = own, interval
+end
+
+-- Tries every second again, for a minute
+function Layouts:StartRetry()
+	tries = 0
+	if not next(self.waiting) then
+		stopTicker()
+	elseif tickerInterval ~= RETRY_INTERVAL then
+		self:RunTicker(RETRY_INTERVAL)
+	end
+end
+
+-- Something that may create the missing frames happened (group, end of combat)
+function Layouts:RetrySoon()
+	if not self.activeId or not next(self.waiting) then return end
+	self:RetryWaiting()
+	self:StartRetry()
 end
 
 function Layouts:OnAddonLoaded(addon)
@@ -258,6 +293,33 @@ function Layouts:UpdateGeometry(panelId)
 	if parent and anchor then
 		ns.Panel:ApplyGeometry(frame, panel, parent, anchor)
 	end
+end
+
+---------------------------------------------------------------------------
+-- Sizes in % follow their parent: Edit Mode or another addon can resize it after
+-- the panel is drawn (the chat frame at login)
+---------------------------------------------------------------------------
+local watched = {}   -- [parent frame] = true: OnSizeChanged hooked (a hook cannot be removed)
+local resizing = {}  -- [parent frame] = true: its panels are being resized
+
+function Layouts:WatchSize(parent, panel)
+	if watched[parent] or (panel.widthUnit ~= "%" and panel.heightUnit ~= "%") then return end
+	watched[parent] = true
+	parent:HookScript("OnSizeChanged", function(frame) self:OnParentSized(frame) end)
+end
+
+-- The hook stays after a layout change: it checks which panels still need it
+function Layouts:OnParentSized(parent)
+	local layout = activeLayout()
+	if not layout or resizing[parent] then return end
+	resizing[parent] = true
+	for panelId, frame in pairs(self.frames) do
+		local panel = layout.panels[panelId]
+		if panel and (panel.widthUnit == "%" or panel.heightUnit == "%") and frame:GetParent() == parent then
+			self:UpdateGeometry(panelId)
+		end
+	end
+	resizing[parent] = nil
 end
 
 function Layouts:CountShown()

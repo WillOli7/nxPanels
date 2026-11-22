@@ -13,13 +13,13 @@ ns.L = L
 
 ---------------------------------------------------------------------------
 -- Client detection
--- WoW Forever reports WOW_PROJECT_MAINLINE with a 1.x build (interface 16xxx).
--- TBC Anniversary is a 2.5.x build (interface 205xx).
+-- By the interface number only: WOW_PROJECT_ID is not stable (WoW Forever reported
+-- WOW_PROJECT_MAINLINE, then WOW_PROJECT_CAMELOT = 18 since build 1.60.1.70170).
+-- WoW Forever is a 1.x build (interface 16xxx), TBC Anniversary a 2.5.x build (205xx).
 ---------------------------------------------------------------------------
 local tocVersion = select(4, GetBuildInfo())
-ns.isMainline = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
-ns.isForever = ns.isMainline and tocVersion >= 16000 and tocVersion < 20000
-ns.isRetail = ns.isMainline and tocVersion >= 100000
+ns.isForever = tocVersion >= 16000 and tocVersion < 20000
+ns.isRetail = tocVersion >= 100000
 ns.isAnniversary = tocVersion >= 20500 and tocVersion < 30000
 -- No specializations: primary / secondary talents instead
 ns.usesTalentGroups = ns.isForever or ns.isAnniversary

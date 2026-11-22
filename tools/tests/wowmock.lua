@@ -68,8 +68,8 @@ DEFAULT_CHAT_FRAME = { AddMessage = function(_, msg) M.printed[#M.printed + 1] =
 
 C_Timer = {
 	After = function(_, fn) M.timers = M.timers or {} table.insert(M.timers, fn) end,
-	NewTicker = function(_, fn, n)
-		local t = { fn = fn, n = n, cancelled = false }
+	NewTicker = function(interval, fn, n)
+		local t = { interval = interval, fn = fn, n = n, cancelled = false }
 		function t:Cancel() self.cancelled = true end
 		M.ticker = t
 		return t

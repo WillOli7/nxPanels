@@ -4,7 +4,7 @@ Document de reprise : l'état exact du projet, pour continuer dans une nouvelle 
 À lire avec `CLAUDE.md` (règles du projet) et `docs/ROADMAP.md` (idées et backlog).
 **Mettre ce fichier à jour à la fin de chaque session de travail.**
 
-Dernière mise à jour : 2026-11-04 (1.2.0 publiée)
+Dernière mise à jour : 2026-11-22 (correctifs 1.2.1 sur `feature/fix-1.2.1`)
 
 ---
 
@@ -13,7 +13,7 @@ Dernière mise à jour : 2026-11-04 (1.2.0 publiée)
 | Élément | État |
 |---|---|
 | Version | **`1.2.0` publiée en release le 2026-11-04** (PR #29, tag `1.2.0` simple, workflow vert : release GitHub + `nxPanels-1.2.0.zip` envoyé sur CurseForge pour Retail 12.0.0–12.1.5, TBC Anniversary 2.5.5 / 2.5.6 et Forever 1.60.1). Contient aussi la 1.1.2 jamais publiée seule. Avant : `1.1.1` (2026-10-23), `1.1.0` (2026-10-23), `1.0.0` (2026-09-29) |
-| Branche de travail | Aucune en cours. `feature/ui-aurora` fusionnée (PR #29, 2026-11-04) ; ce suivi sur `feature/suivi-1.2.0` |
+| Branche de travail | **`feature/fix-1.2.1`** (2026-11-22, partie de `main` = 1.2.0) : détection de Forever, issues #31 et #32 (section 7 octies). Pas de PR ouverte |
 | Pull request | PR #1 à #29 fusionnées dans `main`. #29 (2026-11-04) : version 1.2.0. #28 (2026-10-26) : revue du code et sens de répétition. #24 (Dependabot, 2026-10-25) : `actions/checkout` v4 → v7 et `actions/upload-artifact` v4 → v7 |
 | `main` | **= tag `1.2.0`** (version publiée) |
 | Logo | ✅ 2026-09-28 (PR #4) : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7. Icône vérifiée en jeu (Retail et Forever) le 2026-09-29. Reste : image sociale à envoyer à la main (Settings → Social preview) |
@@ -306,6 +306,25 @@ Publication (2026-11-04, choix du mainteneur) : la 1.1.2 n'est pas publiée seul
 Tests du mainteneur (2026-11-04) : Retail et TBC Anniversary démarrent sans erreur Lua ; fenêtre et page des nouveautés 1.2.0 lisibles (TBC). Sur Retail, pas de fenêtre : déjà vue en 1.2.0 le 26 octobre (normal). **Publiée le 2026-11-04** : CHANGELOG daté, PR #29 fusionnée (CI verte), tag `1.2.0` sur `7b9b387`, workflow Release vert (tests, paquet, release GitHub non pré-version, CurseForge « release » pour 12.1.5, 12.1.0, 12.0.7, 12.0.5, 12.0.1, 12.0.0, 2.5.6, 2.5.5, 1.60.1).
 
 Ancienne liste (fait) : test du mainteneur sur Retail et TBC Anniversary (démarrage sans erreur, fenêtre des nouveautés 1.2.0 lisible), fusion de la PR #29, tag `1.2.0` (workflow : release GitHub + CurseForge). À la sortie de Forever : revérifier le numéro d'Interface (`wowapi.py version --branch forever`) et le dossier du jeu (`_classic_beta_` dans `tools/deploy.sh` pourrait changer). Ensuite : **vérifier l'approbation du fichier sur CurseForge** (onglet Files) ; **à la sortie de Forever (5 novembre)** : `bash <skill>/scripts/setup.sh forever` puis `wowapi.py version --branch forever` (si l'Interface n'est plus 16001 : TOC + version corrective 1.2.1, sans fenêtre des nouveautés), dossier du jeu dans `tools/deploy.sh`, test en jeu sur Forever (dont `{talents}`) ; fermer #16 quand Aur0r4 confirme.
+
+## 7 octies. Correctifs 1.2.1 (2026-11-22, branche `feature/fix-1.2.1`)
+
+Trois bugs, tous vérifiés avant correction. Tests hors jeu verts (`run-all.sh` + `real`) ; sans les correctifs, les nouvelles vérifications échouent.
+
+| Bug | Cause (vérifiée) | Correction |
+|---|---|---|
+| **Forever vu comme « unsupported client »** (statut des issues #31 et #32) | Depuis le build Forever 1.60.1.70170 (2026-10-01), Blizzard charge `Blizzard_ProjectConstants/Camelot/ProjectConstants.lua` : `WOW_PROJECT_ID = WOW_PROJECT_CAMELOT = 18` (vérifié dans `Gethe/wow-ui-source`, branche `forever`, et en jeu : `/run print(WOW_PROJECT_ID, …)` → `18 1 16001`). `Init.lua` exigeait `WOW_PROJECT_MAINLINE`. Conséquences : `usesTalentGroups` faux, layout par groupe de talents (`G1`/`G2`) jamais appliqué sur Forever, liste des 3 arbres à la place | Client reconnu par le seul numéro d'interface (Forever 16000–19999, TBC Anniversary 20500–29999, Retail ≥ 100000). Clés `S<id>` enregistrées sur Forever depuis le 1er octobre : orphelines, à refaire (pas de conversion possible). Scénario `forever` des tests avec `WOW_PROJECT_ID = 18` |
+| **#32 (Aur0r4)** : panneaux sur les cadres de groupe MSUF absents | Le réessai s'arrêtait 60 s après la connexion ou un changement de layout ; MSUF crée ses cadres de groupe à la formation du groupe. Ouvrir `/nxp` charge `nxPanels_Options` → `ADDON_LOADED` → `RetryWaiting`, d'où le contournement constaté. (La ligne « still retried every second after the first minute » du CHANGELOG 1.2.0 décrivait la remise en route du réessai au changement suivant, pas un réessai sans fin) | Réessai chaque seconde pendant 60 s, puis toutes les 3 s tant qu'un panneau attend ; `GROUP_ROSTER_UPDATE` et `PLAYER_REGEN_ENABLED` relancent la phase rapide. Un panneau en attente n'est plus redessiné à chaque essai : seules les frames sont cherchées (`Layouts:RetryWaiting`, `RunTicker`, `RetrySoon`) |
+| **#31 (arrgson)** : fond à 103 % de `ChatFrame1` trop petit à la connexion | `Panel:ApplyGeometry` convertit le % en pixels une seule fois ; le mode Édition redimensionne le chat après (confirmé par le joueur avec un hook) | `Layouts:WatchSize` : un `HookScript("OnSizeChanged")` par parent d'un panneau en % (jamais deux), qui recalcule la taille des panneaux en % de ce parent (`OnParentSized`, garde contre la réentrance). Taille du parent secrète (Retail 12, `GetWidth` est `SecretWhenAnchoringSecret`) : le panneau garde sa taille au lieu d'une erreur Lua |
+
+Tests en jeu à faire (`/console scriptErrors 1` ou BugSack) :
+1. Forever : `/nxp status` affiche « WoW Forever » ; éditeur des layouts : choix « talents principaux / secondaires » ; changer de groupe de talents → le bon layout.
+2. Retail et TBC Anniversary : `/nxp status` affiche toujours le bon client.
+3. Panneau ancré à un cadre de groupe d'un addon (MSUF, Danders Frames) : se connecter seul, attendre plus d'une minute, former un groupe → le panneau apparaît dans les 3 s, sans ouvrir `/nxp`. Pareil si le groupe se forme en combat (après la fin du combat).
+4. Panneau à 103 % de `ChatFrame1` : redimensionner le chat à la souris ou en mode Édition → le panneau suit ; plusieurs connexions de suite → toujours la bonne taille.
+5. Aucune erreur Lua au démarrage, en combat, en groupe.
+
+Avant publication : version 1.2.1 dans les 5 TOC, CHANGELOG daté, `migrate` / `original` / `real` verts. Pas de nouvelle fenêtre des nouveautés (correctif). Répondre aux issues #31 et #32 une fois testé.
 
 ## 8. Reprendre le travail
 

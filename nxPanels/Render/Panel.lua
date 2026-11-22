@@ -120,6 +120,13 @@ end
 ---------------------------------------------------------------------------
 -- Drawing
 ---------------------------------------------------------------------------
+-- Size of the parent, nil when it cannot be read
+local function parentSize(parent)
+	local width, height = parent:GetWidth(), parent:GetHeight()
+	if issecretvalue and (issecretvalue(width) or issecretvalue(height)) then return nil end
+	return width, height
+end
+
 -- Size and position only (cheap: used while dragging in edit mode)
 function Panel:ApplyGeometry(frame, panel, parent, anchor)
 	if frame:GetParent() ~= parent then frame:SetParent(parent) end
@@ -127,10 +134,16 @@ function Panel:ApplyGeometry(frame, panel, parent, anchor)
 	frame:SetScale(scale)
 
 	-- A size in % is a share of the parent on screen, whatever the scale of the panel
-	-- (kgPanels applied the scale on top of it); like the offsets, in parent units
-	local width = panel.widthUnit == "%" and parent:GetWidth() * panel.width / 100 / scale or panel.width
-	local height = panel.heightUnit == "%" and parent:GetHeight() * panel.height / 100 / scale or panel.height
-	frame:SetSize(math.max(width, 0), math.max(height, 0))
+	-- (kgPanels applied the scale on top of it); like the offsets, in parent units.
+	-- Retail 12 can hide the size of a parent ("secret"): the panel keeps its size then
+	local percent = panel.widthUnit == "%" or panel.heightUnit == "%"
+	local parentWidth, parentHeight
+	if percent then parentWidth, parentHeight = parentSize(parent) end
+	if not percent or parentWidth then
+		local width = panel.widthUnit == "%" and parentWidth * panel.width / 100 / scale or panel.width
+		local height = panel.heightUnit == "%" and parentHeight * panel.height / 100 / scale or panel.height
+		frame:SetSize(math.max(width, 0), math.max(height, 0))
+	end
 
 	local a = panel.anchor
 	frame:ClearAllPoints()
