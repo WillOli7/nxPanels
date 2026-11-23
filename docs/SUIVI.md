@@ -4,7 +4,7 @@ Document de reprise : l'état exact du projet, pour continuer dans une nouvelle 
 À lire avec `CLAUDE.md` (règles du projet) et `docs/ROADMAP.md` (idées et backlog).
 **Mettre ce fichier à jour à la fin de chaque session de travail.**
 
-Dernière mise à jour : 2026-11-23 (1.2.1 en cours de publication)
+Dernière mise à jour : 2026-11-23 (1.2.1 publiée)
 
 ---
 
@@ -12,10 +12,10 @@ Dernière mise à jour : 2026-11-23 (1.2.1 en cours de publication)
 
 | Élément | État |
 |---|---|
-| Version | **`1.2.0` publiée en release le 2026-11-04** (PR #29, tag `1.2.0` simple, workflow vert : release GitHub + `nxPanels-1.2.0.zip` envoyé sur CurseForge pour Retail 12.0.0–12.1.5, TBC Anniversary 2.5.5 / 2.5.6 et Forever 1.60.1). Contient aussi la 1.1.2 jamais publiée seule. Avant : `1.1.1` (2026-10-23), `1.1.0` (2026-10-23), `1.0.0` (2026-09-29) |
-| Branche de travail | **`feature/fix-1.2.1`** (2026-11-22, partie de `main` = 1.2.0) : détection de Forever, issues #31 et #32 (section 7 octies). Pas de PR ouverte |
+| Version | **`1.2.1` publiée en release le 2026-11-23** (PR #33, tag `1.2.1` sur `42e6c8c`, workflow vert : release GitHub + `nxPanels-1.2.1.zip` envoyé sur CurseForge pour Retail 12.0.0–12.1.5, TBC Anniversary 2.5.5 / 2.5.6 et Forever 1.60.1). Avant : `1.2.0` publiée le 2026-11-04 (PR #29, tag `1.2.0` simple, workflow vert : release GitHub + `nxPanels-1.2.0.zip` envoyé sur CurseForge pour Retail 12.0.0–12.1.5, TBC Anniversary 2.5.5 / 2.5.6 et Forever 1.60.1). Contient aussi la 1.1.2 jamais publiée seule. Avant : `1.1.1` (2026-10-23), `1.1.0` (2026-10-23), `1.0.0` (2026-09-29) |
+| Branche de travail | Aucune en cours. `feature/fix-1.2.1` fusionnée (PR #33, 2026-11-23) ; ce suivi sur `feature/suivi-1.2.1` |
 | Pull request | PR #1 à #29 fusionnées dans `main`. #29 (2026-11-04) : version 1.2.0. #28 (2026-10-26) : revue du code et sens de répétition. #24 (Dependabot, 2026-10-25) : `actions/checkout` v4 → v7 et `actions/upload-artifact` v4 → v7 |
-| `main` | **= tag `1.2.0`** (version publiée) |
+| `main` | **= tag `1.2.1`** (version publiée) |
 | Logo | ✅ 2026-09-28 (PR #4) : version stylisée (ChatGPT) pour GitHub / CurseForge dans `docs/media/`, version simplifiée (`docs/media/icon.svg` → `nxPanels/Media/icon.tga`) pour le jeu. Détails : `PUBLICATION.md` section 7. Icône vérifiée en jeu (Retail et Forever) le 2026-09-29. Reste : image sociale à envoyer à la main (Settings → Social preview) |
 | Installé sur Mac | Retail (`/Applications/World of Warcraft/_retail_`, compte DARKICE7, aucune donnée kgPanels : test de première installation) via `WOW_DIR="/Applications/World of Warcraft" bash tools/deploy.sh retail`. Forever pas encore lancé sur ce Mac. Test en jeu à faire |
 | Tests hors jeu | Tous verts : `bash tools/tests/run-all.sh` (contrôle statique `tools/lint.sh`, puis migrate, original, handinstall, empty, nolibs, notloaded, forever, tbc, zhcn, options ×11 langues) + `real` avec les vraies données |
@@ -328,7 +328,9 @@ Tests en jeu à faire (`/console scriptErrors 1` ou BugSack) :
 
 Test du mainteneur (2026-11-23) : pas de plantage ; sur Forever, `/nxp status` affiche « client WoW Forever », 15 panneaux affichés, 0 en attente. Version 1.2.1 dans les 5 TOC, CHANGELOG daté du 2026-11-23, Interface à jour (live 12.1.5.70961 → 120105, forever 1.60.1.71037 → 16001, classic_anniversary 2.5.6.70577 → 20506). AceDB-3.0 : révision 40 disponible (39 embarquée), volontairement pas mise à jour dans un correctif (base de données, migration) : à faire dans la prochaine version. Restent à tester en jeu : points 1 (layout par talents), 3 (groupe) et 4 (chat), et les retours d'Aur0r4 (#32) et arrgson (#31).
 
-Avant publication : version 1.2.1 dans les 5 TOC, CHANGELOG daté, `migrate` / `original` / `real` verts. Pas de nouvelle fenêtre des nouveautés (correctif). Répondre aux issues #31 et #32 une fois testé.
+**Publiée le 2026-11-23** (choix du mainteneur, sans attendre les retours sur les issues) : PR #33 fusionnée (CI verte), tag `1.2.1` sur `42e6c8c`, workflow Release vert (CurseForge « release » pour 12.1.5 à 12.0.0, 2.5.6, 2.5.5, 1.60.1 ; release GitHub). Ensuite : vérifier l'approbation du fichier sur CurseForge ; répondre sur #31 et #32 (1.2.1 disponible, demander confirmation) et les fermer après retour ; tests en jeu 1, 3 et 4 ci-dessus ; mettre AceDB-3.0 à jour (révision 40) dans la prochaine version.
+
+Avant publication (fait) : version 1.2.1 dans les 5 TOC, CHANGELOG daté, `migrate` / `original` / `real` verts. Pas de nouvelle fenêtre des nouveautés (correctif). Répondre aux issues #31 et #32 une fois testé.
 
 ## 8. Reprendre le travail
 
