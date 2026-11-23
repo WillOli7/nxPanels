@@ -4,7 +4,7 @@ Document de reprise : l'état exact du projet, pour continuer dans une nouvelle 
 À lire avec `CLAUDE.md` (règles du projet) et `docs/ROADMAP.md` (idées et backlog).
 **Mettre ce fichier à jour à la fin de chaque session de travail.**
 
-Dernière mise à jour : 2026-11-22 (correctifs 1.2.1 sur `feature/fix-1.2.1`)
+Dernière mise à jour : 2026-11-23 (1.2.1 en cours de publication)
 
 ---
 
@@ -325,6 +325,8 @@ Tests en jeu à faire (`/console scriptErrors 1` ou BugSack) :
 5. Aucune erreur Lua au démarrage, en combat, en groupe.
 
 `tools/deploy.sh` installe maintenant Forever dans `_forever_` (dossier du jeu depuis sa sortie le 2026-11-05 ; `_classic_beta_` seulement s'il n'existe pas) : jusqu'ici, `deploy.sh all` installait Forever dans l'ancien dossier de la bêta. Branche installée sur les 3 clients le 2026-11-23. Choix du mainteneur : publier la 1.2.1 si rien ne plante, sans attendre les retours d'Aur0r4 et arrgson ; la PR #33 dit « Refs » pour que les issues restent ouvertes.
+
+Test du mainteneur (2026-11-23) : pas de plantage ; sur Forever, `/nxp status` affiche « client WoW Forever », 15 panneaux affichés, 0 en attente. Version 1.2.1 dans les 5 TOC, CHANGELOG daté du 2026-11-23, Interface à jour (live 12.1.5.70961 → 120105, forever 1.60.1.71037 → 16001, classic_anniversary 2.5.6.70577 → 20506), librairies à jour. Restent à tester en jeu : points 1 (layout par talents), 3 (groupe) et 4 (chat), et les retours d'Aur0r4 (#32) et arrgson (#31).
 
 Avant publication : version 1.2.1 dans les 5 TOC, CHANGELOG daté, `migrate` / `original` / `real` verts. Pas de nouvelle fenêtre des nouveautés (correctif). Répondre aux issues #31 et #32 une fois testé.
 

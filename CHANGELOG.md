@@ -2,7 +2,7 @@
 
 All notable changes to nxPanels. Versions follow [Semantic Versioning](https://semver.org/).
 
-## 1.2.1 — Unreleased
+## 1.2.1 — 2026-11-23
 
 Fixed:
 - WoW Forever is recognized again: since game build 1.60.1.70170 the client reports a project of its own, and nxPanels took it for an unsupported client. Layouts per talent group (primary / secondary) apply again; a layout chosen per talent tree on WoW Forever since then has to be chosen again.
