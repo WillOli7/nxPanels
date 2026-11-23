@@ -17,6 +17,9 @@ TESTDATA=0
 
 FOLDERS="nxPanels nxPanels_Options nxPanels_Import kgPanels_Reloaded kgPanelsConfig_Reloaded"
 STAMP="$(date +%Y%m%d-%H%M%S)"
+# WoW Forever: _forever_ since its release (2026-11-05), _classic_beta_ during the beta
+FOREVER=_forever_
+[ -d "$WOW_DIR/$FOREVER" ] || FOREVER=_classic_beta_
 
 deploy() {
 	local flavor="$1"
@@ -59,7 +62,7 @@ forever_testdata() {
 	local retail_sv
 	retail_sv="$(ls "$WOW_DIR"/_retail_/WTF/Account/*/SavedVariables/kgPanels_Reloaded.lua 2>/dev/null | head -1)"
 	[ -f "$retail_sv" ] || { echo "[forever] no Retail kgPanels_Reloaded.lua to copy"; return; }
-	for account in "$WOW_DIR"/_classic_beta_/WTF/Account/*/; do
+	for account in "$WOW_DIR/$FOREVER"/WTF/Account/*/; do
 		[ -d "$account" ] || continue
 		[ "$(basename "$account")" = "SavedVariables" ] && continue
 		mkdir -p "$account/SavedVariables"
@@ -73,9 +76,9 @@ forever_testdata() {
 
 case "$TARGET" in
 	retail) deploy _retail_ ;;
-	forever) deploy _classic_beta_ ;;
+	forever) deploy "$FOREVER" ;;
 	anniversary) deploy _anniversary_ ;;
-	all) deploy _retail_; deploy _classic_beta_; deploy _anniversary_ ;;
+	all) deploy _retail_; deploy "$FOREVER"; deploy _anniversary_ ;;
 	*) echo "Usage: bash tools/deploy.sh [retail|forever|anniversary|all] [--forever-testdata]"; exit 1 ;;
 esac
 [ "$TESTDATA" = 1 ] && forever_testdata

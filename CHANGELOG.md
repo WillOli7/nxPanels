@@ -2,6 +2,13 @@
 
 All notable changes to nxPanels. Versions follow [Semantic Versioning](https://semver.org/).
 
+## 1.2.1 — 2026-11-23
+
+Fixed:
+- WoW Forever is recognized again: since game build 1.60.1.70170 the client reports a project of its own, and nxPanels took it for an unsupported client. Layouts per talent group (primary / secondary) apply again; a layout chosen per talent tree on WoW Forever since then has to be chosen again.
+- A panel attached to a frame created late, such as party frames created when the group forms, now appears: the frames are looked up every few seconds for as long as the panel waits, and right away when the group changes or combat ends (Aur0r4, issue #32).
+- A size in % follows its parent when the parent is resized after the panel is drawn, such as the chat frame resized by Edit Mode at login (arrgson, issue #31).
+
 ## 1.2.0 — 2026-11-04
 
 New:

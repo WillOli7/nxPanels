@@ -74,7 +74,10 @@ local function realData()
 end
 
 if scenario == "forever" then
-	M.build = { "1.60.1", "70009", "Sep 20 2026", 16001 }
+	-- Since build 1.60.1.70170 the client is its own project (WOW_PROJECT_CAMELOT)
+	WOW_PROJECT_CAMELOT = 18
+	WOW_PROJECT_ID = 18
+	M.build = { "1.60.1", "71037", "Nov 20 2026", 16001 }
 elseif scenario == "tbc" then
 	-- TBC Anniversary: classic project, 2.5.x build, no specializations nor pet battles
 	WOW_PROJECT_BURNING_CRUSADE_CLASSIC = 5
@@ -423,14 +426,56 @@ if scenario == "migrate" or scenario == "forever" or scenario == "tbc" or scenar
 	ns.Layouts:PanelChanged(waitingId, "anchors")
 	local retry = M.ticker
 	check(not retry.cancelled and ns.Layouts.waiting[waitingId], "retry timer started for a panel waiting later on")
+	check(retry.interval == 1, "retry every second at first")
 	for _ = 1, 60 do retry.fn() end
-	check(retry.cancelled, "retry timer stopped after its last try")
+	local slow = M.ticker
+	check(retry.cancelled and slow ~= retry and not slow.cancelled and slow.interval == 3, "then slower, for as long as the panel waits")
+	-- Party frames: the group forms long after login, its frame appears
+	ns.Layouts:RetrySoon()
+	check(slow.cancelled and M.ticker.interval == 1 and not M.ticker.cancelled, "group change: every second again")
+	local party = CreateFrame("Frame", "LaterAddonFrame", UIParent)
+	party.w, party.h = 100, 40
+	M.ticker.fn()
+	check(waiting.shown and waiting.parent == party and M.ticker.cancelled, "panel shown once the late frame exists")
+	_G.LaterAddonFrame = nil
 	ns.Layouts:PanelChanged(waitingId, "anchors")
-	check(M.ticker ~= retry and not M.ticker.cancelled, "retry timer started again after its last try")
+	check(ns.Layouts.waiting[waitingId] and not M.ticker.cancelled, "retry timer started again for a panel waiting again")
+	-- While waiting, the panel is not redrawn at every try
+	local applied = 0
+	local apply = ns.Panel.Apply
+	ns.Panel.Apply = function(...) applied = applied + 1 return apply(...) end
+	M.ticker.fn()
+	ns.Panel.Apply = apply
+	check(applied == 0, "waiting panel only looked up, not redrawn")
 	waitingPanel.parent = waitingParent
 	ns.Layouts:PanelChanged(waitingId, "anchors")
 	M.ticker.fn()
 	check(M.ticker.cancelled and not ns.Layouts.waiting[waitingId], "retry timer stopped once nothing waits")
+
+	-- A size in % follows its parent when the parent is resized later (Edit Mode, login)
+	do
+		local saved = { waitingPanel.widthUnit, waitingPanel.width, waitingPanel.heightUnit, waitingPanel.height, waitingPanel.scale }
+		waitingPanel.widthUnit, waitingPanel.width, waitingPanel.heightUnit, waitingPanel.height, waitingPanel.scale = "%", 50, "%", 25, 1
+		ns.Layouts:PanelChanged(waitingId, "look")
+		check(waiting.parent == target and waiting.w == 150 and waiting.h == 50, "size in % of the parent")
+		target.w, target.h = 400, 100
+		check(target.scripts.OnSizeChanged, "parent size watched")
+		target.scripts.OnSizeChanged(target, 400, 100)
+		check(waiting.w == 200 and waiting.h == 25, "size in % follows the parent")
+		local onSize = target.scripts.OnSizeChanged
+		target.scripts.OnSizeChanged = nil
+		ns.Layouts:PanelChanged(waitingId, "look")
+		check(target.scripts.OnSizeChanged == nil, "parent hooked only once")
+		target.scripts.OnSizeChanged = onSize
+		target.w = M.SECRET
+		local ok = pcall(target.scripts.OnSizeChanged, target)
+		check(ok and waiting.w == 200, "secret parent size: the panel keeps its size")
+		target.w, target.h = 300, 200
+		waitingPanel.widthUnit, waitingPanel.width, waitingPanel.heightUnit, waitingPanel.height, waitingPanel.scale = unpack(saved)
+		ns.Layouts:PanelChanged(waitingId, "look")
+		target.scripts.OnSizeChanged(target, 300, 200)
+		check(waiting.w == waitingPanel.width, "size in pixels ignores the parent size")
+	end
 
 	-- A legacy anchor written like a reference of ours is converted without error
 	do
