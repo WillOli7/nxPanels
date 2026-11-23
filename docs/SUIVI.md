@@ -324,6 +324,8 @@ Tests en jeu à faire (`/console scriptErrors 1` ou BugSack) :
 4. Panneau à 103 % de `ChatFrame1` : redimensionner le chat à la souris ou en mode Édition → le panneau suit ; plusieurs connexions de suite → toujours la bonne taille.
 5. Aucune erreur Lua au démarrage, en combat, en groupe.
 
+`tools/deploy.sh` installe maintenant Forever dans `_forever_` (dossier du jeu depuis sa sortie le 2026-11-05 ; `_classic_beta_` seulement s'il n'existe pas) : jusqu'ici, `deploy.sh all` installait Forever dans l'ancien dossier de la bêta. Branche installée sur les 3 clients le 2026-11-23. Choix du mainteneur : publier la 1.2.1 si rien ne plante, sans attendre les retours d'Aur0r4 et arrgson ; la PR #33 dit « Refs » pour que les issues restent ouvertes.
+
 Avant publication : version 1.2.1 dans les 5 TOC, CHANGELOG daté, `migrate` / `original` / `real` verts. Pas de nouvelle fenêtre des nouveautés (correctif). Répondre aux issues #31 et #32 une fois testé.
 
 ## 8. Reprendre le travail
